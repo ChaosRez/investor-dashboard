@@ -191,6 +191,11 @@ window.ScreenerModule = (function () {
           `;
         }
 
+        const relatedNewsCount = (window.DataStore?.getNews() || []).filter(n => (n.relatedEtfs || []).some(e => e.ticker.toUpperCase() === etf.ticker.toUpperCase())).length;
+        const newsBadgeHtml = relatedNewsCount > 0
+          ? `<span class="badge badge-blue screener-news-badge" data-ticker="${etf.ticker}" title="Click to view ${relatedNewsCount} active market catalysts" style="cursor: pointer; font-size: 0.68rem; font-weight: 700;">📰 ${relatedNewsCount} News</span>`
+          : "";
+
         return `
           <tr>
             <td>
@@ -199,6 +204,7 @@ window.ScreenerModule = (function () {
                 ${providerLogo}
                 ${watchlistBadge}
                 <span class="badge ${scoreBadgeClass}">Score ${compositeScore}/100</span>
+                ${newsBadgeHtml}
               </div>
               <span class="table-etf-title">${etf.name}</span>
               <span class="table-etf-sub">ISIN: <strong>${etf.isin}</strong> | WKN: ${etf.wkn}</span>
@@ -325,6 +331,14 @@ window.ScreenerModule = (function () {
         window.App?.switchTab("overlap");
       });
     });
+
+    container.querySelectorAll(".screener-news-badge").forEach((badge) => {
+      badge.addEventListener("click", (e) => {
+        const ticker = e.currentTarget.dataset.ticker;
+        window.App?.switchTab("news");
+        window.NewsSignalsModule?.filterByEtf(ticker);
+      });
+    });
   }
 
   function showDetailModal(ticker) {
@@ -333,6 +347,47 @@ window.ScreenerModule = (function () {
 
     const modalBody = document.getElementById("modal-body");
     if (!modalBody) return;
+
+    // Active Macro News & Catalysts for this ETF
+    const relatedNews = (window.DataStore?.getNews() || []).filter(n =>
+      (n.relatedEtfs || []).some(e => e.ticker.toUpperCase() === ticker.toUpperCase())
+    );
+
+    let modalNewsHtml = "";
+    if (relatedNews.length === 0) {
+      modalNewsHtml = `
+        <div style="padding: 12px 16px; background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem;">
+          ℹ️ No urgent sector-specific alerts active for <strong>${etf.ticker}</strong>. Fund performance is primarily governed by broad multi-year macroeconomic drivers.
+        </div>
+      `;
+    } else {
+      modalNewsHtml = relatedNews.map(item => {
+        const sig = item.signal || {};
+        const rel = (item.relatedEtfs || []).find(e => e.ticker.toUpperCase() === ticker.toUpperCase()) || {};
+        let signalBadgeClass = "badge-amber";
+        if (sig.bias.toLowerCase().includes("bullish")) signalBadgeClass = "badge-acc";
+        else if (sig.bias.toLowerCase().includes("bearish") || sig.bias.toLowerCase().includes("caution")) signalBadgeClass = "badge-red";
+
+        return `
+          <div style="margin-bottom: 12px; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="badge ${signalBadgeClass}">${sig.bias}</span>
+                <span class="badge ${sig.impactBadge === "critical" ? "badge-red" : "badge-amber"}">${sig.impact}</span>
+              </div>
+              <span style="font-size: 0.76rem; color: var(--text-muted);">
+                📅 ${item.date} • Source: <a href="${item.sourceUrl || '#'}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">${item.source} ↗</a>
+              </span>
+            </div>
+            <strong style="font-size: 0.92rem; color: var(--text-primary); display: block; margin-bottom: 4px;">${item.title}</strong>
+            ${item.summary ? `<p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4;">${item.summary}</p>` : ""}
+            <div style="padding: 8px 10px; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--border-color); font-size: 0.82rem; line-height: 1.45;">
+              <strong style="color: var(--text-primary);">🎯 Fundamental Transmission Mechanism:</strong> ${rel.relation || "Systemic market transmission."}
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
 
     // Top holdings list
     const holdingsListHtml = (etf.topHoldings || [])
@@ -546,6 +601,20 @@ window.ScreenerModule = (function () {
         ${brokersHtml}
       </div>
 
+      <!-- Active Macro News & Fundamental Signals (Two-Sided Grounding) -->
+      <div class="card" style="margin-bottom: 20px; border-left: 4px solid var(--accent-blue);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <h4 class="card-title" style="margin-bottom: 2px;">📰 Active Macro & Market News Affecting ${etf.ticker}</h4>
+            <span class="card-subtitle">Transparent real-world transmission verified from official sources</span>
+          </div>
+          <button class="btn btn-secondary btn-sm modal-jump-radar-btn" data-ticker="${etf.ticker}">
+            📡 Open in Full Signal Radar
+          </button>
+        </div>
+        ${modalNewsHtml}
+      </div>
+
       <!-- Official Issuer Documents -->
       <div class="card" style="margin-bottom: 0;">
         <h4 class="card-title">📑 Official Issuer Documents & Final Verification</h4>
@@ -576,6 +645,12 @@ window.ScreenerModule = (function () {
         window.OverlapModule?.addEtfToPortfolio(ticker);
         detailModal.classList.remove("active");
         window.App?.switchTab("overlap");
+      });
+
+      detailModal.querySelector(".modal-jump-radar-btn")?.addEventListener("click", () => {
+        detailModal.classList.remove("active");
+        window.App?.switchTab("news");
+        window.NewsSignalsModule?.filterByEtf(ticker);
       });
 
       detailModal.classList.add("active");

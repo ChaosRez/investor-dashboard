@@ -181,12 +181,14 @@ def sync_live_ecb_news() -> List[Dict[str, Any]]:
                     "timeframe": "Tactical (1–3 Months)"
                 },
                 "relatedEtfs": [
-                    {"ticker": "AGGU", "relation": "EUR-hedged bond yields track ECB benchmark deposit rates directly"},
-                    {"ticker": "MEUD", "relation": "European equities discount corporate borrowing costs based on ECB rate trajectory"},
-                    {"ticker": "VWCE", "relation": "European macroeconomic stability impacts global composite equity valuations"}
+                    {"ticker": "XEON", "issuer": "Xtrackers", "relation": "€STR overnight swap accrual yield directly tracks ECB deposit facility benchmark rates with 24h transmission"},
+                    {"ticker": "AGGU", "issuer": "BlackRock / iShares", "relation": "EUR-hedged bond yields track ECB benchmark deposit rates and sovereign yield curve shifts"},
+                    {"ticker": "IMAE", "issuer": "BlackRock / iShares", "relation": "European corporate borrowing costs and equity discount rates shift with ECB monetary trajectory"},
+                    {"ticker": "MEUD", "issuer": "Amundi", "relation": "Stoxx 600 European equities discount corporate debt service costs based on ECB rate trajectory"},
+                    {"ticker": "IUSQ", "issuer": "BlackRock / iShares", "relation": "European macroeconomic stability impacts global composite equity valuations and non-US liquidity"}
                 ],
-                "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
-                "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
+                "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Cash instruments (XEON) adjust yield mechanically while bond allocations (AGGU) harvest shifting yield curves. Continue monthly automated DCA.",
+                "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Cash instruments (XEON) adjust yield mechanically while bond allocations (AGGU) harvest shifting yield curves. Continue monthly automated DCA."
             })
     except Exception:
         pass
@@ -213,18 +215,41 @@ def sync_live_marketwatch_news() -> List[Dict[str, Any]]:
             full_text = (title + " " + desc).lower()
             related = []
 
-            if any(w in full_text for w in ["tech", "ai", "nvidia", "apple", "microsoft", "chip", "semiconductor"]):
-                related.append({"ticker": "QDVE", "relation": "S&P 500 Tech heavily concentrates top AI/semiconductor cap weights"})
-                related.append({"ticker": "SXR8", "relation": "Core S&P 500 holds ~32% technology sector allocation"})
+            if any(w in full_text for w in ["tech", "ai", "nvidia", "apple", "microsoft", "chip", "semiconductor", "cloud"]):
+                related.append({"ticker": "QDVE", "issuer": "BlackRock / iShares", "relation": "S&P 500 Tech heavily concentrates top AI/semiconductor cap weights"})
+                related.append({"ticker": "SXR8", "issuer": "BlackRock / iShares", "relation": "Core S&P 500 holds ~32% technology sector allocation"})
+                related.append({"ticker": "AII", "issuer": "BlackRock / iShares", "relation": "Datacenter power equipment and utility infrastructure demand"})
+                related.append({"ticker": "WTAI", "issuer": "WisdomTree", "relation": "Enterprise software and algorithm developer monetization"})
 
-            if any(w in full_text for w in ["small-cap", "small cap", "russell", "interest rate"]):
-                related.append({"ticker": "IUSN", "relation": "MSCI World Small Cap sensitivity to interest rates and domestic debt financing"})
+            if any(w in full_text for w in ["energy", "grid", "power", "utility", "nuclear"]):
+                related.append({"ticker": "AII", "issuer": "BlackRock / iShares", "relation": "Hyperscaler power purchase agreements directly benefit baseload merchant utilities and grid suppliers"})
 
-            if any(w in full_text for w in ["fed", "rate", "bond", "yield", "treasury"]):
-                related.append({"ticker": "AGGU", "relation": "Global fixed income valuations respond directly to sovereign yield shifts"})
+            if any(w in full_text for w in ["battery", "lithium", "ev", "electric vehicle"]):
+                related.append({"ticker": "BATT", "issuer": "Legal & General", "relation": "Lithium spot pricing, EV adoption rates, and cell manufacturing margins impact BATT value-chain"})
+
+            if any(w in full_text for w in ["metal", "rare earth", "mineral", "mining", "copper"]):
+                related.append({"ticker": "RARE", "issuer": "WisdomTree", "relation": "Critical mineral export controls and Western defense stockpiling drive strategic metal miner premiums"})
+
+            if any(w in full_text for w in ["china", "pboc", "beijing", "shanghai", "asia"]):
+                related.append({"ticker": "XCS6", "issuer": "Xtrackers", "relation": "Mainland CSI 300 domestic liquidity and regulatory stimulus"})
+                related.append({"ticker": "EIMI", "issuer": "BlackRock / iShares", "relation": "China constitutes ~24% of MSCI Emerging Markets IMI benchmark"})
+
+            if any(w in full_text for w in ["dividend", "payout", "yield", "income"]):
+                related.append({"ticker": "VHYL", "issuer": "Vanguard", "relation": "Global financial, energy, and healthcare dividend payouts determine distribution yield"})
+
+            if any(w in full_text for w in ["europe", "ecb", "germany", "france", "eurozone"]):
+                related.append({"ticker": "IMAE", "issuer": "BlackRock / iShares", "relation": "Core European equity earnings discount regional economic growth and ECB policy"})
+
+            if any(w in full_text for w in ["small-cap", "small cap", "russell"]):
+                related.append({"ticker": "IUSN", "issuer": "BlackRock / iShares", "relation": "MSCI World Small Cap sensitivity to interest rates and domestic debt financing"})
+
+            if any(w in full_text for w in ["fed", "rate", "bond", "yield", "treasury", "inflation"]):
+                related.append({"ticker": "AGGU", "issuer": "BlackRock / iShares", "relation": "Global fixed income valuations respond directly to sovereign yield shifts"})
+                related.append({"ticker": "XEON", "issuer": "Xtrackers", "relation": "Short-term sovereign collateral yields and central bank policy rates"})
 
             if not related:
-                related.append({"ticker": "VWCE", "relation": "Global multi-cap index reflects systemic macroeconomic and market trends"})
+                related.append({"ticker": "IUSQ", "issuer": "BlackRock / iShares", "relation": "All-Country World Index reflects broad systemic macroeconomic conditions"})
+                related.append({"ticker": "VWCE", "issuer": "Vanguard", "relation": "Global multi-cap index reflects systemic macroeconomic and market trends"})
 
             bias = "Watch / Neutral"
             bias_color = "var(--accent-amber)"
@@ -333,8 +358,12 @@ def run_full_sync() -> Dict[str, Any]:
         with open(news_path, "r", encoding="utf-8") as f:
             base_news = json.load(f)
 
-    # Filter out older live streams from base_news to keep verified foundational macro events
-    static_macro = [n for n in base_news if not n.get("isLiveStream", False)]
+    # Filter out older live streams and ensure comprehensive verified macro events
+    try:
+        from update_news_data import VERIFIED_MACRO_NEWS
+        static_macro = VERIFIED_MACRO_NEWS
+    except Exception:
+        static_macro = [n for n in base_news if not n.get("isLiveStream", False)]
     combined_news = live_news_items + static_macro
 
     with open(news_path, "w", encoding="utf-8") as f:

@@ -2,12 +2,12 @@
  * ApexETF Grounded Data Store
  * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
  * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
- * Last Synced: 2026-09-29T13:29:32.433333+00:00
+ * Last Synced: 2026-09-29T14:05:18.551583+00:00
  */
 
 window.APEX_DATA_STORE = {
   syncMeta: {
-    lastSyncedAt: "2026-09-29T13:29:32.433344+00:00",
+    lastSyncedAt: "2026-09-29T14:05:18.552257+00:00",
     isLiveDynamic: true,
     sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
   },
@@ -4382,6 +4382,16 @@ window.APEX_DATA_STORE = {
       {
         "ticker": "VWCE",
         "relation": "European macroeconomic stability impacts global composite equity valuations"
+      },
+      {
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
+      },
+      {
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
       }
     ],
     "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
@@ -4414,6 +4424,16 @@ window.APEX_DATA_STORE = {
       {
         "ticker": "VWCE",
         "relation": "European macroeconomic stability impacts global composite equity valuations"
+      },
+      {
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
+      },
+      {
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
       }
     ],
     "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
@@ -4446,6 +4466,16 @@ window.APEX_DATA_STORE = {
       {
         "ticker": "VWCE",
         "relation": "European macroeconomic stability impacts global composite equity valuations"
+      },
+      {
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
+      },
+      {
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
       }
     ],
     "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
@@ -4478,6 +4508,16 @@ window.APEX_DATA_STORE = {
       {
         "ticker": "VWCE",
         "relation": "European macroeconomic stability impacts global composite equity valuations"
+      },
+      {
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
+      },
+      {
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
       }
     ],
     "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
@@ -4510,6 +4550,16 @@ window.APEX_DATA_STORE = {
       {
         "ticker": "VWCE",
         "relation": "European macroeconomic stability impacts global composite equity valuations"
+      },
+      {
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
+      },
+      {
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
       }
     ],
     "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
@@ -4542,6 +4592,16 @@ window.APEX_DATA_STORE = {
       {
         "ticker": "VWCE",
         "relation": "European macroeconomic stability impacts global composite equity valuations"
+      },
+      {
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
+      },
+      {
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
       }
     ],
     "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
@@ -4700,176 +4760,363 @@ window.APEX_DATA_STORE = {
     "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "news-1",
+    "id": "macro-ecb-estr-rates",
     "date": "2026-09-28",
-    "title": "Fed & ECB Policy Divergence: Interest Rate Cuts and Sovereign Yield Dynamics",
-    "source": "Financial Times / Morningstar Research",
-    "summary": "Central banks are navigating persistent service inflation while calibrating easing cycles. 10-year sovereign yields hover near 3.8% in the US and 2.2% in Germany, creating attractive yield carry for bondholders while stabilizing equity valuation multiples.",
+    "title": "ECB Monetary Policy Easing & Euro Short-Term Rate (\u20acSTR) Benchmark Transmission",
+    "summary": "The European Central Bank is adjusting policy interest rates and reserve remuneration frameworks. \u20acSTR overnight benchmark yields and European government bond yields react directly to ECB deposit facility guidance, shifting capital yields on cash-like swap instruments and fixed income durations.",
+    "source": "European Central Bank (Official Monetary Policy Decisions & \u20acSTR Benchmark)",
+    "sourceUrl": "https://www.ecb.europa.eu/stats/financial_markets_and_interest_rates/euro_short-term_rate/html/index.en.html",
+    "isLiveStream": false,
     "signal": {
-      "bias": "Bullish",
-      "biasColor": "#10b981",
-      "impact": "High Impact",
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "High Impact (Critical)",
       "impactBadge": "critical",
-      "timeframe": "Strategic (6-18 Months)",
-      "sentimentScore": 78
+      "timeframe": "Tactical (1\u20136 Months)",
+      "sentimentScore": 55
     },
     "relatedEtfs": [
+      {
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "Direct Mathematical Link: XEON accrues the \u20acSTR benchmark rate (+8.5 bps index spread) on a daily compounded basis via sovereign swap collateral. When the ECB cuts its deposit facility rate, the annualized return on XEON mechanically adjusts within 24 hours without duration price risk."
+      },
       {
         "ticker": "AGGU",
-        "relation": "Direct Positive: Falling benchmark rates increase bond capital values while locking in 3.85% yield to maturity."
+        "issuer": "BlackRock / iShares",
+        "relation": "Inverse Price Transmission: Falling policy rates drive sovereign yield curves lower across intermediate maturities (1-10 years), generating capital price appreciation across AGGU's 6.7-year effective duration portfolio."
       },
       {
-        "ticker": "SXR8",
-        "relation": "Constructive: Lower discount rates expand forward equity multiples for large-cap growth constituents."
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "Broad Support: Global monetary easing cushions consumer discretionary and industrial cash flows."
-      }
-    ],
-    "retailAction": "Maintain automated DCA. If your bond allocation is below target in an 80/20 portfolio, AGGU current yield provides excellent real risk-adjusted return."
-  },
-  {
-    "id": "news-2",
-    "date": "2026-09-26",
-    "title": "Hyperscaler AI Infrastructure Capex Reaches Record \\$220B Annual Run Rate",
-    "source": "Bloomberg / Trackinsight Sector Pulse",
-    "summary": "Big Tech hyperscalers (Microsoft, Alphabet, Amazon, Meta) increased quarterly capex guidance for custom AI chips, high-bandwidth memory, and data center thermal management. NVIDIA and Broadcom report backlog stretching into 2027.",
-    "signal": {
-      "bias": "Bullish",
-      "biasColor": "#10b981",
-      "impact": "High Impact",
-      "impactBadge": "critical",
-      "timeframe": "Strategic (1-3 Years)",
-      "sentimentScore": 85
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "QDVE",
-        "relation": "Primary Beneficiary: NVIDIA (21.4%), Apple (20.8%), and Microsoft (20.2%) capture direct AI hardware and software monetization."
-      },
-      {
-        "ticker": "EIMI",
-        "relation": "Indirect Beneficiary: TSMC (8.9%) and SK Hynix (1.1%) are exclusive suppliers of cutting-edge lithography and HBM3e memory."
-      },
-      {
-        "ticker": "SXR8",
-        "relation": "High Exposure: Tech makes up 32.1% of S&P 500, driving earnings per share expansion."
-      }
-    ],
-    "retailAction": "Do not chase QDVE at 32x P/E with new lump sums. VWCE and SXR8 already hold >25% tech exposure naturally through market-cap weighting."
-  },
-  {
-    "id": "news-3",
-    "date": "2026-09-22",
-    "title": "People's Bank of China (PBoC) Unveils Broad Liquidity & Reserve Ratio Support",
-    "source": "Reuters / extraETF Market Review",
-    "summary": "Chinese financial regulators announced rate reductions on existing mortgages, lowered bank reserve requirement ratios (RRR by 50 bps), and introduced a targeted equity swap facility for institutional asset managers.",
-    "signal": {
-      "bias": "Bullish",
-      "biasColor": "#10b981",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (3-6 Months)",
-      "sentimentScore": 72
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "EIMI",
-        "relation": "Direct Catalyst: China represents 25.2% of EIMI. Tencent (4.1%) and Alibaba (2.3%) experienced immediate valuation rerating."
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "Financing Relief: Lower borrowing costs reduce corporate financing friction for European debt-laden industrials, utilities, and cyclicals in MSCI Europe."
       },
       {
         "ticker": "MEUD",
-        "relation": "Trade Rebound: European luxury (LVMH) and automotive industrials benefit from Chinese consumer demand recovery."
+        "issuer": "Amundi",
+        "relation": "Broad European 600 constituents discount corporate debt service costs, expanding forward operating earnings multiples."
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "European monetary stabilization supports global composite equity valuations and non-US liquidity."
+      }
+    ],
+    "retailAction": "Treat XEON strictly as an emergency fund or capital preservation cash instrument, not a long-term compounding engine. As ECB rates normalize, cash yields adjust downward; continue automated DCA into global equities (IUSQ/VWCE)."
+  },
+  {
+    "id": "macro-ai-hyperscaler-power-grid",
+    "date": "2026-09-25",
+    "title": "Hyperscaler Capex Tops $220B as AI Datacenter Power Grid & Nuclear Deals Accelerate",
+    "summary": "Hyperscale cloud operators (Microsoft, Amazon AWS, Alphabet, Meta) have escalated their combined infrastructure capital expenditures past $220B, sparking aggressive procurement of electrical transmission gear, liquid cooling subsystems, and multi-gigawatt baseload nuclear/clean power contracts.",
+    "source": "Bloomberg Intelligence / International Energy Agency (IEA) Datacenter Grid Report",
+    "sourceUrl": "https://www.iea.org/reports/electricity-2024",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Bullish for Infrastructure & Semis",
+      "biasColor": "var(--accent-emerald)",
+      "impact": "High Impact (Critical)",
+      "impactBadge": "critical",
+      "timeframe": "Strategic (1\u20133 Years)",
+      "sentimentScore": 86
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "AII",
+        "issuer": "BlackRock / iShares",
+        "relation": "Primary Structural Beneficiary: Over 65% of AII consists of electrical grid equipment (Vertiv, Eaton, Schneider Electric) and clean/nuclear merchant power generators (Constellation Energy, Vistra). Hyperscaler long-term Power Purchase Agreements (PPAs) guarantee baseload utility revenue."
+      },
+      {
+        "ticker": "WTAI",
+        "issuer": "WisdomTree",
+        "relation": "Downstream Software Translation: Enterprise software and algorithm developers in WTAI capture growing corporate AI seat licenses, though high compute inference costs constrain near-term operating margins."
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "Direct Hardware Demand: NVIDIA (21.4%) and Broadcom (5.2%) capture direct semiconductor capex procurement for next-generation AI clusters."
+      },
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "Tech Weight Beta: Hyperscaler mega-caps (Microsoft, Amazon, Alphabet, Meta, NVIDIA) drive S&P 500 earnings growth, retaining ~32% index tech weight."
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "Global Exposure: US mega-cap technology comprises ~20% of the entire MSCI ACWI global index, transmitting datacenter earnings growth directly to all-world investors."
+      }
+    ],
+    "retailAction": "AII and WTAI represent concentrated thematic bets with elevated valuation multiples (P/E 28\u201335x). Broad market funds like IUSQ and VWCE already capture 60%+ of the AI economic value chain through foundational corporate adoption without single-theme obsolescence risk."
+  },
+  {
+    "id": "macro-china-critical-minerals-export-controls",
+    "date": "2026-09-20",
+    "title": "China Tightens Export Controls on Antimony, Gallium, and Rare Earth Processing Tech",
+    "summary": "China's Ministry of Commerce expanded export licensing restrictions on antimony, gallium, germanium, and rare earth processing equipment. The measures tighten supply chains for permanent magnet manufacturing and battery cells, accelerating domestic subsidies for ex-China mining leaders.",
+    "source": "European Commission / Reuters Mining & Trade Dispatch",
+    "sourceUrl": "https://single-market-economy.ec.europa.eu/sectors/raw-materials/areas-specific-interest/critical-raw-materials_en",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Bullish for Non-China Mining Champions",
+      "biasColor": "var(--accent-emerald)",
+      "impact": "High Impact (Critical)",
+      "impactBadge": "critical",
+      "timeframe": "Tactical to Strategic (6\u201324 Months)",
+      "sentimentScore": 76
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "RARE",
+        "issuer": "WisdomTree",
+        "relation": "Direct Pricing Catalyst: China dominates 70% of global rare earth extraction and 90% of magnet refining. Quota restrictions on export of dysprosium, terbium, and antimony drive spot price premiums for Western ex-China producers (MP Materials, Lynas Rare Earths, Iluka Resources, representing ~18% of RARE), while catalyzing US DoD and EU Critical Raw Materials Act domestic subsidies."
+      },
+      {
+        "ticker": "BATT",
+        "issuer": "Legal & General",
+        "relation": "Component Supply Friction: Rare earth elements (neodymium) are critical for EV permanent magnet synchronous motors. Higher procurement costs create mild gross margin headwinds for electric vehicle assemblers."
+      }
+    ],
+    "retailAction": "Thematic commodity materials funds like RARE exhibit extreme idiosyncratic volatility (annualized volatility >26%) and boom-bust supercycles. Limit any strategic tilt to <=5-10% of portfolio value, and rebalance systematically into global equities when mining stocks spike."
+  },
+  {
+    "id": "macro-lithium-market-battery-margins",
+    "date": "2026-09-17",
+    "title": "Global Lithium Supply Surplus Compresses Mine Margins While EV Battery Cell Production Expands",
+    "summary": "Global spodumene and lithium chemical oversupply continues to suppress upstream extraction margins across Australian and South American miners, while simultaneously driving battery pack costs below $100/kWh to benefit diversified downstream cell manufacturers.",
+    "source": "Financial Times Commodity Markets / BloombergNEF Energy Storage Outlook",
+    "sourceUrl": "https://about.bnef.com/energy-storage/",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Caution / Sector Margin Bifurcation",
+      "biasColor": "var(--accent-rose)",
+      "impact": "High Impact (Critical)",
+      "impactBadge": "critical",
+      "timeframe": "Tactical (3\u201312 Months)",
+      "sentimentScore": 42
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "BATT",
+        "issuer": "Legal & General",
+        "relation": "Upstream vs Downstream Divergence: Falling spodumene and lithium carbonate prices compress EBITDA margins for lithium mining extractors (Albemarle, Pilbara Minerals, SQM). Conversely, cheaper cathode input costs lower pack prices to <$100/kWh, improving margins for diversified downstream battery pack manufacturers (CATL, BYD, Samsung SDI, LG Energy Solution)."
+      },
+      {
+        "ticker": "RARE",
+        "issuer": "WisdomTree",
+        "relation": "Mutes battery metal sentiment, though insulated by non-lithium rare earths (antimony, niobium, titanium)."
+      }
+    ],
+    "retailAction": "BATT's diversified value-chain structure (spanning mining, chemicals, battery cells, and EV hardware) dampens pure-commodity collapse. However, high cyclicality reminds retail investors why total-market indexing (IUSQ/VWCE) minimizes drawdown trauma."
+  },
+  {
+    "id": "macro-pboc-liquidity-csi300",
+    "date": "2026-09-24",
+    "title": "People's Bank of China & Politburo Launch Comprehensive Monetary Easing & Equity Liquidity Swaps",
+    "summary": "The People's Bank of China rolled out comprehensive monetary stimulus measures including reserve requirement cuts and 800B yuan in dedicated liquidity swap and share buyback refinancing facilities to stabilize mainland equity benchmarks.",
+    "source": "People's Bank of China (PBoC) Official Statement / Financial Times / Reuters",
+    "sourceUrl": "http://www.pbc.gov.cn/en/3688140/index.html",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Bullish / Tactical Liquidity Rebound",
+      "biasColor": "var(--accent-emerald)",
+      "impact": "High Impact (Critical)",
+      "impactBadge": "critical",
+      "timeframe": "Tactical (3\u20139 Months)",
+      "sentimentScore": 79
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "XCS6",
+        "issuer": "Xtrackers",
+        "relation": "Direct Valuation Re-Rating: The CSI 300 index tracks the 300 largest mainland A-share equities on Shanghai and Shenzhen exchanges. PBoC's direct 500B yuan institutional swap facility and 300B yuan share buyback refinancing window provide direct institutional bids for top A-share holdings (Kweichow Moutai, CATL, Ping An Insurance, China Merchants Bank)."
+      },
+      {
+        "ticker": "EIMI",
+        "issuer": "BlackRock / iShares",
+        "relation": "Emerging Markets Catalyst: China constitutes ~24% of EIMI. Major rallies in mainland and Hong Kong equities drive significant beta outperformance in EM benchmarks."
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "Composite Tailwind: China accounts for ~3% of all-country world equities, providing modest composite tailwinds."
+      }
+    ],
+    "retailAction": "Do not chase sharp single-country speculative spikes with new capital. If you hold XCS6 or EIMI as an intentional emerging markets allocation, stick to your target rebalancing band. Let the asset allocation plan dictate your trades."
+  },
+  {
+    "id": "macro-eu-competitiveness-draghi",
+    "date": "2026-09-15",
+    "title": "EU Competitiveness Blueprint Urges \u20ac800B Annual Investment in Energy, Tech, and Capital Markets",
+    "summary": "Mario Draghi's strategic report to the European Commission calls for up to \u20ac800B in annual joint public and private investments across energy infrastructure, industrial decarbonization, and advanced technology to bridge the EU productivity gap.",
+    "source": "European Commission / Mario Draghi Competitiveness Report / Eurostat",
+    "sourceUrl": "https://commission.europa.eu/topics/strengthening-european-competitiveness/eu-competitiveness-looking-ahead_en",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Bullish for European Blue Chips",
+      "biasColor": "var(--accent-emerald)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Strategic (2\u20135 Years)",
+      "sentimentScore": 74
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "IMAE",
+        "issuer": "BlackRock / iShares",
+        "relation": "Structural Long-Term Catalyst: MSCI Europe is anchored by world-class global export leaders in healthcare (Novo Nordisk, AstraZeneca, Roche), industrials & electrification (Schneider Electric, Siemens, ABB), and semiconductors (ASML). Coordinated EU energy market integration and cross-border capital consolidation lift European corporate ROIC and narrow the valuation discount versus US equities."
+      },
+      {
+        "ticker": "MEUD",
+        "issuer": "Amundi",
+        "relation": "Pan-European Exposure: Stoxx 600 constituents benefit from deregulation and infrastructure contracts."
+      },
+      {
+        "ticker": "IWDA",
+        "issuer": "BlackRock / iShares",
+        "relation": "Europe represents ~18% of MSCI World; stable European earnings support broad global index resilience."
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "European equities comprise ~16% of ACWI, providing essential non-US valuation diversification."
+      }
+    ],
+    "retailAction": "Valuation matters over decades: European equities (IMAE) trade at ~14.5x forward earnings with 3.2% dividend yields, compared to 21.5x for the US S&P 500. Maintaining a deliberate European allocation cushions against US valuation multiple compression."
+  },
+  {
+    "id": "macro-global-dividend-record",
+    "date": "2026-09-14",
+    "title": "Global Corporate Dividends Reach Record $1.75 Trillion Led by Financials, Energy, and Telecoms",
+    "summary": "Corporate distributions reached an unprecedented $1.75T worldwide according to global dividend indices. Accumulating UCITS ETFs allow retail investors to automatically reinvest distributions gross-of-tax, eliminating dividend withholding friction.",
+    "source": "S&P Global Market Intelligence / Morningstar Dividend Study",
+    "sourceUrl": "https://www.spglobal.com/marketintelligence/en/news-insights/research/global-dividend-trends",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Watch / Neutral Income Quality",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Strategic (1\u20133 Years)",
+      "sentimentScore": 62
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "VHYL",
+        "issuer": "Vanguard",
+        "relation": "Direct Yield Confirmation: Strong capital return policies from financial leaders (JPMorgan Chase, HSBC, BNP Paribas) and energy/healthcare blue chips underpin VHYL's ~3.6% trailing yield and payout durability across 1,800+ global holdings."
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "Internal Compounding: Dividend growth fuels total return compounding across accumulating share classes without generating annual taxable distributions."
       },
       {
         "ticker": "VWCE",
-        "relation": "Minor Positive: Emerging markets constitute ~10% of FTSE All-World."
+        "issuer": "Vanguard",
+        "relation": "Accumulating efficiency automatically captures global cash dividends and reinvests them into new shares at NAV without broker friction."
       }
     ],
-    "retailAction": "Emerging markets offer compelling valuations (13.5x P/E). Continue your scheduled EIMI or VWCE allocations without attempting to time the short-term peak."
+    "retailAction": "Remember tax efficiency: In taxable accounts for European investors, distributing funds like VHYL trigger annual dividend withholding tax and mandatory drag. Accumulating alternatives (like IUSQ or VWCE) allow 100% of dividends to compound internally gross-of-tax."
   },
   {
-    "id": "news-4",
-    "date": "2026-09-18",
-    "title": "US Sovereign Debt Issuance Surpasses \\$36 Trillion: Term Premium Pressures",
-    "source": "Morningstar Quantitative Insights / Wall Street Journal",
-    "summary": "Treasury debt refinancing schedules and fiscal deficit projections keep long-term yield curve term premiums elevated. Institutional asset managers note increased volatility in 30-year duration bonds.",
+    "id": "macro-fed-easing-r-star",
+    "date": "2026-09-22",
+    "title": "Federal Reserve Signals Sustained Easing Path as Core PCE Moderates and Labor Stabilizes",
+    "summary": "The Federal Open Market Committee continues its policy recalibration toward a neutral policy rate as core inflation moderates, easing capital discount rates across US equities and sovereign debt.",
+    "source": "Federal Reserve Board (Official FOMC Release & Projections) / Wall Street Journal",
+    "sourceUrl": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+    "isLiveStream": false,
     "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "#f59e0b",
+      "bias": "Bullish for Global Equity Valuations",
+      "biasColor": "var(--accent-emerald)",
+      "impact": "High Impact (Critical)",
+      "impactBadge": "critical",
+      "timeframe": "Strategic (6\u201318 Months)",
+      "sentimentScore": 81
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "Direct Equity Multiple Support: A stable decline in short-term interest rates toward neutral (r*) reduces the equity risk premium discount rate, supporting valuations for high-ROE US blue chips (Microsoft, Apple, Alphabet, Berkshire Hathaway)."
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "Global Transmission: 64% US allocation transmits Fed liquidity conditions directly into global asset prices."
+      },
+      {
+        "ticker": "AGGU",
+        "issuer": "BlackRock / iShares",
+        "relation": "Treasury Yield Transmission: Treasury yield declines lower global sovereign bond yields and boost capital prices across AGGU's bond portfolio."
+      }
+    ],
+    "retailAction": "Macroeconomic forecasts are already priced into market quotes in milliseconds. Rather than attempting to guess Fed meeting outcomes, stay invested in low-cost index funds with automated monthly contributions."
+  },
+  {
+    "id": "macro-enterprise-ai-software-monetization",
+    "date": "2026-09-10",
+    "title": "Enterprise AI Adoption Moves from Experimental Pilot to Scaled Workflow Integration",
+    "source": "Gartner Research / Financial Times Tech Focus",
+    "sourceUrl": "https://www.ft.com/technology",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Bullish for Enterprise Software & AI",
+      "biasColor": "var(--accent-emerald)",
       "impact": "Moderate Impact",
       "impactBadge": "medium",
-      "timeframe": "Strategic (2-5 Years)",
+      "timeframe": "Strategic (2\u20134 Years)",
+      "sentimentScore": 75
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "WTAI",
+        "issuer": "WisdomTree",
+        "relation": "Revenue Translation: Enterprise software holdings (Palantir, ServiceNow, Synopsys, Salesforce) demonstrate accelerating contract renewal values and AI-assisted productivity seat expansion."
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "Software Multiple Expansion: Software giants (Microsoft, Adobe, Oracle) expand margin contribution from enterprise AI copilot subscriptions."
+      },
+      {
+        "ticker": "AII",
+        "issuer": "BlackRock / iShares",
+        "relation": "Compute Demand: Scaled enterprise workloads accelerate long-term inference capacity demands at tier-1 datacenters."
+      }
+    ],
+    "retailAction": "Thematic software ETFs incur higher expense ratios (TER 0.40% on WTAI vs 0.07% on SXR8). Ensure the tracking difference and management fees do not silently erode compounding gains over 10-20 year horizons."
+  },
+  {
+    "id": "macro-us-fiscal-debt-issuance",
+    "date": "2026-09-08",
+    "title": "US Treasury Refinancing & Sovereign Deficits Expand Global Bond Supply",
+    "summary": "The US Treasury's quarterly refunding schedule reflects ongoing sovereign debt issuance, anchoring high structural yields across short-to-intermediate government securities and global bond portfolios.",
+    "source": "US Department of the Treasury / Morningstar Fixed Income Strategy",
+    "sourceUrl": "https://home.treasury.gov/policy-issues/financing-the-government/quarterly-refunding",
+    "isLiveStream": false,
+    "signal": {
+      "bias": "Watch / Neutral Yield Carry",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Strategic (1\u20135 Years)",
       "sentimentScore": 50
     },
     "relatedEtfs": [
       {
         "ticker": "AGGU",
-        "relation": "Mitigated: AGGU holds intermediate duration (6.7 years) and global sovereign diversification (US is 39%), muting 30-year term premium shocks."
+        "issuer": "BlackRock / iShares",
+        "relation": "Yield Floor: Continuous high debt issuance maintains structural yield carry (~3.8% YTM on AGGU), providing resilient annual coupon generation for balanced portfolio rebalancing."
       },
       {
-        "ticker": "SXR8",
-        "relation": "Valuation Headwind: Elevated long-term risk-free rates create a valuation ceiling on high-multiple equities."
+        "ticker": "XEON",
+        "issuer": "Xtrackers",
+        "relation": "Collateral Benchmark: High short-end sovereign debt yields support collateral performance behind European derivative swap agreements."
       }
     ],
-    "retailAction": "Avoid ultra-long duration bond funds (>20 years). An aggregate intermediate fund like AGGU (6.7y duration) is the optimal Bogleheads sweet spot."
-  },
-  {
-    "id": "news-5",
-    "date": "2026-09-12",
-    "title": "European Draghi Competitiveness Report Urges \u20ac800B Annual Industrial Investment",
-    "source": "Euractiv / extraETF Policy Watch",
-    "summary": "Mario Draghi's landmark EU competitiveness report calls for joint debt issuance, energy grid decarbonization, defense capability consolidation, and regulatory simplification across European capital markets.",
-    "signal": {
-      "bias": "Bullish",
-      "biasColor": "#10b981",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Strategic (3-7 Years)",
-      "sentimentScore": 68
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "MEUD",
-        "relation": "Structural Tailwinds: European capital goods (Siemens, Schneider), defense, and utilities gain long-term order books."
-      },
-      {
-        "ticker": "IWDA",
-        "relation": "Europe is 18% of MSCI World; stable European earnings support broad global index resilience."
-      }
-    ],
-    "retailAction": "Do not write off European equities. MEUD offers high dividend yield (3.15%) and low P/E (14.2x) as a home-bias valuation stabilizer."
-  },
-  {
-    "id": "news-6",
-    "date": "2026-09-05",
-    "title": "Semiconductor Export Controls and Geopolitical Cross-Strait Surveillance",
-    "source": "Financial Times / Curvo Research",
-    "summary": "Tightened export licensing on advanced GAAFET transistor designs and photolithography tools keeps supply chains bifurcated. Foundries accelerate fabrication plants in Arizona, Japan, and Germany.",
-    "signal": {
-      "bias": "Bearish / Caution",
-      "biasColor": "#ef4444",
-      "impact": "High Impact",
-      "impactBadge": "critical",
-      "timeframe": "Tactical to Strategic",
-      "sentimentScore": 38
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "QDVE",
-        "relation": "Supply Chain Vulnerability: Tech ETFs heavily reliant on Taiwanese manufacturing face tail-risk margin compression."
-      },
-      {
-        "ticker": "EIMI",
-        "relation": "Geopolitical Beta: TSMC represents 8.92% of EIMI fund weight."
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "Buffer: Global market-cap weighting limits Taiwan exposure to 2.0%."
-      }
-    ],
-    "retailAction": "This highlights why broad-market diversification (VWCE) is mathematically superior to thematic sector bets (QDVE). Diversification is the only free lunch."
+    "retailAction": "Intermediate aggregate bonds (duration 6.5\u20137 years) provide the optimal mathematical trade-off between yield carry and equity-crash protection. Avoid holding long-term bonds (>20y) which carry uncompensated term-premium volatility."
   }
 ],
   education: {

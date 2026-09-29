@@ -224,9 +224,19 @@ window.App = (function () {
 
   return {
     start,
-    switchTab
+    switchTab,
+    getEtfs: () => [...etfsData],
+    getNews: () => [...newsData],
+    getEtfByTicker: (ticker) => etfsData.find(e => e.ticker.toUpperCase() === (ticker || "").toUpperCase())
   };
 })();
+
+// Global DataStore access helper for standalone and modular access
+window.DataStore = {
+  getEtfs: () => window.App?.getEtfs() || window.APEX_DATA_STORE?.etfs || [],
+  getNews: () => window.App?.getNews() || window.APEX_DATA_STORE?.news || [],
+  getEtfByTicker: (ticker) => (window.App?.getEtfs() || window.APEX_DATA_STORE?.etfs || []).find(e => e.ticker.toUpperCase() === (ticker || "").toUpperCase())
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   window.App.start();

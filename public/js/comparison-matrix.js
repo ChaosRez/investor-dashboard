@@ -388,8 +388,38 @@ window.ComparisonMatrixModule = (function () {
       })
     );
 
-    // Section 6: Official Documents & Direct Actions
-    rows.push(makeDivider("6. Statutory Documents & Action"));
+    // Section 6: Active Macro News & Signal Radar
+    rows.push(makeDivider("6. Active Macro News & Signal Radar"));
+    rows.push(
+      makeRow("Active Signal Bias", "Prevailing macroeconomic and regulatory news signal affecting this ETF.", (e) => {
+        const relatedNews = (window.DataStore?.getNews() || []).filter(n =>
+          (n.relatedEtfs || []).some(r => r.ticker.toUpperCase() === e.ticker.toUpperCase())
+        );
+        if (relatedNews.length === 0) {
+          return `<div style="font-size: 0.74rem; color: var(--text-muted);">Standard Multi-Year Factors</div>`;
+        }
+        const topNews = relatedNews[0];
+        const sig = topNews.signal || {};
+        let signalBadgeClass = "badge-amber";
+        if (sig.bias.toLowerCase().includes("bullish")) signalBadgeClass = "badge-acc";
+        else if (sig.bias.toLowerCase().includes("bearish") || sig.bias.toLowerCase().includes("caution")) signalBadgeClass = "badge-red";
+
+        return `
+          <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center;">
+            <span class="badge ${signalBadgeClass}" style="font-size: 0.75rem; font-weight: 700;">${sig.bias}</span>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.3; max-width: 140px;">
+              ${topNews.title.slice(0, 50)}...
+            </div>
+            <button class="btn btn-secondary btn-sm jump-to-news-btn" data-ticker="${e.ticker}" style="margin-top: 4px; font-size: 0.68rem; padding: 2px 8px; width: 120px;">
+              📡 View News (${relatedNews.length})
+            </button>
+          </div>
+        `;
+      })
+    );
+
+    // Section 7: Official Documents & Direct Actions
+    rows.push(makeDivider("7. Statutory Documents & Action"));
     rows.push(
       makeRow("PRIIPs SRI Risk Rating", "Synthetic Risk Indicator from 1 (lowest risk) to 7 (highest risk) published on statutory KID.", (e) => {
         return `
@@ -486,6 +516,15 @@ window.ComparisonMatrixModule = (function () {
           window.OverlapModule.addEtfToPortfolio(ticker, 20);
           window.App?.switchTab("overlap");
         }
+      });
+    });
+
+    // Jump to News buttons
+    container.querySelectorAll(".jump-to-news-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const ticker = e.currentTarget.dataset.ticker;
+        window.App?.switchTab("news");
+        window.NewsSignalsModule?.filterByEtf(ticker);
       });
     });
   }

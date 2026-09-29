@@ -317,6 +317,7 @@ class ETFRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         elif path == "/api/etfs":
+            reload_datasets()
             results = ETFS_DATA
             if "accOnly" in query and query["accOnly"][0].lower() in ["true", "1", "yes"]:
                 results = [e for e in results if e.get("isAccumulating", False)]
@@ -330,6 +331,7 @@ class ETFRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         elif path.startswith("/api/etf/"):
+            reload_datasets()
             ticker = path.split("/")[-1].upper()
             etf = ETFS_BY_TICKER.get(ticker)
             if etf:
@@ -339,10 +341,12 @@ class ETFRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         elif path == "/api/correlations":
+            reload_datasets()
             self.send_json(CORRELATIONS_DATA)
             return
 
         elif path == "/api/news":
+            reload_datasets()
             results = NEWS_DATA
             if "ticker" in query:
                 t = query["ticker"][0].upper()
