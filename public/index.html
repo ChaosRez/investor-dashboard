@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Investment Dashboard for ETFs | Retail Investor Intelligence</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+</head>
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="logo-group">
+        <div class="logo-badge">ApexETF</div>
+        <div>
+          <h1 class="app-title">Personal ETF Investment Dashboard</h1>
+          <div class="app-subtitle">
+            Retail Investor Decision Engine • Prioritizing Accumulating (Acc) UCITS ETFs &amp; Total Cost of Ownership
+          </div>
+        </div>
+      </div>
+
+      <!-- Provenance Links to Real Data Sources -->
+      <div class="sources-provenance">
+        <a href="https://www.justetf.com" target="_blank" class="provenance-tag">justETF</a>
+        <a href="https://extraetf.com" target="_blank" class="provenance-tag">extraETF</a>
+        <a href="https://curvo.eu/backtest/en" target="_blank" class="provenance-tag">Curvo Backtest</a>
+        <a href="https://www.portfoliovisualizer.com" target="_blank" class="provenance-tag">Portfolio Visualizer</a>
+        <a href="https://www.morningstar.com" target="_blank" class="provenance-tag">Morningstar</a>
+        <a href="https://www.trackinsight.com" target="_blank" class="provenance-tag">Trackinsight</a>
+        <a href="https://www.bogleheads.org/wiki/EU_investing" target="_blank" class="provenance-tag">Bogleheads Wiki</a>
+      </div>
+
+      <div class="header-actions">
+        <div style="text-align: right; margin-right: 8px;">
+          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Tracked Verified AUM</div>
+          <div id="stat-total-aum" style="font-weight: 800; font-size: 0.95rem; color: var(--accent-emerald);">312B €</div>
+        </div>
+        <button id="theme-toggle" class="theme-toggle-btn">☀️ Light Mode</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Tab Bar -->
+  <nav class="nav-bar">
+    <div class="nav-inner">
+      <button class="nav-tab active" data-tab="screener">
+        📊 ETF Screener &amp; Multi-Factor Score
+      </button>
+      <button class="nav-tab" data-tab="overlap">
+        🔗 Correlation &amp; Overlap Auditor
+      </button>
+      <button class="nav-tab" data-tab="curvo">
+        📈 Curvo Historical Backtest &amp; DCA
+      </button>
+      <button class="nav-tab" data-tab="pv">
+        🧮 Portfolio Visualizer Quant Risk
+      </button>
+      <button class="nav-tab" data-tab="news">
+        📰 Market News &amp; Signal Radar <span class="tab-badge">6 Live</span>
+      </button>
+      <button class="nav-tab" data-tab="verification">
+        📑 Official Factsheets &amp; KIDs
+      </button>
+      <button class="nav-tab" data-tab="academy">
+        🎓 Bogleheads &amp; Tax Academy
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Body -->
+  <main class="main-container">
+
+    <!-- TAB 1: ETF Screener & Multi-Factor Score -->
+    <section id="tab-screener" class="tab-panel active">
+      <div id="screener-filters"></div>
+      <div id="screener-table-container"></div>
+    </section>
+
+    <!-- TAB 2: Correlation & Overlap Auditor -->
+    <section id="tab-overlap" class="tab-panel">
+      <div id="correlation-matrix-container"></div>
+      <div id="portfolio-overlap-inputs"></div>
+      <div id="overlap-audit-results"></div>
+    </section>
+
+    <!-- TAB 3: Curvo Historical Backtest & DCA -->
+    <section id="tab-curvo" class="tab-panel">
+      <div id="curvo-backtest-container"></div>
+    </section>
+
+    <!-- TAB 4: Portfolio Visualizer Quant Risk -->
+    <section id="tab-pv" class="tab-panel">
+      <div id="portfolio-visualizer-container"></div>
+    </section>
+
+    <!-- TAB 5: Market News & Signal Radar -->
+    <section id="tab-news" class="tab-panel">
+      <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">📡 Market Intelligence &amp; ETF Signal Radar</h3>
+            <span class="card-subtitle">Macroeconomic trends, earnings capex, and central bank catalysts mapped directly to impacted ETFs</span>
+          </div>
+          <span class="badge badge-acc">Disciplined Boglehead Guidance</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+          Every market headline carries an underlying signal. Rather than inciting emotional retail trades, this radar evaluates signal bias (Bullish/Watch/Bearish), systemic impact level, transmission mechanisms into specific ETFs, and provides disciplined long-term Bogleheads guidance.
+        </p>
+      </div>
+
+      <div id="news-filters-container"></div>
+      <div id="news-feed-container"></div>
+    </section>
+
+    <!-- TAB 6: Official Factsheets & KIDs -->
+    <section id="tab-verification" class="tab-panel">
+      <div id="verification-docs-container"></div>
+    </section>
+
+    <!-- TAB 7: Bogleheads & Tax Academy -->
+    <section id="tab-academy" class="tab-panel">
+      <div id="education-academy-container"></div>
+    </section>
+
+  </main>
+
+  <!-- Drilldown Detail Modal -->
+  <div id="detail-modal" class="modal-overlay">
+    <div class="modal-content">
+      <button id="modal-close" class="modal-close-btn">&times;</button>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <div>
+      <strong>ApexETF Personal Investment Dashboard</strong> • Grounded exclusively in verified real data from
+      <a href="https://www.justetf.com" target="_blank">justETF</a>,
+      <a href="https://extraetf.com" target="_blank">extraETF</a>,
+      <a href="https://curvo.eu/backtest/en" target="_blank">Curvo</a>,
+      <a href="https://www.portfoliovisualizer.com" target="_blank">Portfolio Visualizer</a>,
+      <a href="https://www.morningstar.com" target="_blank">Morningstar</a>,
+      <a href="https://www.trackinsight.com" target="_blank">Trackinsight</a>, and official issuer KIDs.
+    </div>
+    <div style="margin-top: 6px; font-size: 0.72rem; color: var(--text-muted);">
+      Disclaimer: For informational and educational purposes only. Always consult statutory Key Information Documents (PRIIPs KIDs) before making investment decisions.
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/data-store.js"></script>
+  <script src="js/screener.js"></script>
+  <script src="js/overlap-correlation.js"></script>
+  <script src="js/curvo-engine.js"></script>
+  <script src="js/pv-engine.js"></script>
+  <script src="js/news-signals.js"></script>
+  <script src="js/verification-docs.js"></script>
+  <script src="js/bogleheads-academy.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

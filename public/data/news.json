@@ -1,0 +1,174 @@
+[
+  {
+    "id": "news-1",
+    "date": "2026-09-28",
+    "title": "Fed & ECB Policy Divergence: Interest Rate Cuts and Sovereign Yield Dynamics",
+    "source": "Financial Times / Morningstar Research",
+    "summary": "Central banks are navigating persistent service inflation while calibrating easing cycles. 10-year sovereign yields hover near 3.8% in the US and 2.2% in Germany, creating attractive yield carry for bondholders while stabilizing equity valuation multiples.",
+    "signal": {
+      "bias": "Bullish",
+      "biasColor": "#10b981",
+      "impact": "High Impact",
+      "impactBadge": "critical",
+      "timeframe": "Strategic (6-18 Months)",
+      "sentimentScore": 78
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "AGGU",
+        "relation": "Direct Positive: Falling benchmark rates increase bond capital values while locking in 3.85% yield to maturity."
+      },
+      {
+        "ticker": "SXR8",
+        "relation": "Constructive: Lower discount rates expand forward equity multiples for large-cap growth constituents."
+      },
+      {
+        "ticker": "VWCE",
+        "relation": "Broad Support: Global monetary easing cushions consumer discretionary and industrial cash flows."
+      }
+    ],
+    "retailAction": "Maintain automated DCA. If your bond allocation is below target in an 80/20 portfolio, AGGU current yield provides excellent real risk-adjusted return."
+  },
+  {
+    "id": "news-2",
+    "date": "2026-09-26",
+    "title": "Hyperscaler AI Infrastructure Capex Reaches Record \\$220B Annual Run Rate",
+    "source": "Bloomberg / Trackinsight Sector Pulse",
+    "summary": "Big Tech hyperscalers (Microsoft, Alphabet, Amazon, Meta) increased quarterly capex guidance for custom AI chips, high-bandwidth memory, and data center thermal management. NVIDIA and Broadcom report backlog stretching into 2027.",
+    "signal": {
+      "bias": "Bullish",
+      "biasColor": "#10b981",
+      "impact": "High Impact",
+      "impactBadge": "critical",
+      "timeframe": "Strategic (1-3 Years)",
+      "sentimentScore": 85
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "QDVE",
+        "relation": "Primary Beneficiary: NVIDIA (21.4%), Apple (20.8%), and Microsoft (20.2%) capture direct AI hardware and software monetization."
+      },
+      {
+        "ticker": "EIMI",
+        "relation": "Indirect Beneficiary: TSMC (8.9%) and SK Hynix (1.1%) are exclusive suppliers of cutting-edge lithography and HBM3e memory."
+      },
+      {
+        "ticker": "SXR8",
+        "relation": "High Exposure: Tech makes up 32.1% of S&P 500, driving earnings per share expansion."
+      }
+    ],
+    "retailAction": "Do not chase QDVE at 32x P/E with new lump sums. VWCE and SXR8 already hold >25% tech exposure naturally through market-cap weighting."
+  },
+  {
+    "id": "news-3",
+    "date": "2026-09-22",
+    "title": "People's Bank of China (PBoC) Unveils Broad Liquidity & Reserve Ratio Support",
+    "source": "Reuters / extraETF Market Review",
+    "summary": "Chinese financial regulators announced rate reductions on existing mortgages, lowered bank reserve requirement ratios (RRR by 50 bps), and introduced a targeted equity swap facility for institutional asset managers.",
+    "signal": {
+      "bias": "Bullish",
+      "biasColor": "#10b981",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (3-6 Months)",
+      "sentimentScore": 72
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "EIMI",
+        "relation": "Direct Catalyst: China represents 25.2% of EIMI. Tencent (4.1%) and Alibaba (2.3%) experienced immediate valuation rerating."
+      },
+      {
+        "ticker": "MEUD",
+        "relation": "Trade Rebound: European luxury (LVMH) and automotive industrials benefit from Chinese consumer demand recovery."
+      },
+      {
+        "ticker": "VWCE",
+        "relation": "Minor Positive: Emerging markets constitute ~10% of FTSE All-World."
+      }
+    ],
+    "retailAction": "Emerging markets offer compelling valuations (13.5x P/E). Continue your scheduled EIMI or VWCE allocations without attempting to time the short-term peak."
+  },
+  {
+    "id": "news-4",
+    "date": "2026-09-18",
+    "title": "US Sovereign Debt Issuance Surpasses \\$36 Trillion: Term Premium Pressures",
+    "source": "Morningstar Quantitative Insights / Wall Street Journal",
+    "summary": "Treasury debt refinancing schedules and fiscal deficit projections keep long-term yield curve term premiums elevated. Institutional asset managers note increased volatility in 30-year duration bonds.",
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "#f59e0b",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Strategic (2-5 Years)",
+      "sentimentScore": 50
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "AGGU",
+        "relation": "Mitigated: AGGU holds intermediate duration (6.7 years) and global sovereign diversification (US is 39%), muting 30-year term premium shocks."
+      },
+      {
+        "ticker": "SXR8",
+        "relation": "Valuation Headwind: Elevated long-term risk-free rates create a valuation ceiling on high-multiple equities."
+      }
+    ],
+    "retailAction": "Avoid ultra-long duration bond funds (>20 years). An aggregate intermediate fund like AGGU (6.7y duration) is the optimal Bogleheads sweet spot."
+  },
+  {
+    "id": "news-5",
+    "date": "2026-09-12",
+    "title": "European Draghi Competitiveness Report Urges \u20ac800B Annual Industrial Investment",
+    "source": "Euractiv / extraETF Policy Watch",
+    "summary": "Mario Draghi's landmark EU competitiveness report calls for joint debt issuance, energy grid decarbonization, defense capability consolidation, and regulatory simplification across European capital markets.",
+    "signal": {
+      "bias": "Bullish",
+      "biasColor": "#10b981",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Strategic (3-7 Years)",
+      "sentimentScore": 68
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "MEUD",
+        "relation": "Structural Tailwinds: European capital goods (Siemens, Schneider), defense, and utilities gain long-term order books."
+      },
+      {
+        "ticker": "IWDA",
+        "relation": "Europe is 18% of MSCI World; stable European earnings support broad global index resilience."
+      }
+    ],
+    "retailAction": "Do not write off European equities. MEUD offers high dividend yield (3.15%) and low P/E (14.2x) as a home-bias valuation stabilizer."
+  },
+  {
+    "id": "news-6",
+    "date": "2026-09-05",
+    "title": "Semiconductor Export Controls and Geopolitical Cross-Strait Surveillance",
+    "source": "Financial Times / Curvo Research",
+    "summary": "Tightened export licensing on advanced GAAFET transistor designs and photolithography tools keeps supply chains bifurcated. Foundries accelerate fabrication plants in Arizona, Japan, and Germany.",
+    "signal": {
+      "bias": "Bearish / Caution",
+      "biasColor": "#ef4444",
+      "impact": "High Impact",
+      "impactBadge": "critical",
+      "timeframe": "Tactical to Strategic",
+      "sentimentScore": 38
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "QDVE",
+        "relation": "Supply Chain Vulnerability: Tech ETFs heavily reliant on Taiwanese manufacturing face tail-risk margin compression."
+      },
+      {
+        "ticker": "EIMI",
+        "relation": "Geopolitical Beta: TSMC represents 8.92% of EIMI fund weight."
+      },
+      {
+        "ticker": "VWCE",
+        "relation": "Buffer: Global market-cap weighting limits Taiwan exposure to 2.0%."
+      }
+    ],
+    "retailAction": "This highlights why broad-market diversification (VWCE) is mathematically superior to thematic sector bets (QDVE). Diversification is the only free lunch."
+  }
+]

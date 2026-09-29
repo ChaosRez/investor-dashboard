@@ -1,0 +1,51 @@
+{
+  "bogleheadsPrinciples": [
+    {
+      "title": "Develop a Workable Plan",
+      "description": "Base your financial plan on broad diversification, low costs, and disciplined regular investing. Determine an asset allocation that reflects your risk tolerance and holding horizon."
+    },
+    {
+      "title": "Invest with Simplicity: The 3-Fund UCITS Model",
+      "description": "For European retail investors, simplicity outperforms complex active trading. The classic UCITS 3-Fund portfolio consists of: (1) Core World Equity (VWCE or IWDA+EIMI), (2) Small-Cap factor diversifier (IUSN), and (3) Global Aggregate Bonds (AGGU EUR Hedged)."
+    },
+    {
+      "title": "Prioritize Accumulating (Acc) ETFs",
+      "description": "Accumulating funds automatically reinvest dividends directly into the NAV. This prevents dividend cash drag, saves recurring broker reinvestment commissions, and eliminates taxable events in countries with favourable capital gains deferral."
+    },
+    {
+      "title": "Master Total Cost: TER + Tracking Difference",
+      "description": "Do not look at TER alone! Tracking Difference (TD) measures how the fund actually performs relative to its index. Irish UCITS ETFs tracking US indices often show negative TD (-0.18%), outperforming the net benchmark due to the US-Ireland tax treaty."
+    },
+    {
+      "title": "Never Try to Time the Market",
+      "description": "Curvo backtest data shows that missing the 10 best trading days over a 20-year period cuts total cumulative portfolio returns by more than 50%. Stay invested and use monthly automated Sparpl\u00e4ne (savings plans)."
+    }
+  ],
+  "taxDomicileGuide": {
+    "ireland": {
+      "domicile": "Ireland (IE)",
+      "usTreatyWithholding": "15% (under US-Ireland Double Taxation Treaty)",
+      "localWht": "0% Irish withholding tax for non-resident investors",
+      "usEstateTax": "Exempt: Irish UCITS ETFs are not US-situs assets, shielding non-US residents from the 40% US Estate Tax on assets exceeding $60,000",
+      "verdict": "The undisputed gold standard domicile for retail index investors worldwide."
+    },
+    "luxembourg": {
+      "domicile": "Luxembourg (LU)",
+      "usTreatyWithholding": "30% on certain asset classes unless specific sub-fund treaties apply",
+      "localWht": "0% Luxembourg WHT for SICAVs",
+      "usEstateTax": "Exempt",
+      "verdict": "Strong for European bonds and STOXX Europe 600 (MEUD), but Ireland is preferred for US-heavy equity indices."
+    },
+    "unitedStates": {
+      "domicile": "United States (US - e.g. VOO, VTI)",
+      "usTreatyWithholding": "30% standard WHT (reducible to 15% with W-8BEN depending on tax treaty)",
+      "localWht": "Subject to US tax filing",
+      "usEstateTax": "DANGEROUS: Up to 40% US Federal Estate Tax on all US assets exceeding $60,000 upon death for non-US citizens!",
+      "verdict": "Strictly avoid holding US-domiciled ETFs as a non-US retail investor. Use Irish UCITS instead."
+    }
+  },
+  "morningstarStyleBox": {
+    "dimensions": "Market Capitalization (Large, Mid, Small) x Investment Style (Value, Blend, Growth)",
+    "guide": "Core portfolios (VWCE, IWDA, SXR8) occupy 'Large Blend', giving balanced exposure to all macro conditions. QDVE is 'Large Growth' (high valuation, momentum-driven). ZPRV is 'Small Value' (Fama-French factor premium)."
+  }
+}

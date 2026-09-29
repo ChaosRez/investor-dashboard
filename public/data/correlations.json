@@ -1,0 +1,141 @@
+{
+  "tickers": [
+    "VWCE",
+    "IWDA",
+    "SXR8",
+    "VUAA",
+    "EIMI",
+    "MEUD",
+    "QDVE",
+    "AGGU",
+    "IUSN",
+    "VUSA"
+  ],
+  "matrix": {
+    "VWCE": {
+      "VWCE": 1.0,
+      "IWDA": 0.99,
+      "SXR8": 0.96,
+      "VUAA": 0.96,
+      "EIMI": 0.82,
+      "MEUD": 0.88,
+      "QDVE": 0.89,
+      "AGGU": 0.12,
+      "IUSN": 0.91,
+      "VUSA": 0.96
+    },
+    "IWDA": {
+      "VWCE": 0.99,
+      "IWDA": 1.0,
+      "SXR8": 0.97,
+      "VUAA": 0.97,
+      "EIMI": 0.74,
+      "MEUD": 0.89,
+      "QDVE": 0.9,
+      "AGGU": 0.11,
+      "IUSN": 0.92,
+      "VUSA": 0.97
+    },
+    "SXR8": {
+      "VWCE": 0.96,
+      "IWDA": 0.97,
+      "SXR8": 1.0,
+      "VUAA": 1.0,
+      "EIMI": 0.69,
+      "MEUD": 0.81,
+      "QDVE": 0.94,
+      "AGGU": 0.08,
+      "IUSN": 0.89,
+      "VUSA": 1.0
+    },
+    "VUAA": {
+      "VWCE": 0.96,
+      "IWDA": 0.97,
+      "SXR8": 1.0,
+      "VUAA": 1.0,
+      "EIMI": 0.69,
+      "MEUD": 0.81,
+      "QDVE": 0.94,
+      "AGGU": 0.08,
+      "IUSN": 0.89,
+      "VUSA": 1.0
+    },
+    "EIMI": {
+      "VWCE": 0.82,
+      "IWDA": 0.74,
+      "SXR8": 0.69,
+      "VUAA": 0.69,
+      "EIMI": 1.0,
+      "MEUD": 0.68,
+      "QDVE": 0.64,
+      "AGGU": 0.22,
+      "IUSN": 0.73,
+      "VUSA": 0.69
+    },
+    "MEUD": {
+      "VWCE": 0.88,
+      "IWDA": 0.89,
+      "SXR8": 0.81,
+      "VUAA": 0.81,
+      "EIMI": 0.68,
+      "MEUD": 1.0,
+      "QDVE": 0.73,
+      "AGGU": 0.24,
+      "IUSN": 0.84,
+      "VUSA": 0.81
+    },
+    "QDVE": {
+      "VWCE": 0.89,
+      "IWDA": 0.9,
+      "SXR8": 0.94,
+      "VUAA": 0.94,
+      "EIMI": 0.64,
+      "MEUD": 0.73,
+      "QDVE": 1.0,
+      "AGGU": 0.04,
+      "IUSN": 0.81,
+      "VUSA": 0.94
+    },
+    "AGGU": {
+      "VWCE": 0.12,
+      "IWDA": 0.11,
+      "SXR8": 0.08,
+      "VUAA": 0.08,
+      "EIMI": 0.22,
+      "MEUD": 0.24,
+      "QDVE": 0.04,
+      "AGGU": 1.0,
+      "IUSN": 0.16,
+      "VUSA": 0.08
+    },
+    "IUSN": {
+      "VWCE": 0.91,
+      "IWDA": 0.92,
+      "SXR8": 0.89,
+      "VUAA": 0.89,
+      "EIMI": 0.73,
+      "MEUD": 0.84,
+      "QDVE": 0.81,
+      "AGGU": 0.16,
+      "IUSN": 1.0,
+      "VUSA": 0.89
+    },
+    "VUSA": {
+      "VWCE": 0.96,
+      "IWDA": 0.97,
+      "SXR8": 1.0,
+      "VUAA": 1.0,
+      "EIMI": 0.69,
+      "MEUD": 0.81,
+      "QDVE": 0.94,
+      "AGGU": 0.08,
+      "IUSN": 0.89,
+      "VUSA": 1.0
+    }
+  },
+  "pvMethodology": {
+    "source": "Portfolio Visualizer Quantitative Analytics Engine",
+    "cadence": "Monthly returns over 120 rolling periods",
+    "keyTakeaway": "AGGU (Global Aggregate Bonds) has near-zero correlation (0.08 - 0.12) with core equity ETFs, providing true non-correlated portfolio diversification. SXR8 and QDVE show extreme correlation (0.94), showing high redundancy."
+  }
+}
