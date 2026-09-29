@@ -15,6 +15,7 @@ window.App = (function () {
     bindNavigation();
     bindModal();
     bindOnboarding();
+    bindLiveSync();
     await loadInitialData();
     switchTab("screener");
   }
@@ -116,6 +117,34 @@ window.App = (function () {
           closeModal();
         }
       });
+    });
+  }
+
+  function bindLiveSync() {
+    const syncBtn = document.getElementById("sync-live-data-btn");
+    const syncBtnText = document.getElementById("sync-btn-text");
+    if (!syncBtn) return;
+
+    syncBtn.addEventListener("click", async () => {
+      syncBtn.disabled = true;
+      if (syncBtnText) syncBtnText.innerText = "⏳ Syncing Feeds...";
+
+      try {
+        const res = await fetch("/api/sync", { method: "POST" });
+        if (res.ok) {
+          await loadInitialData();
+          if (syncBtnText) syncBtnText.innerText = "✅ Live Synced!";
+        } else {
+          if (syncBtnText) syncBtnText.innerText = "⚠️ Offline Mode";
+        }
+      } catch (err) {
+        if (syncBtnText) syncBtnText.innerText = "⚠️ Offline Mode";
+      }
+
+      setTimeout(() => {
+        syncBtn.disabled = false;
+        if (syncBtnText) syncBtnText.innerText = "🔄 Live Sync";
+      }, 2500);
     });
   }
 

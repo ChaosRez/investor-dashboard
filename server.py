@@ -11,7 +11,14 @@ import json
 import os
 import urllib.parse
 import math
+import threading
+from datetime import datetime, timezone
 from typing import Dict, Any, List
+
+try:
+    import dynamic_sync
+except ImportError:
+    dynamic_sync = None
 
 PORT = 8080
 PUBLIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "public")
@@ -30,6 +37,14 @@ NEWS_DATA = load_json("news.json")
 EDUCATION_DATA = load_json("education.json")
 
 ETFS_BY_TICKER = {etf["ticker"].upper(): etf for etf in ETFS_DATA}
+
+def reload_datasets():
+    global ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER
+    ETFS_DATA = load_json("etfs.json")
+    CORRELATIONS_DATA = load_json("correlations.json")
+    NEWS_DATA = load_json("news.json")
+    EDUCATION_DATA = load_json("education.json")
+    ETFS_BY_TICKER = {etf["ticker"].upper(): etf for etf in ETFS_DATA}
 
 def calculate_portfolio_overlap(portfolio_weights: Dict[str, float]) -> Dict[str, Any]:
     """
@@ -335,6 +350,33 @@ class ETFRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(results)
             return
 
+        elif path == "/api/sync":
+            self.send_json({
+                "status": "active",
+                "isLiveDynamic": True,
+                "lastSyncedAt": ETFS_DATA[0].get("lastSyncedAt") if ETFS_DATA else None,
+                "liveEtfsCount": len(ETFS_DATA),
+                "liveNewsCount": len(NEWS_DATA),
+                "sources": [
+                    "Yahoo Finance (Live Quotes, 52W High/Low, Daily Return)",
+                    "justETF.com (Live Fund Size AUM & TER)",
+                    "European Central Bank RSS (Monetary Policy Decisions)",
+                    "MarketWatch Top Stories RSS (Market Headlines)"
+                ]
+            })
+            return
+
+        elif path == "/api/market-status":
+            now = datetime.now(timezone.utc)
+            self.send_json({
+                "marketStatus": "open" if 7 <= now.hour <= 16 else "closed",
+                "timestamp": now.isoformat(),
+                "trackedEtfs": len(ETFS_DATA),
+                "primaryCurrency": "EUR",
+                "dataEngine": "Dynamic Yahoo Finance + justETF + ECB"
+            })
+            return
+
         elif path == "/api/education":
             self.send_json(EDUCATION_DATA)
             return
@@ -353,7 +395,19 @@ class ETFRequestHandler(http.server.SimpleHTTPRequestHandler):
         except Exception:
             body = {}
 
-        if path == "/api/overlap":
+        if path in ["/api/sync", "/api/refresh"]:
+            if dynamic_sync:
+                try:
+                    sync_res = dynamic_sync.run_full_sync()
+                    reload_datasets()
+                    self.send_json(sync_res)
+                except Exception as e:
+                    self.send_json({"error": f"Sync failed: {str(e)}"}, status=500)
+            else:
+                self.send_json({"error": "Dynamic sync module unavailable"}, status=500)
+            return
+
+        elif path == "/api/overlap":
             weights = body.get("portfolio") or body.get("etfs")
             if isinstance(weights, list):
                 # Equal weights if list of tickers provided

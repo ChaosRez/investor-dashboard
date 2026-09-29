@@ -158,7 +158,7 @@ window.NewsSignalsModule = (function () {
 
           <div class="retail-action-box">
             <strong>🛡️ Retail Boglehead Action:</strong>
-            <span>${item.retailAction}</span>
+            <span>${item.retailAction || item.retailBogleheadAction || "Maintain disciplined automated DCA into broad market index ETFs."}</span>
           </div>
         </div>
       `;

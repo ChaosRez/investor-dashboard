@@ -24,16 +24,22 @@
 
       <!-- Provenance Links to Real Data Sources -->
       <div class="sources-provenance">
+        <a href="https://finance.yahoo.com" target="_blank" class="provenance-tag" style="border-color: rgba(16, 185, 129, 0.4); color: var(--accent-emerald);">
+          <span class="live-dot-pulse" style="width: 6px; height: 6px;"></span>Live Yahoo Finance
+        </a>
         <a href="https://www.justetf.com" target="_blank" class="provenance-tag">justETF</a>
         <a href="https://extraetf.com" target="_blank" class="provenance-tag">extraETF</a>
+        <a href="https://www.ecb.europa.eu" target="_blank" class="provenance-tag" style="border-color: rgba(59, 130, 246, 0.4); color: var(--accent-blue);">ECB Live Wire</a>
         <a href="https://curvo.eu/backtest/en" target="_blank" class="provenance-tag">Curvo Backtest</a>
         <a href="https://www.portfoliovisualizer.com" target="_blank" class="provenance-tag">Portfolio Visualizer</a>
         <a href="https://www.morningstar.com" target="_blank" class="provenance-tag">Morningstar</a>
-        <a href="https://www.trackinsight.com" target="_blank" class="provenance-tag">Trackinsight</a>
-        <a href="https://www.bogleheads.org/wiki/EU_investing" target="_blank" class="provenance-tag">Bogleheads Wiki</a>
       </div>
 
       <div class="header-actions">
+        <button id="sync-live-data-btn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 0.78rem;">
+          <span class="live-dot-pulse"></span>
+          <span id="sync-btn-text">🔄 Live Sync</span>
+        </button>
         <button id="open-onboarding-btn" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #10b981, #06b6d4); border: none; white-space: nowrap;">
           🚀 Where to Start? (Guide)
         </button>

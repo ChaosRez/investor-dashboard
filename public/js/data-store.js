@@ -1,9 +1,16 @@
 /**
- * ApexETF Real Data Store
- * Grounded verified data from justETF, extraETF, Curvo, Portfolio Visualizer, Morningstar, Trackinsight, and official KIDs.
+ * ApexETF Grounded Data Store
+ * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
+ * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
+ * Last Synced: 2026-09-29T13:21:04.429023+00:00
  */
 
 window.APEX_DATA_STORE = {
+  syncMeta: {
+    lastSyncedAt: "2026-09-29T13:21:04.429034+00:00",
+    isLiveDynamic: true,
+    sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
+  },
   etfs: [
   {
     "ticker": "VWCE",
@@ -22,7 +29,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.14,
     "trackingDifference5Y": 0.02,
     "trackingDifference1Y": 0.01,
-    "aumMillionsEUR": 53167,
+    "aumMillionsEUR": 53167.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -195,7 +202,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 98,
       "brokerScore": 96,
       "bogleheadsRating": "Gold Benchmark (Single-Fund 'VWCE and Chill')"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:20:57.270264+00:00",
+    "liveMarketData": {
+      "livePrice": 169.82,
+      "currency": "EUR",
+      "previousClose": 170.5,
+      "dayChange": -0.68,
+      "dayChangePercent": -0.4,
+      "fiftyTwoWeekHigh": 170.92,
+      "fiftyTwoWeekLow": 138.24,
+      "regularMarketDayHigh": 170.1,
+      "regularMarketDayLow": 169.36,
+      "regularMarketVolume": 119207,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:20:56.866509+00:00"
+    },
+    "currentPriceEUR": 169.82,
+    "dayChangePercent": -0.4,
+    "fiftyTwoWeekHigh": 170.92,
+    "fiftyTwoWeekLow": 138.24
   },
   {
     "ticker": "IWDA",
@@ -214,7 +240,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.2,
     "trackingDifference5Y": -0.01,
     "trackingDifference1Y": -0.02,
-    "aumMillionsEUR": 72400,
+    "aumMillionsEUR": 130706.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -386,7 +412,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 98,
       "brokerScore": 98,
       "bogleheadsRating": "Core Developed Foundation (Pair with EIMI 88/12)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:20:57.845811+00:00",
+    "liveMarketData": {
+      "livePrice": 129.04,
+      "currency": "EUR",
+      "previousClose": 129.1,
+      "dayChange": -0.06,
+      "dayChangePercent": -0.05,
+      "fiftyTwoWeekHigh": 129.83,
+      "fiftyTwoWeekLow": 106.13,
+      "regularMarketDayHigh": 129.27,
+      "regularMarketDayLow": 128.71,
+      "regularMarketVolume": 59032,
+      "exchange": "Euronext Amsterdam",
+      "lastPriceUpdated": "2026-09-29T13:20:57.449889+00:00"
+    },
+    "currentPriceEUR": 129.04,
+    "dayChangePercent": -0.05,
+    "fiftyTwoWeekHigh": 129.83,
+    "fiftyTwoWeekLow": 106.13
   },
   {
     "ticker": "SXR8",
@@ -405,7 +450,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.18,
     "trackingDifference1Y": -0.21,
-    "aumMillionsEUR": 88500,
+    "aumMillionsEUR": 136853.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -568,7 +613,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 100,
       "brokerScore": 98,
       "bogleheadsRating": "Lowest Cost US Engine (Caution: 100% US single-country risk)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:20:58.537356+00:00",
+    "liveMarketData": {
+      "livePrice": 731.56,
+      "currency": "EUR",
+      "previousClose": 731.94,
+      "dayChange": -0.38,
+      "dayChangePercent": -0.05,
+      "fiftyTwoWeekHigh": 735.02,
+      "fiftyTwoWeekLow": 595.6,
+      "regularMarketDayHigh": 732.3,
+      "regularMarketDayLow": 729.28,
+      "regularMarketVolume": 11240,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:20:58.055822+00:00"
+    },
+    "currentPriceEUR": 731.56,
+    "dayChangePercent": -0.05,
+    "fiftyTwoWeekHigh": 735.02,
+    "fiftyTwoWeekLow": 595.6
   },
   {
     "ticker": "VUAA",
@@ -586,7 +650,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.19,
     "trackingDifference1Y": -0.2,
-    "aumMillionsEUR": 14800,
+    "aumMillionsEUR": 32157.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -749,7 +813,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 100,
       "brokerScore": 96,
       "bogleheadsRating": "Vanguard US Flagship Accumulator"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:20:59.195133+00:00",
+    "liveMarketData": {
+      "livePrice": 131.18,
+      "currency": "EUR",
+      "previousClose": 131.26,
+      "dayChange": -0.08,
+      "dayChangePercent": -0.06,
+      "fiftyTwoWeekHigh": 131.81,
+      "fiftyTwoWeekLow": 106.82,
+      "regularMarketDayHigh": 131.305,
+      "regularMarketDayLow": 130.775,
+      "regularMarketVolume": 9829,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:20:58.679571+00:00"
+    },
+    "currentPriceEUR": 131.18,
+    "dayChangePercent": -0.06,
+    "fiftyTwoWeekHigh": 131.81,
+    "fiftyTwoWeekLow": 106.82
   },
   {
     "ticker": "EIMI",
@@ -768,7 +851,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.18,
     "trackingDifference5Y": 0.08,
     "trackingDifference1Y": 0.05,
-    "aumMillionsEUR": 19500,
+    "aumMillionsEUR": 40069.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -941,7 +1024,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 92,
       "brokerScore": 97,
       "bogleheadsRating": "Best Emerging Market UCITS Engine (Includes Small Caps)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:20:59.877765+00:00",
+    "liveMarketData": {
+      "livePrice": 48.575,
+      "currency": "EUR",
+      "previousClose": 48.84,
+      "dayChange": -0.265,
+      "dayChangePercent": -0.54,
+      "fiftyTwoWeekHigh": 51.03,
+      "fiftyTwoWeekLow": 36.72,
+      "regularMarketDayHigh": 48.65,
+      "regularMarketDayLow": 48.335,
+      "regularMarketVolume": 32301,
+      "exchange": "Euronext Amsterdam",
+      "lastPriceUpdated": "2026-09-29T13:20:59.365976+00:00"
+    },
+    "currentPriceEUR": 48.575,
+    "dayChangePercent": -0.54,
+    "fiftyTwoWeekHigh": 51.03,
+    "fiftyTwoWeekLow": 36.72
   },
   {
     "ticker": "MEUD",
@@ -960,7 +1062,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.02,
     "trackingDifference1Y": -0.01,
-    "aumMillionsEUR": 7200,
+    "aumMillionsEUR": 20925.0,
     "domicile": "Luxembourg",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -1132,7 +1234,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 90,
       "brokerScore": 96,
       "bogleheadsRating": "European Home-Bias / Tilt Core"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:21:00.531458+00:00",
+    "liveMarketData": {
+      "livePrice": 316.0,
+      "currency": "EUR",
+      "previousClose": 315.85,
+      "dayChange": 0.15,
+      "dayChangePercent": 0.05,
+      "fiftyTwoWeekHigh": 326.7,
+      "fiftyTwoWeekLow": 265.67,
+      "regularMarketDayHigh": 317.2,
+      "regularMarketDayLow": 315.8,
+      "regularMarketVolume": 40984,
+      "exchange": "Euronext Paris",
+      "lastPriceUpdated": "2026-09-29T13:21:00.007303+00:00"
+    },
+    "currentPriceEUR": 316.0,
+    "dayChangePercent": 0.05,
+    "fiftyTwoWeekHigh": 326.7,
+    "fiftyTwoWeekLow": 265.67
   },
   {
     "ticker": "QDVE",
@@ -1150,7 +1271,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.15,
     "trackingDifference5Y": -0.12,
     "trackingDifference1Y": -0.15,
-    "aumMillionsEUR": 11400,
+    "aumMillionsEUR": 18119.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -1303,7 +1424,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 100,
       "brokerScore": 97,
       "bogleheadsRating": "Satellite High-Growth Tilt (Warning: Top 3 stocks = 62.4% portfolio concentration!)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:21:01.113163+00:00",
+    "liveMarketData": {
+      "livePrice": 47.29,
+      "currency": "EUR",
+      "previousClose": 46.9,
+      "dayChange": 0.39,
+      "dayChangePercent": 0.83,
+      "fiftyTwoWeekHigh": 47.35,
+      "fiftyTwoWeekLow": 31.88,
+      "regularMarketDayHigh": 47.35,
+      "regularMarketDayLow": 47.06,
+      "regularMarketVolume": 56147,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:21:00.682213+00:00"
+    },
+    "currentPriceEUR": 47.29,
+    "dayChangePercent": 0.83,
+    "fiftyTwoWeekHigh": 47.35,
+    "fiftyTwoWeekLow": 31.88
   },
   {
     "ticker": "AGGU",
@@ -1322,7 +1462,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.1,
     "trackingDifference5Y": 0.05,
     "trackingDifference1Y": 0.04,
-    "aumMillionsEUR": 13200,
+    "aumMillionsEUR": 2505.0,
     "domicile": "Ireland",
     "replication": "Physical (Sampling)",
     "securitiesLending": true,
@@ -1487,7 +1627,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 96,
       "brokerScore": 97,
       "bogleheadsRating": "Core Fixed-Income Anchor (Bogleheads 80/20 or 60/40 component)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:21:01.695939+00:00",
+    "liveMarketData": {
+      "livePrice": 5.723,
+      "currency": "USD",
+      "previousClose": 5.764,
+      "dayChange": -0.041,
+      "dayChangePercent": -0.71,
+      "fiftyTwoWeekHigh": 6.15,
+      "fiftyTwoWeekLow": 5.71,
+      "regularMarketDayHigh": 5.728,
+      "regularMarketDayLow": 5.71,
+      "regularMarketVolume": 25490,
+      "exchange": "London Stock Exchange",
+      "lastPriceUpdated": "2026-09-29T13:21:01.271512+00:00"
+    },
+    "currentPriceEUR": 5.723,
+    "dayChangePercent": -0.71,
+    "fiftyTwoWeekHigh": 6.15,
+    "fiftyTwoWeekLow": 5.71
   },
   {
     "ticker": "IUSN",
@@ -1676,7 +1835,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 95,
       "brokerScore": 95,
       "bogleheadsRating": "Size Factor Diversifier (Completes World Large/Mid with Small Caps)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:21:02.507768+00:00",
+    "liveMarketData": {
+      "livePrice": 8.998,
+      "currency": "EUR",
+      "previousClose": 9.078,
+      "dayChange": -0.08,
+      "dayChangePercent": -0.88,
+      "fiftyTwoWeekHigh": 9.36,
+      "fiftyTwoWeekLow": 7.26,
+      "regularMarketDayHigh": 9.014,
+      "regularMarketDayLow": 8.964,
+      "regularMarketVolume": 116529,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:21:01.848999+00:00"
+    },
+    "currentPriceEUR": 8.998,
+    "dayChangePercent": -0.88,
+    "fiftyTwoWeekHigh": 9.36,
+    "fiftyTwoWeekLow": 7.26
   },
   {
     "ticker": "VUSA",
@@ -1695,7 +1873,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.19,
     "trackingDifference1Y": -0.2,
-    "aumMillionsEUR": 38500,
+    "aumMillionsEUR": 46776.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -1827,7 +2005,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 55,
       "brokerScore": 96,
       "bogleheadsRating": "Distributing Benchmark (Compounding penalty vs Accumulating VUAA/SXR8)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:21:03.170257+00:00",
+    "liveMarketData": {
+      "livePrice": 128.45,
+      "currency": "EUR",
+      "previousClose": 128.373,
+      "dayChange": 0.077,
+      "dayChangePercent": 0.06,
+      "fiftyTwoWeekHigh": 129.09,
+      "fiftyTwoWeekLow": 105.03,
+      "regularMarketDayHigh": 128.6,
+      "regularMarketDayLow": 128.042,
+      "regularMarketVolume": 25369,
+      "exchange": "Euronext Amsterdam",
+      "lastPriceUpdated": "2026-09-29T13:21:02.650865+00:00"
+    },
+    "currentPriceEUR": 128.45,
+    "dayChangePercent": 0.06,
+    "fiftyTwoWeekHigh": 129.09,
+    "fiftyTwoWeekLow": 105.03
   },
   {
     "ticker": "GGRA",
@@ -1842,10 +2039,10 @@ window.APEX_DATA_STORE = {
     "assetClass": "Global Quality Factor Dividend Equities",
     "distributionPolicy": "Accumulating",
     "isAccumulating": true,
-    "ter": 0.29,
+    "ter": 0.38,
     "trackingDifference5Y": 0.05,
     "trackingDifference1Y": 0.03,
-    "aumMillionsEUR": 1850,
+    "aumMillionsEUR": 658.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -2010,7 +2207,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 98,
       "brokerScore": 96,
       "bogleheadsRating": "Quality Factor Engine (High ROE & Sustainable Dividend Growth)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:21:03.723610+00:00",
+    "liveMarketData": {
+      "livePrice": 49.17,
+      "currency": "USD",
+      "previousClose": 49.49,
+      "dayChange": -0.32,
+      "dayChangePercent": -0.65,
+      "fiftyTwoWeekHigh": 51.34,
+      "fiftyTwoWeekLow": 42.78,
+      "regularMarketDayHigh": 49.21,
+      "regularMarketDayLow": 49.0,
+      "regularMarketVolume": 55,
+      "exchange": "London Stock Exchange",
+      "lastPriceUpdated": "2026-09-29T13:21:03.320154+00:00"
+    },
+    "currentPriceEUR": 49.17,
+    "dayChangePercent": -0.65,
+    "fiftyTwoWeekHigh": 51.34,
+    "fiftyTwoWeekLow": 42.78
   },
   {
     "ticker": "FWRA",
@@ -2028,7 +2244,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.15,
     "trackingDifference5Y": -0.01,
     "trackingDifference1Y": -0.01,
-    "aumMillionsEUR": 1250,
+    "aumMillionsEUR": 4111.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -2201,7 +2417,26 @@ window.APEX_DATA_STORE = {
       "taxScore": 98,
       "brokerScore": 96,
       "bogleheadsRating": "Low-Cost Vanguard Competitor (0.15% TER Core Alternative)"
-    }
+    },
+    "lastSyncedAt": "2026-09-29T13:21:04.276701+00:00",
+    "liveMarketData": {
+      "livePrice": 8.361,
+      "currency": "EUR",
+      "previousClose": 8.385,
+      "dayChange": -0.024,
+      "dayChangePercent": -0.29,
+      "fiftyTwoWeekHigh": 8.41,
+      "fiftyTwoWeekLow": 6.8,
+      "regularMarketDayHigh": 8.372,
+      "regularMarketDayLow": 8.339,
+      "regularMarketVolume": 51831,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:21:03.891948+00:00"
+    },
+    "currentPriceEUR": 8.361,
+    "dayChangePercent": -0.29,
+    "fiftyTwoWeekHigh": 8.41,
+    "fiftyTwoWeekLow": 6.8
   }
 ],
   correlations: {
@@ -2346,6 +2581,158 @@ window.APEX_DATA_STORE = {
   }
 },
   news: [
+  {
+    "id": "mw-76424831",
+    "title": "\ud83d\udcc8 MarketWatch: Two stock picks from a money manager who expects small-caps to roar in 2027",
+    "summary": "Calamos Investments manager Brandon Nelson\u2019s four-star fund is betting on financial services apps.",
+    "date": "Tue, 29 Sep 2026 12:47:00 GMT",
+    "source": "MarketWatch Live Wire",
+    "sourceUrl": "https://www.marketwatch.com/story/two-stock-picks-from-a-money-manager-who-expects-small-caps-to-roar-in-2027-70de9c4d?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20133 Months)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "IUSN",
+        "relation": "MSCI World Small Cap sensitivity to interest rates and domestic debt financing"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
+    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-36700163",
+    "title": "\ud83d\udcc8 MarketWatch: Dolly Parton planned for her estate. The fight with her nephew shows why that matters.",
+    "summary": "It\u2019s important to have guardrails around your legacy.",
+    "date": "Tue, 29 Sep 2026 12:42:00 GMT",
+    "source": "MarketWatch Live Wire",
+    "sourceUrl": "https://www.marketwatch.com/story/dolly-parton-planned-for-her-estate-the-fight-with-her-nephew-shows-why-that-matters-b7e57c26?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20133 Months)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "QDVE",
+        "relation": "S&P 500 Tech heavily concentrates top AI/semiconductor cap weights"
+      },
+      {
+        "ticker": "SXR8",
+        "relation": "Core S&P 500 holds ~32% technology sector allocation"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
+    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-77789167",
+    "title": "\ud83d\udcc8 MarketWatch: \u2018We lived within our means\u2019: I earned $30,000 as a pastor and still retired comfortably. Why don\u2019t you tell people that?",
+    "summary": "\u201cAs a country, we have grown dangerously comfortable.\u201d",
+    "date": "Tue, 29 Sep 2026 12:15:00 GMT",
+    "source": "MarketWatch Live Wire",
+    "sourceUrl": "https://www.marketwatch.com/story/we-lived-within-our-means-i-earned-30-000-as-a-pastor-and-still-retired-comfortably-why-dont-you-tell-people-that-6b9f231e?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20133 Months)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "VWCE",
+        "relation": "Global multi-cap index reflects systemic macroeconomic and market trends"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
+    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-11659255",
+    "title": "\ud83d\udcc8 MarketWatch: Taking Ozempic and worried about vision loss? This test can help you understand your risk.",
+    "summary": "Some research suggests that GLP-1 drugs may raise the risk of a rare eye disease that causes full or partial vision loss.",
+    "date": "Tue, 29 Sep 2026 12:03:00 GMT",
+    "source": "MarketWatch Live Wire",
+    "sourceUrl": "https://www.marketwatch.com/story/taking-ozempic-a-routine-eye-exam-could-help-you-understand-your-risk-for-vision-loss-3392c1a0?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20133 Months)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "QDVE",
+        "relation": "S&P 500 Tech heavily concentrates top AI/semiconductor cap weights"
+      },
+      {
+        "ticker": "SXR8",
+        "relation": "Core S&P 500 holds ~32% technology sector allocation"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
+    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-24121828",
+    "title": "\ud83d\udcc8 MarketWatch: \u2018I\u2019d rather be on a beach in Bali\u2019: My husband resents my $8 million net worth. Should I pay for his retirement?",
+    "summary": "\u201cWe have an ironclad prenup.\u201d",
+    "date": "Tue, 29 Sep 2026 11:15:00 GMT",
+    "source": "MarketWatch Live Wire",
+    "sourceUrl": "https://www.marketwatch.com/story/i-feel-like-hes-holding-me-back-i-have-8-million-my-husband-resents-my-success-should-i-pay-for-more-things-08a4221b?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20133 Months)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "VWCE",
+        "relation": "Global multi-cap index reflects systemic macroeconomic and market trends"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
+    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-84134890",
+    "title": "\ud83d\udcc8 MarketWatch: Morgan Stanley\u2019s Mike Wilson says an S&P 500 correction may be exactly what the market needs",
+    "summary": "The chief U.S. equity strategist at the investment bank favors large-capitalization quality companies.",
+    "date": "Tue, 29 Sep 2026 11:03:00 GMT",
+    "source": "MarketWatch Live Wire",
+    "sourceUrl": "https://www.marketwatch.com/story/morgan-stanleys-mike-wilson-says-an-s-p-500-correction-may-be-exactly-what-the-market-needs-a6baf54e?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20133 Months)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "AGGU",
+        "relation": "Global fixed income valuations respond directly to sovereign yield shifts"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
+    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
   {
     "id": "news-1",
     "date": "2026-09-28",
