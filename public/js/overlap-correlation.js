@@ -228,7 +228,7 @@ window.OverlapModule = (function () {
 
     const display = document.getElementById("total-weight-display");
     if (display) {
-      display.innerHTML = `Total Weight: <span style="color: ${total === 100 ? "var(--accent-emerald)" : "var(--accent-amber)};">${total}%</span> ${total !== 100 ? "(Will be normalized to 100% in audit)" : "✅"}`;
+      display.innerHTML = `Total Weight: <span style="color: ${total === 100 ? "var(--accent-emerald)" : "var(--accent-amber)"};">${total}%</span> ${total !== 100 ? "(Will be normalized to 100% in audit)" : "✅"}`;
     }
   }
 

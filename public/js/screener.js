@@ -294,7 +294,7 @@ window.ScreenerModule = (function () {
         ([broker, data]) => `
         <div style="display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.82rem; border-bottom: 1px solid var(--border-color);">
           <span><strong>${broker}</strong></span>
-          <span style="color: ${data.sparplan ? "var(--accent-emerald)" : "var(--text-muted)}; font-weight: 600;">
+          <span style="color: ${data.sparplan ? "var(--accent-emerald)" : "var(--text-muted)"}; font-weight: 600;">
             ${data.sparplan ? "✅ Sparplan: " + data.fee : "❌ Manual execution"}
           </span>
         </div>
