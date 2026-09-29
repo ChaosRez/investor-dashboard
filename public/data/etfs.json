@@ -190,7 +190,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "Gold Benchmark (Single-Fund 'VWCE and Chill')"
     },
-    "lastSyncedAt": "2026-09-29T13:29:18.648774+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:51.186472+00:00",
     "liveMarketData": {
       "livePrice": 169.88,
       "currency": "EUR",
@@ -400,7 +400,7 @@
       "brokerScore": 98,
       "bogleheadsRating": "Core Developed Foundation (Pair with EIMI 88/12)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:19.328678+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:51.673375+00:00",
     "liveMarketData": {
       "livePrice": 129.08,
       "currency": "EUR",
@@ -601,7 +601,7 @@
       "brokerScore": 98,
       "bogleheadsRating": "Lowest Cost US Engine (Caution: 100% US single-country risk)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:19.912688+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:52.080449+00:00",
     "liveMarketData": {
       "livePrice": 731.74,
       "currency": "EUR",
@@ -802,7 +802,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "Vanguard US Flagship Accumulator"
     },
-    "lastSyncedAt": "2026-09-29T13:29:20.567319+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:52.613859+00:00",
     "liveMarketData": {
       "livePrice": 131.22,
       "currency": "EUR",
@@ -1013,7 +1013,7 @@
       "brokerScore": 97,
       "bogleheadsRating": "Best Emerging Market UCITS Engine (Includes Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:21.088078+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:53.073986+00:00",
     "liveMarketData": {
       "livePrice": 48.595,
       "currency": "EUR",
@@ -1223,7 +1223,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "European Home-Bias / Tilt Core"
     },
-    "lastSyncedAt": "2026-09-29T13:29:21.868453+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:53.576599+00:00",
     "liveMarketData": {
       "livePrice": 316.1,
       "currency": "EUR",
@@ -1413,7 +1413,7 @@
       "brokerScore": 97,
       "bogleheadsRating": "Satellite High-Growth Tilt (Warning: Top 3 stocks = 62.4% portfolio concentration!)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:22.527615+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:54.000449+00:00",
     "liveMarketData": {
       "livePrice": 47.29,
       "currency": "EUR",
@@ -1616,7 +1616,7 @@
       "brokerScore": 97,
       "bogleheadsRating": "Core Fixed-Income Anchor (Bogleheads 80/20 or 60/40 component)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:23.328176+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:54.422276+00:00",
     "liveMarketData": {
       "livePrice": 5.723,
       "currency": "USD",
@@ -1824,7 +1824,7 @@
       "brokerScore": 95,
       "bogleheadsRating": "Size Factor Diversifier (Completes World Large/Mid with Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:24.201456+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:55.074980+00:00",
     "liveMarketData": {
       "livePrice": 9.002,
       "currency": "EUR",
@@ -1994,7 +1994,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "Distributing Benchmark (Compounding penalty vs Accumulating VUAA/SXR8)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:24.936405+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:55.548004+00:00",
     "liveMarketData": {
       "livePrice": 128.491,
       "currency": "EUR",
@@ -2196,7 +2196,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "Quality Factor Engine (High ROE & Sustainable Dividend Growth)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:25.585865+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:55.943982+00:00",
     "liveMarketData": {
       "livePrice": 49.17,
       "currency": "USD",
@@ -2406,7 +2406,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "Low-Cost Vanguard Competitor (0.15% TER Core Alternative)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:26.163752+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:56.333052+00:00",
     "liveMarketData": {
       "livePrice": 8.361,
       "currency": "EUR",
@@ -2625,7 +2625,7 @@
     "dayChangePercent": -3.38,
     "fiftyTwoWeekHigh": 35.52,
     "fiftyTwoWeekLow": 20.61,
-    "lastSyncedAt": "2026-09-29T13:29:26.830316+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:56.923397+00:00"
   },
   {
     "ticker": "RARE",
@@ -2824,7 +2824,7 @@
     "dayChangePercent": -4.86,
     "fiftyTwoWeekHigh": 70.6,
     "fiftyTwoWeekLow": 42.09,
-    "lastSyncedAt": "2026-09-29T13:29:27.529118+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:57.444236+00:00"
   },
   {
     "ticker": "IUSQ",
@@ -3036,7 +3036,7 @@
     "dayChangePercent": -0.37,
     "fiftyTwoWeekHigh": 109.5,
     "fiftyTwoWeekLow": 88.46,
-    "lastSyncedAt": "2026-09-29T13:29:28.197515+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:57.883950+00:00"
   },
   {
     "ticker": "IMAE",
@@ -3246,7 +3246,7 @@
     "dayChangePercent": 0.23,
     "fiftyTwoWeekHigh": 107.56,
     "fiftyTwoWeekLow": 87.61,
-    "lastSyncedAt": "2026-09-29T13:29:28.880639+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:58.377468+00:00"
   },
   {
     "ticker": "XCS6",
@@ -3445,7 +3445,7 @@
     "dayChangePercent": -4.25,
     "fiftyTwoWeekHigh": 12.71,
     "fiftyTwoWeekLow": 10.47,
-    "lastSyncedAt": "2026-09-29T13:29:29.530992+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:58.892245+00:00"
   },
   {
     "ticker": "XEON",
@@ -3591,7 +3591,7 @@
     "dayChangePercent": 0.07,
     "fiftyTwoWeekHigh": 150.36,
     "fiftyTwoWeekLow": 147.29,
-    "lastSyncedAt": "2026-09-29T13:29:30.213157+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:59.396268+00:00"
   },
   {
     "ticker": "VHYL",
@@ -3801,7 +3801,7 @@
     "dayChangePercent": -0.54,
     "fiftyTwoWeekHigh": 82.28,
     "fiftyTwoWeekLow": 66.0,
-    "lastSyncedAt": "2026-09-29T13:29:30.931713+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:59.786916+00:00"
   },
   {
     "ticker": "AII",
@@ -4000,7 +4000,7 @@
     "dayChangePercent": 0.39,
     "fiftyTwoWeekHigh": 10.44,
     "fiftyTwoWeekLow": 5.61,
-    "lastSyncedAt": "2026-09-29T13:29:31.515634+00:00"
+    "lastSyncedAt": "2026-09-29T14:15:00.192394+00:00"
   },
   {
     "ticker": "WTAI",
@@ -4197,6 +4197,6 @@
     "dayChangePercent": 0.62,
     "fiftyTwoWeekHigh": 19.42,
     "fiftyTwoWeekLow": 12.83,
-    "lastSyncedAt": "2026-09-29T13:29:32.206884+00:00"
+    "lastSyncedAt": "2026-09-29T14:15:00.702558+00:00"
   }
 ]

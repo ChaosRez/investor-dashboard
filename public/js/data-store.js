@@ -2,12 +2,12 @@
  * ApexETF Grounded Data Store
  * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
  * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
- * Last Synced: 2026-09-29T14:05:18.551583+00:00
+ * Last Synced: 2026-09-29T14:15:00.723770+00:00
  */
 
 window.APEX_DATA_STORE = {
   syncMeta: {
-    lastSyncedAt: "2026-09-29T14:05:18.552257+00:00",
+    lastSyncedAt: "2026-09-29T14:15:00.723784+00:00",
     isLiveDynamic: true,
     sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
   },
@@ -203,7 +203,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Gold Benchmark (Single-Fund 'VWCE and Chill')"
     },
-    "lastSyncedAt": "2026-09-29T13:29:18.648774+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:51.186472+00:00",
     "liveMarketData": {
       "livePrice": 169.88,
       "currency": "EUR",
@@ -413,7 +413,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 98,
       "bogleheadsRating": "Core Developed Foundation (Pair with EIMI 88/12)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:19.328678+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:51.673375+00:00",
     "liveMarketData": {
       "livePrice": 129.08,
       "currency": "EUR",
@@ -614,7 +614,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 98,
       "bogleheadsRating": "Lowest Cost US Engine (Caution: 100% US single-country risk)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:19.912688+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:52.080449+00:00",
     "liveMarketData": {
       "livePrice": 731.74,
       "currency": "EUR",
@@ -815,7 +815,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Vanguard US Flagship Accumulator"
     },
-    "lastSyncedAt": "2026-09-29T13:29:20.567319+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:52.613859+00:00",
     "liveMarketData": {
       "livePrice": 131.22,
       "currency": "EUR",
@@ -1026,7 +1026,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 97,
       "bogleheadsRating": "Best Emerging Market UCITS Engine (Includes Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:21.088078+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:53.073986+00:00",
     "liveMarketData": {
       "livePrice": 48.595,
       "currency": "EUR",
@@ -1236,7 +1236,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "European Home-Bias / Tilt Core"
     },
-    "lastSyncedAt": "2026-09-29T13:29:21.868453+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:53.576599+00:00",
     "liveMarketData": {
       "livePrice": 316.1,
       "currency": "EUR",
@@ -1426,7 +1426,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 97,
       "bogleheadsRating": "Satellite High-Growth Tilt (Warning: Top 3 stocks = 62.4% portfolio concentration!)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:22.527615+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:54.000449+00:00",
     "liveMarketData": {
       "livePrice": 47.29,
       "currency": "EUR",
@@ -1629,7 +1629,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 97,
       "bogleheadsRating": "Core Fixed-Income Anchor (Bogleheads 80/20 or 60/40 component)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:23.328176+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:54.422276+00:00",
     "liveMarketData": {
       "livePrice": 5.723,
       "currency": "USD",
@@ -1837,7 +1837,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 95,
       "bogleheadsRating": "Size Factor Diversifier (Completes World Large/Mid with Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:24.201456+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:55.074980+00:00",
     "liveMarketData": {
       "livePrice": 9.002,
       "currency": "EUR",
@@ -2007,7 +2007,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Distributing Benchmark (Compounding penalty vs Accumulating VUAA/SXR8)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:24.936405+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:55.548004+00:00",
     "liveMarketData": {
       "livePrice": 128.491,
       "currency": "EUR",
@@ -2209,7 +2209,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Quality Factor Engine (High ROE & Sustainable Dividend Growth)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:25.585865+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:55.943982+00:00",
     "liveMarketData": {
       "livePrice": 49.17,
       "currency": "USD",
@@ -2419,7 +2419,7 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Low-Cost Vanguard Competitor (0.15% TER Core Alternative)"
     },
-    "lastSyncedAt": "2026-09-29T13:29:26.163752+00:00",
+    "lastSyncedAt": "2026-09-29T14:14:56.333052+00:00",
     "liveMarketData": {
       "livePrice": 8.361,
       "currency": "EUR",
@@ -2638,7 +2638,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": -3.38,
     "fiftyTwoWeekHigh": 35.52,
     "fiftyTwoWeekLow": 20.61,
-    "lastSyncedAt": "2026-09-29T13:29:26.830316+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:56.923397+00:00"
   },
   {
     "ticker": "RARE",
@@ -2837,7 +2837,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": -4.86,
     "fiftyTwoWeekHigh": 70.6,
     "fiftyTwoWeekLow": 42.09,
-    "lastSyncedAt": "2026-09-29T13:29:27.529118+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:57.444236+00:00"
   },
   {
     "ticker": "IUSQ",
@@ -3049,7 +3049,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": -0.37,
     "fiftyTwoWeekHigh": 109.5,
     "fiftyTwoWeekLow": 88.46,
-    "lastSyncedAt": "2026-09-29T13:29:28.197515+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:57.883950+00:00"
   },
   {
     "ticker": "IMAE",
@@ -3259,7 +3259,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": 0.23,
     "fiftyTwoWeekHigh": 107.56,
     "fiftyTwoWeekLow": 87.61,
-    "lastSyncedAt": "2026-09-29T13:29:28.880639+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:58.377468+00:00"
   },
   {
     "ticker": "XCS6",
@@ -3458,7 +3458,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": -4.25,
     "fiftyTwoWeekHigh": 12.71,
     "fiftyTwoWeekLow": 10.47,
-    "lastSyncedAt": "2026-09-29T13:29:29.530992+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:58.892245+00:00"
   },
   {
     "ticker": "XEON",
@@ -3604,7 +3604,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": 0.07,
     "fiftyTwoWeekHigh": 150.36,
     "fiftyTwoWeekLow": 147.29,
-    "lastSyncedAt": "2026-09-29T13:29:30.213157+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:59.396268+00:00"
   },
   {
     "ticker": "VHYL",
@@ -3814,7 +3814,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": -0.54,
     "fiftyTwoWeekHigh": 82.28,
     "fiftyTwoWeekLow": 66.0,
-    "lastSyncedAt": "2026-09-29T13:29:30.931713+00:00"
+    "lastSyncedAt": "2026-09-29T14:14:59.786916+00:00"
   },
   {
     "ticker": "AII",
@@ -4013,7 +4013,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": 0.39,
     "fiftyTwoWeekHigh": 10.44,
     "fiftyTwoWeekLow": 5.61,
-    "lastSyncedAt": "2026-09-29T13:29:31.515634+00:00"
+    "lastSyncedAt": "2026-09-29T14:15:00.192394+00:00"
   },
   {
     "ticker": "WTAI",
@@ -4210,7 +4210,7 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": 0.62,
     "fiftyTwoWeekHigh": 19.42,
     "fiftyTwoWeekLow": 12.83,
-    "lastSyncedAt": "2026-09-29T13:29:32.206884+00:00"
+    "lastSyncedAt": "2026-09-29T14:15:00.702558+00:00"
   }
 ],
   correlations: {
@@ -4355,410 +4355,6 @@ window.APEX_DATA_STORE = {
   }
 },
   news: [
-  {
-    "id": "ecb-51321312",
-    "title": "\ud83c\uddea\ud83c\uddfa ECB: ECB amends monetary policy implementation guidelines as part of regular review",
-    "summary": "",
-    "date": "Tue, 29 Sep 2026 10:00:00 +0200",
-    "source": "European Central Bank (Official RSS Feed)",
-    "sourceUrl": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260929~050089e922.en.html",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "High Impact (Critical)",
-      "impactBadge": "critical",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "AGGU",
-        "relation": "EUR-hedged bond yields track ECB benchmark deposit rates directly"
-      },
-      {
-        "ticker": "MEUD",
-        "relation": "European equities discount corporate borrowing costs based on ECB rate trajectory"
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "European macroeconomic stability impacts global composite equity valuations"
-      },
-      {
-        "ticker": "XEON",
-        "issuer": "Xtrackers",
-        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
-      },
-      {
-        "ticker": "IMAE",
-        "issuer": "BlackRock / iShares",
-        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
-      }
-    ],
-    "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
-    "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
-  },
-  {
-    "id": "ecb-54946689",
-    "title": "\ud83c\uddea\ud83c\uddfa ECB: Christine Lagarde: Hearing of the Committee on Economic and Monetary Affairs of the European Parliament",
-    "summary": "",
-    "date": "Mon, 28 Sep 2026 15:30:00 +0200",
-    "source": "European Central Bank (Official RSS Feed)",
-    "sourceUrl": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260928~a875675544.en.html",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "High Impact (Critical)",
-      "impactBadge": "critical",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "AGGU",
-        "relation": "EUR-hedged bond yields track ECB benchmark deposit rates directly"
-      },
-      {
-        "ticker": "MEUD",
-        "relation": "European equities discount corporate borrowing costs based on ECB rate trajectory"
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "European macroeconomic stability impacts global composite equity valuations"
-      },
-      {
-        "ticker": "XEON",
-        "issuer": "Xtrackers",
-        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
-      },
-      {
-        "ticker": "IMAE",
-        "issuer": "BlackRock / iShares",
-        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
-      }
-    ],
-    "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
-    "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
-  },
-  {
-    "id": "ecb-69745868",
-    "title": "\ud83c\uddea\ud83c\uddfa ECB: ECB Executive Board member Isabel Schnabel to resign to take senior role at IMF",
-    "summary": "",
-    "date": "Thu, 24 Sep 2026 14:00:00 +0200",
-    "source": "European Central Bank (Official RSS Feed)",
-    "sourceUrl": "https://www.ecb.europa.eu//press/pr/date/2026/html/ecb.pr260924~bea1dd9824.en.html",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Bullish for Bonds & Equities",
-      "biasColor": "var(--accent-emerald)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "AGGU",
-        "relation": "EUR-hedged bond yields track ECB benchmark deposit rates directly"
-      },
-      {
-        "ticker": "MEUD",
-        "relation": "European equities discount corporate borrowing costs based on ECB rate trajectory"
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "European macroeconomic stability impacts global composite equity valuations"
-      },
-      {
-        "ticker": "XEON",
-        "issuer": "Xtrackers",
-        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
-      },
-      {
-        "ticker": "IMAE",
-        "issuer": "BlackRock / iShares",
-        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
-      }
-    ],
-    "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
-    "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
-  },
-  {
-    "id": "ecb-54021967",
-    "title": "\ud83c\uddea\ud83c\uddfa ECB: Philip R. Lane: The outlook for the euro area economy",
-    "summary": "",
-    "date": "Thu, 24 Sep 2026 11:00:00 +0200",
-    "source": "European Central Bank (Official RSS Feed)",
-    "sourceUrl": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260924~e0eceef02c.en.pdf",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "AGGU",
-        "relation": "EUR-hedged bond yields track ECB benchmark deposit rates directly"
-      },
-      {
-        "ticker": "MEUD",
-        "relation": "European equities discount corporate borrowing costs based on ECB rate trajectory"
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "European macroeconomic stability impacts global composite equity valuations"
-      },
-      {
-        "ticker": "XEON",
-        "issuer": "Xtrackers",
-        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
-      },
-      {
-        "ticker": "IMAE",
-        "issuer": "BlackRock / iShares",
-        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
-      }
-    ],
-    "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
-    "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
-  },
-  {
-    "id": "ecb-79181311",
-    "title": "\ud83c\uddea\ud83c\uddfa ECB: Philip R. Lane: The Outlook for the Euro Area Economy",
-    "summary": "",
-    "date": "Wed, 23 Sep 2026 18:30:00 +0200",
-    "source": "European Central Bank (Official RSS Feed)",
-    "sourceUrl": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260923_1~ac21bf46e3.en.pdf",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "AGGU",
-        "relation": "EUR-hedged bond yields track ECB benchmark deposit rates directly"
-      },
-      {
-        "ticker": "MEUD",
-        "relation": "European equities discount corporate borrowing costs based on ECB rate trajectory"
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "European macroeconomic stability impacts global composite equity valuations"
-      },
-      {
-        "ticker": "XEON",
-        "issuer": "Xtrackers",
-        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
-      },
-      {
-        "ticker": "IMAE",
-        "issuer": "BlackRock / iShares",
-        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
-      }
-    ],
-    "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
-    "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
-  },
-  {
-    "id": "ecb-62330040",
-    "title": "\ud83c\uddea\ud83c\uddfa ECB: The digitalisation of money, payments and finance",
-    "summary": "",
-    "date": "Wed, 23 Sep 2026 18:00:00 +0200",
-    "source": "European Central Bank (Official RSS Feed)",
-    "sourceUrl": "https://www.ecb.europa.eu//press/key/date/2026/html/ecb.sp260923~87850778f5.en.pdf",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "AGGU",
-        "relation": "EUR-hedged bond yields track ECB benchmark deposit rates directly"
-      },
-      {
-        "ticker": "MEUD",
-        "relation": "European equities discount corporate borrowing costs based on ECB rate trajectory"
-      },
-      {
-        "ticker": "VWCE",
-        "relation": "European macroeconomic stability impacts global composite equity valuations"
-      },
-      {
-        "ticker": "XEON",
-        "issuer": "Xtrackers",
-        "relation": "\u20acSTR overnight swap yield directly reflects ECB deposit facility decisions"
-      },
-      {
-        "ticker": "IMAE",
-        "issuer": "BlackRock / iShares",
-        "relation": "European corporate borrowing costs and equity discount rates shift with ECB policy"
-      }
-    ],
-    "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings.",
-    "retailBogleheadAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
-  },
-  {
-    "id": "mw-57260209",
-    "title": "\ud83d\udcc8 MarketWatch: Two stock picks from a money manager who expects small-caps to roar in 2027",
-    "summary": "Calamos Investments manager Brandon Nelson\u2019s four-star fund is betting on financial services apps.",
-    "date": "Tue, 29 Sep 2026 12:47:00 GMT",
-    "source": "MarketWatch Live Wire",
-    "sourceUrl": "https://www.marketwatch.com/story/two-stock-picks-from-a-money-manager-who-expects-small-caps-to-roar-in-2027-70de9c4d?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "IUSN",
-        "relation": "MSCI World Small Cap sensitivity to interest rates and domestic debt financing"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
-    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-89911158",
-    "title": "\ud83d\udcc8 MarketWatch: Dolly Parton planned for her estate. The fight with her nephew shows why that matters.",
-    "summary": "It\u2019s important to have guardrails around your legacy.",
-    "date": "Tue, 29 Sep 2026 12:42:00 GMT",
-    "source": "MarketWatch Live Wire",
-    "sourceUrl": "https://www.marketwatch.com/story/dolly-parton-planned-for-her-estate-the-fight-with-her-nephew-shows-why-that-matters-b7e57c26?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "QDVE",
-        "relation": "S&P 500 Tech heavily concentrates top AI/semiconductor cap weights"
-      },
-      {
-        "ticker": "SXR8",
-        "relation": "Core S&P 500 holds ~32% technology sector allocation"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
-    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-57095207",
-    "title": "\ud83d\udcc8 MarketWatch: \u2018We lived within our means\u2019: I earned $30,000 as a pastor and still retired comfortably. Why don\u2019t you tell people that?",
-    "summary": "\u201cAs a country, we have grown dangerously comfortable.\u201d",
-    "date": "Tue, 29 Sep 2026 12:15:00 GMT",
-    "source": "MarketWatch Live Wire",
-    "sourceUrl": "https://www.marketwatch.com/story/we-lived-within-our-means-i-earned-30-000-as-a-pastor-and-still-retired-comfortably-why-dont-you-tell-people-that-6b9f231e?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "VWCE",
-        "relation": "Global multi-cap index reflects systemic macroeconomic and market trends"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
-    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-38006611",
-    "title": "\ud83d\udcc8 MarketWatch: Taking Ozempic and worried about vision loss? This test can help you understand your risk.",
-    "summary": "Some research suggests that GLP-1 drugs may raise the risk of a rare eye disease that causes full or partial vision loss.",
-    "date": "Tue, 29 Sep 2026 12:03:00 GMT",
-    "source": "MarketWatch Live Wire",
-    "sourceUrl": "https://www.marketwatch.com/story/taking-ozempic-a-routine-eye-exam-could-help-you-understand-your-risk-for-vision-loss-3392c1a0?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "QDVE",
-        "relation": "S&P 500 Tech heavily concentrates top AI/semiconductor cap weights"
-      },
-      {
-        "ticker": "SXR8",
-        "relation": "Core S&P 500 holds ~32% technology sector allocation"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
-    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-27563590",
-    "title": "\ud83d\udcc8 MarketWatch: \u2018I\u2019d rather be on a beach in Bali\u2019: My husband resents my $8 million net worth. Should I pay for his retirement?",
-    "summary": "\u201cWe have an ironclad prenup.\u201d",
-    "date": "Tue, 29 Sep 2026 11:15:00 GMT",
-    "source": "MarketWatch Live Wire",
-    "sourceUrl": "https://www.marketwatch.com/story/i-feel-like-hes-holding-me-back-i-have-8-million-my-husband-resents-my-success-should-i-pay-for-more-things-08a4221b?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "VWCE",
-        "relation": "Global multi-cap index reflects systemic macroeconomic and market trends"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
-    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-34408715",
-    "title": "\ud83d\udcc8 MarketWatch: Morgan Stanley\u2019s Mike Wilson says an S&P 500 correction may be exactly what the market needs",
-    "summary": "The chief U.S. equity strategist at the investment bank favors large-capitalization quality companies.",
-    "date": "Tue, 29 Sep 2026 11:03:00 GMT",
-    "source": "MarketWatch Live Wire",
-    "sourceUrl": "https://www.marketwatch.com/story/morgan-stanleys-mike-wilson-says-an-s-p-500-correction-may-be-exactly-what-the-market-needs-a6baf54e?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20133 Months)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "AGGU",
-        "relation": "Global fixed income valuations respond directly to sovereign yield shifts"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification.",
-    "retailBogleheadAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
   {
     "id": "macro-ecb-estr-rates",
     "date": "2026-09-28",
