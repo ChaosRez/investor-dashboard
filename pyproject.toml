@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "apex-etf"
+version = "1.0.0"
+description = "Institutional European ETF Portfolio Intelligence & Real-Time Analytics Dashboard"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Apex ETF Team" }
+]
+keywords = ["etf", "portfolio", "finance", "ucits", "investing", "curvo", "justetf"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Office/Business :: Financial :: Investment",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+]
+
+[project.scripts]
+apex-etf = "apex_etf.cli:main"
+apex-sync = "apex_etf.sync:main"
+apex-server = "apex_etf.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/apex_etf"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/public",
+    "/README.md",
+    "/pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

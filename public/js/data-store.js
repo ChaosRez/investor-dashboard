@@ -2,12 +2,12 @@
  * ApexETF Grounded Data Store
  * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
  * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
- * Last Synced: 2026-09-29T14:15:00.723770+00:00
+ * Last Synced: 2026-09-29T14:25:46.861564+00:00
  */
 
 window.APEX_DATA_STORE = {
   syncMeta: {
-    lastSyncedAt: "2026-09-29T14:15:00.723784+00:00",
+    lastSyncedAt: "2026-09-29T14:25:46.861572+00:00",
     isLiveDynamic: true,
     sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
   },
@@ -4654,6 +4654,7 @@ window.APEX_DATA_STORE = {
     "id": "macro-enterprise-ai-software-monetization",
     "date": "2026-09-10",
     "title": "Enterprise AI Adoption Moves from Experimental Pilot to Scaled Workflow Integration",
+    "summary": "Corporate IT spending surveys indicate that enterprise AI pilots are transitioning into permanent production seat licenses and automated workflows, expanding revenue streams for enterprise software platforms.",
     "source": "Gartner Research / Financial Times Tech Focus",
     "sourceUrl": "https://www.ft.com/technology",
     "isLiveStream": false,

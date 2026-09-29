@@ -171,3 +171,36 @@ When modifying or extending this codebase, follow these rules:
    - When altering warning logic, ensure Bogleheads principles (broad diversification, low turnover, tax efficiency) remain the guiding evaluation standard.
 5. **Always Verify PRIIPs KIDs:**
    - Any new ETF added must include official issuer document URLs (`kidUrl`, `factsheetUrl`, `issuerPage`).
+
+---
+
+## 🐍 8. Modular Python Architecture & Modern Tooling (`uv`)
+
+### Decision 8.1: Standard `src/` Layout & PEP 621 Packaging (`pyproject.toml`)
+* **Context:** The project initially used flat root scripts (`server.py`, `dynamic_sync.py`, `build_*.py`). For long-term maintainability, professional distribution, and clean separation of concerns, a standardized layout is required.
+* **Decision:** Modularize core logic into `src/apex_etf/`:
+  - `config.py`: Centralized filesystem paths, defaults, ISIN market mappings, and watchlist tickers.
+  - `analysis.py`: Quantitative overlap mathematics, single-stock concentration analysis, and Curvo DCA compounding.
+  - `sync.py`: Live ingestion engine (Yahoo Finance quotes, justETF fund size/TER scraper, ECB RSS, MarketWatch).
+  - `macro_news.py`: Grounded macro catalysts, transmission mechanisms, and Boglehead retail actions.
+  - `server.py`: Standard HTTP server handling static asset delivery and REST API routes (`/api/*`).
+  - `cli.py`: Unified command-line dispatcher (`serve`, `sync`, `audit`, `status`).
+* **Packaging:** Define `pyproject.toml` using `hatchling` as build-backend and `uv.lock` for deterministic dependency resolution.
+
+### Decision 8.2: Zero External Runtime Dependencies Mandate
+* **Context:** Requiring heavy external web frameworks (FastAPI, Flask, Pandas, Django) introduces compilation friction, C-extension build failures, pip version conflicts, and startup latency for new users.
+* **Decision:** The core runtime of `apex-etf` relies strictly on Python 3 standard library modules (`http.server`, `urllib.request`, `socketserver`, `json`, `xml.etree.ElementTree`, `math`, `argparse`).
+* **Rationale:** Zero setup overhead. A user who clones the repository can execute `uv run apex-etf` or `python3 server.py` immediately with zero `pip install` steps.
+
+### Decision 8.3: Backward-Compatible Root Shims
+* **Context:** Existing automation, persistent background server daemons, and developer muscle memory rely on `python3 server.py` and `python3 dynamic_sync.py`.
+* **Decision:** Retain root `server.py` and `dynamic_sync.py` as lightweight backward-compatible shims that dynamically add `src/` to `sys.path` and delegate to `apex_etf.server` and `apex_etf.sync`. Legacy build scripts are archived in `scripts/`.
+
+### Decision 8.4: Automated Unit Test Suite (`tests/`)
+* **Context:** Ensuring numerical accuracy of portfolio overlap, tracking difference calculations, and server stability requires continuous verification.
+* **Decision:** Establish an automated test suite under `tests/` covering:
+  - `test_analysis.py`: Overlap math, single-stock concentration warnings, Curvo DCA nominal/real values.
+  - `test_server.py`: HTTP server endpoints (`/api/etfs`, `/api/correlations`, `/api/news`, `/api/market-status`, POST `/api/overlap`, POST `/api/portfolio/backtest`) on ephemeral OS ports.
+  - `test_sync.py`: Ticker mappings, ISIN formatting, macro news grounding, and network resilience.
+  - Run via: `uv run python -m unittest discover tests` or `python3 -m unittest discover tests`.
+
