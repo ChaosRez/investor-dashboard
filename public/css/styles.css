@@ -1079,3 +1079,112 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
+
+/* ==========================================================================
+   Personal Watchlist & Comparison Matrix Styles
+   ========================================================================== */
+.badge-watchlist {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  font-weight: 700;
+  font-size: 0.72rem;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.compare-btn.active {
+  background: var(--accent-blue) !important;
+  color: #ffffff !important;
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.84rem;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+}
+
+.compare-table tr:last-child td {
+  border-bottom: none;
+}
+
+.compare-sticky-col {
+  position: sticky;
+  left: 0;
+  background: var(--bg-card);
+  z-index: 2;
+  font-weight: 700;
+  color: var(--text-muted);
+  width: 220px;
+  min-width: 200px;
+  border-right: 2px solid var(--border-focus) !important;
+}
+
+.compare-etf-col {
+  min-width: 200px;
+  max-width: 280px;
+  background: var(--bg-card);
+  vertical-align: top;
+}
+
+.compare-table tbody tr:hover td {
+  background: rgba(59, 130, 246, 0.04);
+}
+
+.compare-table tbody tr:hover .compare-sticky-col {
+  background: var(--bg-secondary);
+}
+
+.metric-category-header td {
+  background: rgba(59, 130, 246, 0.08) !important;
+  font-weight: 800;
+  color: var(--accent-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.74rem;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border-color);
+}
+
+.compare-preset-btn {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.compare-preset-btn:hover {
+  background: var(--bg-card);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.tab-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border-radius: var(--radius-full);
+  background: var(--accent-blue);
+  color: #ffffff;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+

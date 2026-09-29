@@ -58,6 +58,9 @@
       <button class="nav-tab active" data-tab="screener">
         📊 ETF Screener &amp; Multi-Factor Score
       </button>
+      <button class="nav-tab" data-tab="comparison">
+        ⚖️ ETF Comparison Matrix <span class="tab-badge" id="compare-count-badge">5</span>
+      </button>
       <button class="nav-tab" data-tab="overlap">
         🔗 Correlation &amp; Overlap Auditor
       </button>
@@ -163,6 +166,11 @@
     <section id="tab-screener" class="tab-panel active">
       <div id="screener-filters"></div>
       <div id="screener-table-container"></div>
+    </section>
+
+    <!-- TAB: Side-by-Side ETF Comparison Matrix -->
+    <section id="tab-comparison" class="tab-panel">
+      <div id="comparison-matrix-container"></div>
     </section>
 
     <!-- TAB 2: Correlation & Overlap Auditor -->
@@ -366,6 +374,7 @@
   <script src="js/data-store.js"></script>
   <script src="js/provider-logos.js"></script>
   <script src="js/screener.js"></script>
+  <script src="js/comparison-matrix.js"></script>
   <script src="js/overlap-correlation.js"></script>
   <script src="js/curvo-engine.js"></script>
   <script src="js/pv-engine.js"></script>

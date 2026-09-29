@@ -190,23 +190,23 @@
       "brokerScore": 96,
       "bogleheadsRating": "Gold Benchmark (Single-Fund 'VWCE and Chill')"
     },
-    "lastSyncedAt": "2026-09-29T13:20:57.270264+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:18.648774+00:00",
     "liveMarketData": {
-      "livePrice": 169.82,
+      "livePrice": 169.88,
       "currency": "EUR",
       "previousClose": 170.5,
-      "dayChange": -0.68,
-      "dayChangePercent": -0.4,
+      "dayChange": -0.62,
+      "dayChangePercent": -0.36,
       "fiftyTwoWeekHigh": 170.92,
       "fiftyTwoWeekLow": 138.24,
       "regularMarketDayHigh": 170.1,
       "regularMarketDayLow": 169.36,
-      "regularMarketVolume": 119207,
+      "regularMarketVolume": 119618,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:20:56.866509+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:18.139019+00:00"
     },
-    "currentPriceEUR": 169.82,
-    "dayChangePercent": -0.4,
+    "currentPriceEUR": 169.88,
+    "dayChangePercent": -0.36,
     "fiftyTwoWeekHigh": 170.92,
     "fiftyTwoWeekLow": 138.24
   },
@@ -400,23 +400,23 @@
       "brokerScore": 98,
       "bogleheadsRating": "Core Developed Foundation (Pair with EIMI 88/12)"
     },
-    "lastSyncedAt": "2026-09-29T13:20:57.845811+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:19.328678+00:00",
     "liveMarketData": {
-      "livePrice": 129.04,
+      "livePrice": 129.08,
       "currency": "EUR",
       "previousClose": 129.1,
-      "dayChange": -0.06,
-      "dayChangePercent": -0.05,
+      "dayChange": -0.02,
+      "dayChangePercent": -0.02,
       "fiftyTwoWeekHigh": 129.83,
       "fiftyTwoWeekLow": 106.13,
       "regularMarketDayHigh": 129.27,
       "regularMarketDayLow": 128.71,
-      "regularMarketVolume": 59032,
+      "regularMarketVolume": 60039,
       "exchange": "Euronext Amsterdam",
-      "lastPriceUpdated": "2026-09-29T13:20:57.449889+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:18.787822+00:00"
     },
-    "currentPriceEUR": 129.04,
-    "dayChangePercent": -0.05,
+    "currentPriceEUR": 129.08,
+    "dayChangePercent": -0.02,
     "fiftyTwoWeekHigh": 129.83,
     "fiftyTwoWeekLow": 106.13
   },
@@ -601,25 +601,26 @@
       "brokerScore": 98,
       "bogleheadsRating": "Lowest Cost US Engine (Caution: 100% US single-country risk)"
     },
-    "lastSyncedAt": "2026-09-29T13:20:58.537356+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:19.912688+00:00",
     "liveMarketData": {
-      "livePrice": 731.56,
+      "livePrice": 731.74,
       "currency": "EUR",
       "previousClose": 731.94,
-      "dayChange": -0.38,
-      "dayChangePercent": -0.05,
+      "dayChange": -0.2,
+      "dayChangePercent": -0.03,
       "fiftyTwoWeekHigh": 735.02,
       "fiftyTwoWeekLow": 595.6,
       "regularMarketDayHigh": 732.3,
       "regularMarketDayLow": 729.28,
-      "regularMarketVolume": 11240,
+      "regularMarketVolume": 11288,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:20:58.055822+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:19.501004+00:00"
     },
-    "currentPriceEUR": 731.56,
-    "dayChangePercent": -0.05,
+    "currentPriceEUR": 731.74,
+    "dayChangePercent": -0.03,
     "fiftyTwoWeekHigh": 735.02,
-    "fiftyTwoWeekLow": 595.6
+    "fiftyTwoWeekLow": 595.6,
+    "isUserWatchlist": true
   },
   {
     "ticker": "VUAA",
@@ -801,23 +802,23 @@
       "brokerScore": 96,
       "bogleheadsRating": "Vanguard US Flagship Accumulator"
     },
-    "lastSyncedAt": "2026-09-29T13:20:59.195133+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:20.567319+00:00",
     "liveMarketData": {
-      "livePrice": 131.18,
+      "livePrice": 131.22,
       "currency": "EUR",
       "previousClose": 131.26,
-      "dayChange": -0.08,
-      "dayChangePercent": -0.06,
+      "dayChange": -0.04,
+      "dayChangePercent": -0.03,
       "fiftyTwoWeekHigh": 131.81,
       "fiftyTwoWeekLow": 106.82,
       "regularMarketDayHigh": 131.305,
       "regularMarketDayLow": 130.775,
-      "regularMarketVolume": 9829,
+      "regularMarketVolume": 10253,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:20:58.679571+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:20.049294+00:00"
     },
-    "currentPriceEUR": 131.18,
-    "dayChangePercent": -0.06,
+    "currentPriceEUR": 131.22,
+    "dayChangePercent": -0.03,
     "fiftyTwoWeekHigh": 131.81,
     "fiftyTwoWeekLow": 106.82
   },
@@ -1012,23 +1013,23 @@
       "brokerScore": 97,
       "bogleheadsRating": "Best Emerging Market UCITS Engine (Includes Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T13:20:59.877765+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:21.088078+00:00",
     "liveMarketData": {
-      "livePrice": 48.575,
+      "livePrice": 48.595,
       "currency": "EUR",
       "previousClose": 48.84,
-      "dayChange": -0.265,
-      "dayChangePercent": -0.54,
+      "dayChange": -0.245,
+      "dayChangePercent": -0.5,
       "fiftyTwoWeekHigh": 51.03,
       "fiftyTwoWeekLow": 36.72,
       "regularMarketDayHigh": 48.65,
       "regularMarketDayLow": 48.335,
-      "regularMarketVolume": 32301,
+      "regularMarketVolume": 32552,
       "exchange": "Euronext Amsterdam",
-      "lastPriceUpdated": "2026-09-29T13:20:59.365976+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:20.699111+00:00"
     },
-    "currentPriceEUR": 48.575,
-    "dayChangePercent": -0.54,
+    "currentPriceEUR": 48.595,
+    "dayChangePercent": -0.5,
     "fiftyTwoWeekHigh": 51.03,
     "fiftyTwoWeekLow": 36.72
   },
@@ -1222,23 +1223,23 @@
       "brokerScore": 96,
       "bogleheadsRating": "European Home-Bias / Tilt Core"
     },
-    "lastSyncedAt": "2026-09-29T13:21:00.531458+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:21.868453+00:00",
     "liveMarketData": {
-      "livePrice": 316.0,
+      "livePrice": 316.1,
       "currency": "EUR",
       "previousClose": 315.85,
-      "dayChange": 0.15,
-      "dayChangePercent": 0.05,
+      "dayChange": 0.25,
+      "dayChangePercent": 0.08,
       "fiftyTwoWeekHigh": 326.7,
       "fiftyTwoWeekLow": 265.67,
       "regularMarketDayHigh": 317.2,
       "regularMarketDayLow": 315.8,
-      "regularMarketVolume": 40984,
+      "regularMarketVolume": 41008,
       "exchange": "Euronext Paris",
-      "lastPriceUpdated": "2026-09-29T13:21:00.007303+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:21.228257+00:00"
     },
-    "currentPriceEUR": 316.0,
-    "dayChangePercent": 0.05,
+    "currentPriceEUR": 316.1,
+    "dayChangePercent": 0.08,
     "fiftyTwoWeekHigh": 326.7,
     "fiftyTwoWeekLow": 265.67
   },
@@ -1412,7 +1413,7 @@
       "brokerScore": 97,
       "bogleheadsRating": "Satellite High-Growth Tilt (Warning: Top 3 stocks = 62.4% portfolio concentration!)"
     },
-    "lastSyncedAt": "2026-09-29T13:21:01.113163+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:22.527615+00:00",
     "liveMarketData": {
       "livePrice": 47.29,
       "currency": "EUR",
@@ -1423,9 +1424,9 @@
       "fiftyTwoWeekLow": 31.88,
       "regularMarketDayHigh": 47.35,
       "regularMarketDayLow": 47.06,
-      "regularMarketVolume": 56147,
+      "regularMarketVolume": 56867,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:21:00.682213+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:22.057776+00:00"
     },
     "currentPriceEUR": 47.29,
     "dayChangePercent": 0.83,
@@ -1615,7 +1616,7 @@
       "brokerScore": 97,
       "bogleheadsRating": "Core Fixed-Income Anchor (Bogleheads 80/20 or 60/40 component)"
     },
-    "lastSyncedAt": "2026-09-29T13:21:01.695939+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:23.328176+00:00",
     "liveMarketData": {
       "livePrice": 5.723,
       "currency": "USD",
@@ -1626,9 +1627,9 @@
       "fiftyTwoWeekLow": 5.71,
       "regularMarketDayHigh": 5.728,
       "regularMarketDayLow": 5.71,
-      "regularMarketVolume": 25490,
+      "regularMarketVolume": 25612,
       "exchange": "London Stock Exchange",
-      "lastPriceUpdated": "2026-09-29T13:21:01.271512+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:22.733553+00:00"
     },
     "currentPriceEUR": 5.723,
     "dayChangePercent": -0.71,
@@ -1823,23 +1824,23 @@
       "brokerScore": 95,
       "bogleheadsRating": "Size Factor Diversifier (Completes World Large/Mid with Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T13:21:02.507768+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:24.201456+00:00",
     "liveMarketData": {
-      "livePrice": 8.998,
+      "livePrice": 9.002,
       "currency": "EUR",
       "previousClose": 9.078,
-      "dayChange": -0.08,
-      "dayChangePercent": -0.88,
+      "dayChange": -0.076,
+      "dayChangePercent": -0.84,
       "fiftyTwoWeekHigh": 9.36,
       "fiftyTwoWeekLow": 7.26,
       "regularMarketDayHigh": 9.014,
       "regularMarketDayLow": 8.964,
-      "regularMarketVolume": 116529,
+      "regularMarketVolume": 118318,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:21:01.848999+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:23.532353+00:00"
     },
-    "currentPriceEUR": 8.998,
-    "dayChangePercent": -0.88,
+    "currentPriceEUR": 9.002,
+    "dayChangePercent": -0.84,
     "fiftyTwoWeekHigh": 9.36,
     "fiftyTwoWeekLow": 7.26
   },
@@ -1993,23 +1994,23 @@
       "brokerScore": 96,
       "bogleheadsRating": "Distributing Benchmark (Compounding penalty vs Accumulating VUAA/SXR8)"
     },
-    "lastSyncedAt": "2026-09-29T13:21:03.170257+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:24.936405+00:00",
     "liveMarketData": {
-      "livePrice": 128.45,
+      "livePrice": 128.491,
       "currency": "EUR",
       "previousClose": 128.373,
-      "dayChange": 0.077,
-      "dayChangePercent": 0.06,
+      "dayChange": 0.118,
+      "dayChangePercent": 0.09,
       "fiftyTwoWeekHigh": 129.09,
       "fiftyTwoWeekLow": 105.03,
       "regularMarketDayHigh": 128.6,
       "regularMarketDayLow": 128.042,
-      "regularMarketVolume": 25369,
+      "regularMarketVolume": 25382,
       "exchange": "Euronext Amsterdam",
-      "lastPriceUpdated": "2026-09-29T13:21:02.650865+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:24.428494+00:00"
     },
-    "currentPriceEUR": 128.45,
-    "dayChangePercent": 0.06,
+    "currentPriceEUR": 128.491,
+    "dayChangePercent": 0.09,
     "fiftyTwoWeekHigh": 129.09,
     "fiftyTwoWeekLow": 105.03
   },
@@ -2195,7 +2196,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "Quality Factor Engine (High ROE & Sustainable Dividend Growth)"
     },
-    "lastSyncedAt": "2026-09-29T13:21:03.723610+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:25.585865+00:00",
     "liveMarketData": {
       "livePrice": 49.17,
       "currency": "USD",
@@ -2206,9 +2207,9 @@
       "fiftyTwoWeekLow": 42.78,
       "regularMarketDayHigh": 49.21,
       "regularMarketDayLow": 49.0,
-      "regularMarketVolume": 55,
+      "regularMarketVolume": 13726,
       "exchange": "London Stock Exchange",
-      "lastPriceUpdated": "2026-09-29T13:21:03.320154+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:25.110397+00:00"
     },
     "currentPriceEUR": 49.17,
     "dayChangePercent": -0.65,
@@ -2405,7 +2406,7 @@
       "brokerScore": 96,
       "bogleheadsRating": "Low-Cost Vanguard Competitor (0.15% TER Core Alternative)"
     },
-    "lastSyncedAt": "2026-09-29T13:21:04.276701+00:00",
+    "lastSyncedAt": "2026-09-29T13:29:26.163752+00:00",
     "liveMarketData": {
       "livePrice": 8.361,
       "currency": "EUR",
@@ -2418,11 +2419,1784 @@
       "regularMarketDayLow": 8.339,
       "regularMarketVolume": 51831,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:21:03.891948+00:00"
+      "lastPriceUpdated": "2026-09-29T13:29:25.721115+00:00"
     },
     "currentPriceEUR": 8.361,
     "dayChangePercent": -0.29,
     "fiftyTwoWeekHigh": 8.41,
     "fiftyTwoWeekLow": 6.8
+  },
+  {
+    "ticker": "BATT",
+    "secondaryTickers": [
+      "BATE",
+      "LGEN"
+    ],
+    "isin": "IE00BF0M2Z96",
+    "wkn": "A2H5GK",
+    "name": "L&G Battery Value-Chain UCITS ETF",
+    "issuer": "Legal & General",
+    "benchmarkIndex": "Solactive Battery Value-Chain Index (Net Return)",
+    "assetClass": "Thematic Equities (Clean Energy & Battery Storage)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.49,
+    "trackingDifference5Y": 0.12,
+    "trackingDifference1Y": 0.08,
+    "aumMillionsEUR": 660.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Full replication)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No lending",
+    "sriRisk": 5,
+    "holdingCount": 35,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "Panasonic Holdings Corp.",
+        "symbol": "6752.T",
+        "weight": 3.6
+      },
+      {
+        "name": "Siemens AG",
+        "symbol": "SIE.DE",
+        "weight": 3.12
+      },
+      {
+        "name": "Hitachi Ltd.",
+        "symbol": "6501.T",
+        "weight": 3.1
+      },
+      {
+        "name": "Bayerische Motoren Werke (BMW)",
+        "symbol": "BMW.DE",
+        "weight": 2.95
+      },
+      {
+        "name": "Tesla Inc.",
+        "symbol": "TSLA",
+        "weight": 2.8
+      },
+      {
+        "name": "Albemarle Corp.",
+        "symbol": "ALB",
+        "weight": 2.75
+      },
+      {
+        "name": "Samsung SDI Co.",
+        "symbol": "006400.KS",
+        "weight": 2.7
+      },
+      {
+        "name": "LG Energy Solution",
+        "symbol": "373220.KS",
+        "weight": 2.6
+      },
+      {
+        "name": "BYD Co. Ltd.",
+        "symbol": "1211.HK",
+        "weight": 2.5
+      },
+      {
+        "name": "Pilbara Minerals Ltd.",
+        "symbol": "PLS.AX",
+        "weight": 2.4
+      }
+    ],
+    "countryBreakdown": {
+      "Japan": 24.5,
+      "United States": 21.0,
+      "South Korea": 18.5,
+      "Germany": 14.0,
+      "Australia": 9.5,
+      "China": 8.0,
+      "Other Countries": 4.5
+    },
+    "sectorBreakdown": {
+      "Information Technology & Batteries": 44.5,
+      "Materials & Lithium Miners": 28.0,
+      "Automotive / EV Manufacturing": 18.5,
+      "Industrials & Electrical Equipment": 9.0
+    },
+    "historicalStatsCurvo": {
+      "period": "2018 - 2026 (Battery Value-Chain Track)",
+      "cagr": 11.2,
+      "sharpe": 0.52,
+      "stdev": 24.5,
+      "maxDrawdown": -45.2,
+      "recoveryPeriod": "2 years 6 months",
+      "bestYear": 64.5,
+      "worstYear": -28.4,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/lg-battery-value-chain-ucits-etf/IE00BF0M2Z96"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 0.88,
+      "calmar": 0.25,
+      "var95": -11.4,
+      "marketBeta": 1.25,
+      "annualizedTurnover": 18.0,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Sector Equity Alternative Energy",
+      "styleBox": "Mid Growth",
+      "sustainabilityRating": 4,
+      "peRatio": 18.5,
+      "pbRatio": 2.1,
+      "yieldEquivalent": 1.45,
+      "feeLevel": "Average"
+    },
+    "trackinsight": {
+      "esgScore": "AA",
+      "trackingErrorPercent": 0.12,
+      "liquidityRating": "Tier 2 - Specialized Sector",
+      "avgSpreadPercent": 0.15
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class avoids annual taxable events",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": true,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://www.lgim.com/documentlibrary/capabilities/etfs/priips-kid-en.pdf",
+      "factsheetUrl": "https://www.lgim.com/uk/en/capabilities/etfs/battery-value-chain-ucits-etf.html",
+      "annualReportUrl": "https://www.lgim.com",
+      "issuerPage": "https://www.lgim.com/uk/en/capabilities/etfs/battery-value-chain-ucits-etf.html"
+    },
+    "retailScores": {
+      "composite": 88,
+      "indexCoverage": 82,
+      "costScore": 84,
+      "trackingScore": 89,
+      "fundSizeScore": 86,
+      "taxScore": 98,
+      "brokerScore": 95,
+      "bogleheadsRating": "Thematic Satellite Tilt (Battery Transition & Storage)"
+    },
+    "liveMarketData": {
+      "livePrice": 25.85,
+      "currency": "EUR",
+      "previousClose": 26.755,
+      "dayChange": -0.905,
+      "dayChangePercent": -3.38,
+      "fiftyTwoWeekHigh": 35.52,
+      "fiftyTwoWeekLow": 20.61,
+      "regularMarketDayHigh": 25.92,
+      "regularMarketDayLow": 25.685,
+      "regularMarketVolume": 4565,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:29:26.347088+00:00"
+    },
+    "currentPriceEUR": 25.85,
+    "dayChangePercent": -3.38,
+    "fiftyTwoWeekHigh": 35.52,
+    "fiftyTwoWeekLow": 20.61,
+    "lastSyncedAt": "2026-09-29T13:29:26.830316+00:00"
+  },
+  {
+    "ticker": "RARE",
+    "secondaryTickers": [
+      "WRAE"
+    ],
+    "isin": "IE000KHX9DX6",
+    "wkn": "A3D66Z",
+    "name": "WisdomTree Strategic Metals and Rare Earths Miners UCITS ETF USD Acc",
+    "issuer": "WisdomTree",
+    "benchmarkIndex": "WisdomTree Strategic Metals and Rare Earths Miners Index",
+    "assetClass": "Thematic Equities (Critical Raw Materials & Rare Earths)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.5,
+    "trackingDifference5Y": 0.15,
+    "trackingDifference1Y": 0.1,
+    "aumMillionsEUR": 762.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Full replication)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No lending",
+    "sriRisk": 5,
+    "holdingCount": 42,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "Lynas Rare Earths Ltd.",
+        "symbol": "LYC.AX",
+        "weight": 3.54
+      },
+      {
+        "name": "Anglo American Plc",
+        "symbol": "AAL.L",
+        "weight": 3.47
+      },
+      {
+        "name": "PT Merdeka Copper Gold Tbk",
+        "symbol": "MDKA.JK",
+        "weight": 3.24
+      },
+      {
+        "name": "Freeport-McMoRan Inc.",
+        "symbol": "FCX",
+        "weight": 3.1
+      },
+      {
+        "name": "MP Materials Corp.",
+        "symbol": "MP",
+        "weight": 3.05
+      },
+      {
+        "name": "Iluka Resources Ltd.",
+        "symbol": "ILU.AX",
+        "weight": 2.9
+      },
+      {
+        "name": "Pilbara Minerals",
+        "symbol": "PLS.AX",
+        "weight": 2.8
+      },
+      {
+        "name": "Albemarle Corp.",
+        "symbol": "ALB",
+        "weight": 2.7
+      },
+      {
+        "name": "Sociedad Quimica y Minera (SQM)",
+        "symbol": "SQM",
+        "weight": 2.6
+      },
+      {
+        "name": "Tianqi Lithium Corp.",
+        "symbol": "002466.SZ",
+        "weight": 2.5
+      }
+    ],
+    "countryBreakdown": {
+      "Australia": 31.0,
+      "United States": 19.5,
+      "Canada": 14.0,
+      "China": 12.0,
+      "Indonesia": 8.5,
+      "South Africa": 7.0,
+      "Other Countries": 8.0
+    },
+    "sectorBreakdown": {
+      "Materials (Rare Earth Mining)": 72.0,
+      "Specialty Chemicals & Refining": 19.0,
+      "Industrial Mining Services": 9.0
+    },
+    "historicalStatsCurvo": {
+      "period": "2021 - 2026 (Rare Earths Track)",
+      "cagr": 8.4,
+      "sharpe": 0.42,
+      "stdev": 26.8,
+      "maxDrawdown": -48.2,
+      "recoveryPeriod": "Ongoing",
+      "bestYear": 42.1,
+      "worstYear": -31.5,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/wisdomtree-strategic-metals-and-rare-earths-miners-ucits-etf-usd-unhedged-acc/IE000KHX9DX6"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 0.72,
+      "calmar": 0.18,
+      "var95": -12.8,
+      "marketBeta": 1.18,
+      "annualizedTurnover": 22.0,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Sector Equity Natural Resources",
+      "styleBox": "Mid Value",
+      "sustainabilityRating": 3,
+      "peRatio": 15.2,
+      "pbRatio": 1.75,
+      "yieldEquivalent": 1.95,
+      "feeLevel": "Average"
+    },
+    "trackinsight": {
+      "esgScore": "BBB",
+      "trackingErrorPercent": 0.15,
+      "liquidityRating": "Tier 2 - Materials Niche",
+      "avgSpreadPercent": 0.18
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class protects against dividend leakage",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": false,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://www.wisdomtree.eu/en-gb/-/media/eu-media-files/key-information-documents/en/ucits/wisdomtree-strategic-metals-and-rare-earths-miners-ucits-etf---usd-acc.pdf",
+      "factsheetUrl": "https://www.wisdomtree.eu/en-gb/etfs/thematic/rare-earths",
+      "annualReportUrl": "https://www.wisdomtree.eu",
+      "issuerPage": "https://www.wisdomtree.eu/en-gb/etfs/thematic/rare-earths"
+    },
+    "retailScores": {
+      "composite": 85,
+      "indexCoverage": 80,
+      "costScore": 82,
+      "trackingScore": 88,
+      "fundSizeScore": 87,
+      "taxScore": 98,
+      "brokerScore": 94,
+      "bogleheadsRating": "Thematic Resource Hedge (High Volatility Geopolitical Play)"
+    },
+    "liveMarketData": {
+      "livePrice": 52.06,
+      "currency": "USD",
+      "previousClose": 54.72,
+      "dayChange": -2.66,
+      "dayChangePercent": -4.86,
+      "fiftyTwoWeekHigh": 70.6,
+      "fiftyTwoWeekLow": 42.09,
+      "regularMarketDayHigh": 52.38,
+      "regularMarketDayLow": 51.78,
+      "regularMarketVolume": 1085,
+      "exchange": "London Stock Exchange",
+      "lastPriceUpdated": "2026-09-29T13:29:27.060816+00:00"
+    },
+    "currentPriceEUR": 52.06,
+    "dayChangePercent": -4.86,
+    "fiftyTwoWeekHigh": 70.6,
+    "fiftyTwoWeekLow": 42.09,
+    "lastSyncedAt": "2026-09-29T13:29:27.529118+00:00"
+  },
+  {
+    "ticker": "IUSQ",
+    "secondaryTickers": [
+      "ISAC",
+      "SSAC"
+    ],
+    "isin": "IE00B6R52259",
+    "wkn": "A111X9",
+    "name": "iShares MSCI ACWI UCITS ETF USD (Acc)",
+    "issuer": "iShares",
+    "benchmarkIndex": "MSCI All Country World Index (ACWI) Net USD",
+    "assetClass": "Global Equities (Developed + Emerging Markets)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.2,
+    "trackingDifference5Y": -0.04,
+    "trackingDifference1Y": -0.02,
+    "aumMillionsEUR": 32474.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Optimised sampling)",
+    "securitiesLending": true,
+    "securitiesLendingRevenueShare": "62.5% net revenue to fund",
+    "sriRisk": 4,
+    "holdingCount": 2350,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "NVIDIA Corp.",
+        "symbol": "NVDA",
+        "weight": 4.88
+      },
+      {
+        "name": "Apple Inc.",
+        "symbol": "AAPL",
+        "weight": 4.46
+      },
+      {
+        "name": "Microsoft Corp.",
+        "symbol": "MSFT",
+        "weight": 3.42
+      },
+      {
+        "name": "Amazon.com Inc.",
+        "symbol": "AMZN",
+        "weight": 2.25
+      },
+      {
+        "name": "Meta Platforms Inc.",
+        "symbol": "META",
+        "weight": 1.65
+      },
+      {
+        "name": "Alphabet Inc. (Class A)",
+        "symbol": "GOOGL",
+        "weight": 1.38
+      },
+      {
+        "name": "Alphabet Inc. (Class C)",
+        "symbol": "GOOG",
+        "weight": 1.18
+      },
+      {
+        "name": "Taiwan Semiconductor (TSMC)",
+        "symbol": "TSM",
+        "weight": 1.05
+      },
+      {
+        "name": "Eli Lilly & Co.",
+        "symbol": "LLY",
+        "weight": 0.95
+      },
+      {
+        "name": "Broadcom Inc.",
+        "symbol": "AVGO",
+        "weight": 0.92
+      }
+    ],
+    "countryBreakdown": {
+      "United States": 64.2,
+      "Japan": 5.4,
+      "United Kingdom": 3.4,
+      "France": 2.6,
+      "Canada": 2.5,
+      "China": 2.4,
+      "Switzerland": 2.2,
+      "Taiwan": 2.0,
+      "Germany": 1.9,
+      "India": 1.9,
+      "Other Countries": 11.5
+    },
+    "sectorBreakdown": {
+      "Information Technology": 26.2,
+      "Financials": 15.5,
+      "Healthcare": 11.2,
+      "Consumer Discretionary": 10.5,
+      "Industrials": 10.2,
+      "Communication Services": 7.4,
+      "Consumer Staples": 5.9,
+      "Energy": 4.2,
+      "Materials": 3.8,
+      "Utilities": 2.6,
+      "Real Estate": 2.5
+    },
+    "historicalStatsCurvo": {
+      "period": "2011 - 2026 (MSCI ACWI Series)",
+      "cagr": 10.15,
+      "sharpe": 0.72,
+      "stdev": 14.85,
+      "maxDrawdown": -33.6,
+      "recoveryPeriod": "1 year 8 months",
+      "bestYear": 31.8,
+      "worstYear": -18.2,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/ishares-msci-acwi-ucits-etf-usd-acc/IE00B6R52259"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 1.12,
+      "calmar": 0.3,
+      "var95": -6.8,
+      "marketBeta": 1.0,
+      "annualizedTurnover": 3.5,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Global Large-Cap Blend Equity",
+      "styleBox": "Large Blend",
+      "sustainabilityRating": 4,
+      "peRatio": 20.8,
+      "pbRatio": 3.12,
+      "yieldEquivalent": 1.78,
+      "feeLevel": "Low"
+    },
+    "trackinsight": {
+      "esgScore": "AA",
+      "trackingErrorPercent": 0.03,
+      "liquidityRating": "Tier 1 - Institutional Mega Core",
+      "avgSpreadPercent": 0.03
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class maximizes compounding",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0 (Prime ETF)",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": true,
+        "fee": "\u20ac1.00 Handling (Core Selection)",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://www.ishares.com/uk/individual/en/literature/kiid/kiid-ishares-msci-acwi-ucits-etf-usd-acc-ie00b6r52259-en.pdf",
+      "factsheetUrl": "https://www.ishares.com/uk/individual/en/literature/fact-sheet/isac-ishares-msci-acwi-ucits-etf-fund-fact-sheet-en-gb.pdf",
+      "annualReportUrl": "https://www.ishares.com",
+      "issuerPage": "https://www.ishares.com/uk/individual/en/products/251850/ishares-msci-acwi-ucits-etf"
+    },
+    "retailScores": {
+      "composite": 96,
+      "indexCoverage": 98,
+      "costScore": 95,
+      "trackingScore": 98,
+      "fundSizeScore": 99,
+      "taxScore": 98,
+      "brokerScore": 98,
+      "bogleheadsRating": "Prime Global One-Stop Core (MSCI Alternative to VWCE)"
+    },
+    "liveMarketData": {
+      "livePrice": 108.78,
+      "currency": "EUR",
+      "previousClose": 109.18,
+      "dayChange": -0.4,
+      "dayChangePercent": -0.37,
+      "fiftyTwoWeekHigh": 109.5,
+      "fiftyTwoWeekLow": 88.46,
+      "regularMarketDayHigh": 108.96,
+      "regularMarketDayLow": 108.48,
+      "regularMarketVolume": 46741,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:29:27.671814+00:00"
+    },
+    "currentPriceEUR": 108.78,
+    "dayChangePercent": -0.37,
+    "fiftyTwoWeekHigh": 109.5,
+    "fiftyTwoWeekLow": 88.46,
+    "lastSyncedAt": "2026-09-29T13:29:28.197515+00:00"
+  },
+  {
+    "ticker": "IMAE",
+    "secondaryTickers": [
+      "SMEA",
+      "CEU2"
+    ],
+    "isin": "IE00B4K48X80",
+    "wkn": "A0RPWH",
+    "name": "iShares Core MSCI Europe UCITS ETF EUR (Acc)",
+    "issuer": "iShares",
+    "benchmarkIndex": "MSCI Europe Index (Net Return EUR)",
+    "assetClass": "European Equities (15 Developed European Countries)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.12,
+    "trackingDifference5Y": -0.06,
+    "trackingDifference1Y": -0.03,
+    "aumMillionsEUR": 15830.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Full replication)",
+    "securitiesLending": true,
+    "securitiesLendingRevenueShare": "62.5% net revenue to fund",
+    "sriRisk": 4,
+    "holdingCount": 420,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "ASML Holding NV",
+        "symbol": "ASML.AS",
+        "weight": 4.55
+      },
+      {
+        "name": "Novo Nordisk A/S (Class B)",
+        "symbol": "NOVO-B.CO",
+        "weight": 3.8
+      },
+      {
+        "name": "Nestl\u00e9 S.A.",
+        "symbol": "NESN.SW",
+        "weight": 2.8
+      },
+      {
+        "name": "HSBC Holdings Plc",
+        "symbol": "HSBA.L",
+        "weight": 2.47
+      },
+      {
+        "name": "AstraZeneca PLC",
+        "symbol": "AZN.L",
+        "weight": 2.2
+      },
+      {
+        "name": "Roche Holding AG",
+        "symbol": "ROG.SW",
+        "weight": 2.13
+      },
+      {
+        "name": "SAP SE",
+        "symbol": "SAP.DE",
+        "weight": 2.1
+      },
+      {
+        "name": "Novartis AG",
+        "symbol": "NOVN.SW",
+        "weight": 2.0
+      },
+      {
+        "name": "Shell PLC",
+        "symbol": "SHEL.L",
+        "weight": 1.8
+      },
+      {
+        "name": "LVMH Mo\u00ebt Hennessy",
+        "symbol": "MC.PA",
+        "weight": 1.7
+      }
+    ],
+    "countryBreakdown": {
+      "United Kingdom": 21.8,
+      "France": 17.5,
+      "Switzerland": 15.0,
+      "Germany": 13.2,
+      "Netherlands": 9.8,
+      "Denmark": 6.2,
+      "Sweden": 4.8,
+      "Spain": 4.0,
+      "Italy": 3.9,
+      "Other Countries": 3.8
+    },
+    "sectorBreakdown": {
+      "Financials": 19.5,
+      "Industrials": 16.8,
+      "Healthcare": 15.2,
+      "Consumer Discretionary": 10.8,
+      "Consumer Staples": 9.8,
+      "Information Technology": 9.2,
+      "Materials": 6.8,
+      "Energy": 5.4,
+      "Utilities": 3.8,
+      "Communication Services": 2.7
+    },
+    "historicalStatsCurvo": {
+      "period": "2009 - 2026 (MSCI Europe Track)",
+      "cagr": 8.65,
+      "sharpe": 0.6,
+      "stdev": 14.5,
+      "maxDrawdown": -35.2,
+      "recoveryPeriod": "2 years 1 month",
+      "bestYear": 26.5,
+      "worstYear": -15.1,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/ishares-core-msci-europe-ucits-etf-eur-acc/IE00B4K48X80"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 0.94,
+      "calmar": 0.24,
+      "var95": -7.1,
+      "marketBeta": 0.88,
+      "annualizedTurnover": 4.2,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Europe Large-Cap Blend Equity",
+      "styleBox": "Large Blend",
+      "sustainabilityRating": 4,
+      "peRatio": 14.8,
+      "pbRatio": 2.05,
+      "yieldEquivalent": 3.1,
+      "feeLevel": "Low"
+    },
+    "trackinsight": {
+      "esgScore": "AAA",
+      "trackingErrorPercent": 0.02,
+      "liquidityRating": "Tier 1 - European Mega Core",
+      "avgSpreadPercent": 0.03
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "Pure European holdings, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class compounds European dividends tax-free",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": true,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://www.ishares.com/uk/individual/en/literature/kiid/kiid-ishares-core-msci-europe-ucits-etf-eur-acc-ie00b4k48x80-en.pdf",
+      "factsheetUrl": "https://www.ishares.com/uk/individual/en/literature/fact-sheet/smea-ishares-core-msci-europe-ucits-etf-fund-fact-sheet-en-gb.pdf",
+      "annualReportUrl": "https://www.ishares.com",
+      "issuerPage": "https://www.ishares.com/uk/individual/en/products/251861/ishares-msci-europe-ucits-etf"
+    },
+    "retailScores": {
+      "composite": 94,
+      "indexCoverage": 95,
+      "costScore": 96,
+      "trackingScore": 98,
+      "fundSizeScore": 97,
+      "taxScore": 98,
+      "brokerScore": 98,
+      "bogleheadsRating": "Low-Cost European Regional Pillar (0.12% TER)"
+    },
+    "liveMarketData": {
+      "livePrice": 104.24,
+      "currency": "EUR",
+      "previousClose": 104.0,
+      "dayChange": 0.24,
+      "dayChangePercent": 0.23,
+      "fiftyTwoWeekHigh": 107.56,
+      "fiftyTwoWeekLow": 87.61,
+      "regularMarketDayHigh": 104.545,
+      "regularMarketDayLow": 104.04,
+      "regularMarketVolume": 100861,
+      "exchange": "Euronext Amsterdam",
+      "lastPriceUpdated": "2026-09-29T13:29:28.321424+00:00"
+    },
+    "currentPriceEUR": 104.24,
+    "dayChangePercent": 0.23,
+    "fiftyTwoWeekHigh": 107.56,
+    "fiftyTwoWeekLow": 87.61,
+    "lastSyncedAt": "2026-09-29T13:29:28.880639+00:00"
+  },
+  {
+    "ticker": "XCS6",
+    "secondaryTickers": [
+      "RQFI",
+      "XCHA"
+    ],
+    "isin": "LU0779800910",
+    "wkn": "DBX0M2",
+    "name": "Xtrackers CSI 300 Swap UCITS ETF 1C",
+    "issuer": "Xtrackers",
+    "benchmarkIndex": "CSI 300 Index (China A-Shares)",
+    "assetClass": "Emerging Market Equities (Mainland China A-Shares)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.5,
+    "trackingDifference5Y": -0.15,
+    "trackingDifference1Y": -0.08,
+    "aumMillionsEUR": 1758.0,
+    "domicile": "Luxembourg",
+    "replication": "Synthetic (Unfunded swap)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No lending",
+    "sriRisk": 5,
+    "holdingCount": 300,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "Contemporary Amperex Technology (CATL)",
+        "symbol": "300750.SZ",
+        "weight": 4.01
+      },
+      {
+        "name": "Zhongji Innolight Co.",
+        "symbol": "300308.SZ",
+        "weight": 3.86
+      },
+      {
+        "name": "Kweichow Moutai Co. Ltd.",
+        "symbol": "600519.SS",
+        "weight": 3.24
+      },
+      {
+        "name": "Ping An Insurance (Group)",
+        "symbol": "601318.SS",
+        "weight": 2.95
+      },
+      {
+        "name": "China Merchants Bank",
+        "symbol": "600036.SS",
+        "weight": 2.7
+      },
+      {
+        "name": "Midea Group Co. Ltd.",
+        "symbol": "000333.SZ",
+        "weight": 2.5
+      },
+      {
+        "name": "BYD Co. Ltd. (A-Share)",
+        "symbol": "002594.SZ",
+        "weight": 2.4
+      },
+      {
+        "name": "China Yangtze Power Co.",
+        "symbol": "600900.SS",
+        "weight": 2.3
+      },
+      {
+        "name": "Wuliangye Yibin Co. Ltd.",
+        "symbol": "000858.SZ",
+        "weight": 2.1
+      },
+      {
+        "name": "Zijin Mining Group Co.",
+        "symbol": "601899.SS",
+        "weight": 1.9
+      }
+    ],
+    "countryBreakdown": {
+      "China (Mainland A-Shares)": 100.0
+    },
+    "sectorBreakdown": {
+      "Financials": 22.5,
+      "Information Technology": 18.2,
+      "Consumer Staples": 14.8,
+      "Industrials": 14.2,
+      "Materials": 10.5,
+      "Consumer Discretionary": 8.5,
+      "Healthcare": 7.0,
+      "Utilities": 4.3
+    },
+    "historicalStatsCurvo": {
+      "period": "2012 - 2026 (CSI 300 Net Track)",
+      "cagr": 6.8,
+      "sharpe": 0.38,
+      "stdev": 22.4,
+      "maxDrawdown": -49.8,
+      "recoveryPeriod": "3 years 9 months",
+      "bestYear": 51.2,
+      "worstYear": -25.8,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/xtrackers-csi300-swap-ucits-etf-1c/LU0779800910"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 0.62,
+      "calmar": 0.14,
+      "var95": -11.8,
+      "marketBeta": 0.85,
+      "annualizedTurnover": 12.0,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "China Equity - A Shares",
+      "styleBox": "Large Blend",
+      "sustainabilityRating": 2,
+      "peRatio": 13.2,
+      "pbRatio": 1.45,
+      "yieldEquivalent": 2.65,
+      "feeLevel": "Average"
+    },
+    "trackinsight": {
+      "esgScore": "BB",
+      "trackingErrorPercent": 0.08,
+      "liquidityRating": "Tier 1 - China Benchmark",
+      "avgSpreadPercent": 0.08
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Standard (Luxembourg)",
+      "usTreatyAdvantage": "Non-US assets, synthetic swap eliminates Chinese domestic withholding tax friction",
+      "localDividendTax": "0% Lux WHT",
+      "reinvestmentEfficiency": "Accumulating share class reinvests net dividends",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0 (Prime ETF)",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": false,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://etf.dws.com/en-gb/LU0779800910-csi300-swap-ucits-etf-1c/",
+      "factsheetUrl": "https://etf.dws.com/en-gb/LU0779800910-csi300-swap-ucits-etf-1c/",
+      "annualReportUrl": "https://etf.dws.com",
+      "issuerPage": "https://etf.dws.com/en-gb/LU0779800910-csi300-swap-ucits-etf-1c/"
+    },
+    "retailScores": {
+      "composite": 84,
+      "indexCoverage": 88,
+      "costScore": 81,
+      "trackingScore": 94,
+      "fundSizeScore": 92,
+      "taxScore": 90,
+      "brokerScore": 95,
+      "bogleheadsRating": "Single-Country Emerging Satellite (Synthetic Chinese A-Shares)"
+    },
+    "liveMarketData": {
+      "livePrice": 11.08,
+      "currency": "EUR",
+      "previousClose": 11.572,
+      "dayChange": -0.492,
+      "dayChangePercent": -4.25,
+      "fiftyTwoWeekHigh": 12.71,
+      "fiftyTwoWeekLow": 10.47,
+      "regularMarketDayHigh": 11.138,
+      "regularMarketDayLow": 11.06,
+      "regularMarketVolume": 1771,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:29:29.026300+00:00"
+    },
+    "currentPriceEUR": 11.08,
+    "dayChangePercent": -4.25,
+    "fiftyTwoWeekHigh": 12.71,
+    "fiftyTwoWeekLow": 10.47,
+    "lastSyncedAt": "2026-09-29T13:29:29.530992+00:00"
+  },
+  {
+    "ticker": "XEON",
+    "secondaryTickers": [
+      "DBX0AN"
+    ],
+    "isin": "LU0290358497",
+    "wkn": "DBX0AN",
+    "name": "Xtrackers II EUR Overnight Rate Swap UCITS ETF 1C",
+    "issuer": "Xtrackers",
+    "benchmarkIndex": "Deutsche Bundesbank Euro Short-Term Rate (\u20acSTR)",
+    "assetClass": "Money Market / Euro Overnight Cash Yield",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.1,
+    "trackingDifference5Y": -0.02,
+    "trackingDifference1Y": -0.01,
+    "aumMillionsEUR": 22939.0,
+    "domicile": "Luxembourg",
+    "replication": "Synthetic (Unfunded swap backed by European sovereign collateral)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No lending",
+    "sriRisk": 1,
+    "holdingCount": 1,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "\u20acSTR Overnight Swap Collateral (European Sovereign Debt Basket)",
+        "symbol": "ESTR.CASH",
+        "weight": 100.0
+      }
+    ],
+    "countryBreakdown": {
+      "Eurozone Sovereign Cash / Collateral": 100.0
+    },
+    "sectorBreakdown": {
+      "Cash & Central Bank Overnight Deposits": 100.0
+    },
+    "historicalStatsCurvo": {
+      "period": "2007 - 2026 (Euro Overnight Track)",
+      "cagr": 2.15,
+      "sharpe": 1.45,
+      "stdev": 0.85,
+      "maxDrawdown": -0.6,
+      "recoveryPeriod": "3 months",
+      "bestYear": 3.85,
+      "worstYear": -0.55,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/xtrackers-ii-eur-overnight-rate-swap-ucits-etf-1c/LU0290358497"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 3.85,
+      "calmar": 3.58,
+      "var95": -0.05,
+      "marketBeta": 0.01,
+      "annualizedTurnover": 0.0,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "EUR Money Market",
+      "styleBox": "Cash / Risk-Free",
+      "sustainabilityRating": 5,
+      "peRatio": 0.0,
+      "pbRatio": 0.0,
+      "yieldEquivalent": 3.65,
+      "feeLevel": "Lowest"
+    },
+    "trackinsight": {
+      "esgScore": "AAA",
+      "trackingErrorPercent": 0.01,
+      "liquidityRating": "Tier 1 - Cash Equivalent Benchmark",
+      "avgSpreadPercent": 0.01
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Standard (Luxembourg)",
+      "usTreatyAdvantage": "Zero US assets, zero US WHT, 0% Lux domestic WHT",
+      "localDividendTax": "0% Lux WHT",
+      "reinvestmentEfficiency": "Accumulating share class auto-compounds daily ECB \u20acSTR interest",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0 (Prime ETF)",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": true,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://etf.dws.com/en-gb/LU0290358497-eur-overnight-rate-swap-ucits-etf-1c/",
+      "factsheetUrl": "https://etf.dws.com/en-gb/LU0290358497-eur-overnight-rate-swap-ucits-etf-1c/",
+      "annualReportUrl": "https://etf.dws.com",
+      "issuerPage": "https://etf.dws.com/en-gb/LU0290358497-eur-overnight-rate-swap-ucits-etf-1c/"
+    },
+    "retailScores": {
+      "composite": 98,
+      "indexCoverage": 100,
+      "costScore": 99,
+      "trackingScore": 100,
+      "fundSizeScore": 100,
+      "taxScore": 98,
+      "brokerScore": 99,
+      "bogleheadsRating": "Ultimate Retail Cash Anchor (Earns ECB \u20acSTR with Zero Bank Default Risk)"
+    },
+    "liveMarketData": {
+      "livePrice": 150.355,
+      "currency": "EUR",
+      "previousClose": 150.252,
+      "dayChange": 0.103,
+      "dayChangePercent": 0.07,
+      "fiftyTwoWeekHigh": 150.36,
+      "fiftyTwoWeekLow": 147.29,
+      "regularMarketDayHigh": 150.358,
+      "regularMarketDayLow": 150.33,
+      "regularMarketVolume": 131927,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:29:29.694170+00:00"
+    },
+    "currentPriceEUR": 150.355,
+    "dayChangePercent": 0.07,
+    "fiftyTwoWeekHigh": 150.36,
+    "fiftyTwoWeekLow": 147.29,
+    "lastSyncedAt": "2026-09-29T13:29:30.213157+00:00"
+  },
+  {
+    "ticker": "VHYL",
+    "secondaryTickers": [
+      "VGWD",
+      "VHYD"
+    ],
+    "isin": "IE00B8GKDB10",
+    "wkn": "A1T8FV",
+    "name": "Vanguard FTSE All-World High Dividend Yield UCITS ETF Distributing",
+    "issuer": "Vanguard",
+    "benchmarkIndex": "FTSE All-World High Dividend Yield Index (Net Tax)",
+    "assetClass": "Global Equities (High Dividend Factor)",
+    "distributionPolicy": "Distributing",
+    "isAccumulating": false,
+    "ter": 0.29,
+    "trackingDifference5Y": 0.05,
+    "trackingDifference1Y": 0.02,
+    "aumMillionsEUR": 9930.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Optimised sampling)",
+    "securitiesLending": true,
+    "securitiesLendingRevenueShare": "100% net revenue to fund",
+    "sriRisk": 4,
+    "holdingCount": 1820,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "JPMorgan Chase & Co.",
+        "symbol": "JPM",
+        "weight": 2.13
+      },
+      {
+        "name": "ExxonMobil Corp.",
+        "symbol": "XOM",
+        "weight": 1.5
+      },
+      {
+        "name": "Johnson & Johnson",
+        "symbol": "JNJ",
+        "weight": 1.44
+      },
+      {
+        "name": "Procter & Gamble Co.",
+        "symbol": "PG",
+        "weight": 1.35
+      },
+      {
+        "name": "Home Depot Inc.",
+        "symbol": "HD",
+        "weight": 1.28
+      },
+      {
+        "name": "AbbVie Inc.",
+        "symbol": "ABBV",
+        "weight": 1.22
+      },
+      {
+        "name": "Chevron Corp.",
+        "symbol": "CVX",
+        "weight": 1.18
+      },
+      {
+        "name": "Nestl\u00e9 S.A.",
+        "symbol": "NESN.SW",
+        "weight": 1.12
+      },
+      {
+        "name": "Bank of America Corp.",
+        "symbol": "BAC",
+        "weight": 1.08
+      },
+      {
+        "name": "Broadcom Inc.",
+        "symbol": "AVGO",
+        "weight": 1.05
+      }
+    ],
+    "countryBreakdown": {
+      "United States": 43.5,
+      "Japan": 8.2,
+      "United Kingdom": 7.8,
+      "Switzerland": 5.8,
+      "Canada": 4.9,
+      "France": 4.5,
+      "Australia": 4.2,
+      "Germany": 3.8,
+      "China": 3.2,
+      "Other Countries": 14.1
+    },
+    "sectorBreakdown": {
+      "Financials": 26.5,
+      "Consumer Staples": 12.8,
+      "Industrials": 11.5,
+      "Healthcare": 11.2,
+      "Energy": 10.4,
+      "Information Technology": 8.2,
+      "Utilities": 6.5,
+      "Communication Services": 5.4,
+      "Materials": 4.8,
+      "Real Estate": 2.7
+    },
+    "historicalStatsCurvo": {
+      "period": "2013 - 2026 (High Dividend Yield Track)",
+      "cagr": 7.85,
+      "sharpe": 0.58,
+      "stdev": 13.9,
+      "maxDrawdown": -32.8,
+      "recoveryPeriod": "1 year 10 months",
+      "bestYear": 24.2,
+      "worstYear": -12.4,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/vanguard-ftse-all-world-high-dividend-yield-ucits-etf-distributing/IE00B8GKDB10"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 0.88,
+      "calmar": 0.24,
+      "var95": -6.4,
+      "marketBeta": 0.86,
+      "annualizedTurnover": 9.5,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Global Equity Income",
+      "styleBox": "Large Value",
+      "sustainabilityRating": 3,
+      "peRatio": 14.2,
+      "pbRatio": 1.95,
+      "yieldEquivalent": 3.45,
+      "feeLevel": "Average"
+    },
+    "trackinsight": {
+      "esgScore": "A",
+      "trackingErrorPercent": 0.04,
+      "liquidityRating": "Tier 1 - High Dividend Benchmark",
+      "avgSpreadPercent": 0.04
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Distributing quarterly dividends creates annual taxable event",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": true,
+        "fee": "\u20ac1.00 Handling (Core Selection)",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://fund-docs.vanguard.com/priips-kid-ftse-all-world-high-dividend-yield-ucits-etf-dist-ie00b8gkdb10-en.pdf",
+      "factsheetUrl": "https://www.vanguardinvestor.co.uk/investments/vanguard-ftse-all-world-high-dividend-yield-ucits-etf-usd-distributing",
+      "annualReportUrl": "https://www.vanguard.co.uk",
+      "issuerPage": "https://www.vanguardinvestor.co.uk/investments/vanguard-ftse-all-world-high-dividend-yield-ucits-etf-usd-distributing"
+    },
+    "retailScores": {
+      "composite": 89,
+      "indexCoverage": 94,
+      "costScore": 88,
+      "trackingScore": 92,
+      "fundSizeScore": 96,
+      "taxScore": 82,
+      "brokerScore": 97,
+      "bogleheadsRating": "Dividend Income Satellite (Note: Distributing drag applies)"
+    },
+    "liveMarketData": {
+      "livePrice": 80.52,
+      "currency": "EUR",
+      "previousClose": 80.96,
+      "dayChange": -0.44,
+      "dayChangePercent": -0.54,
+      "fiftyTwoWeekHigh": 82.28,
+      "fiftyTwoWeekLow": 66.0,
+      "regularMarketDayHigh": 80.66,
+      "regularMarketDayLow": 80.42,
+      "regularMarketVolume": 45788,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:29:30.385528+00:00"
+    },
+    "currentPriceEUR": 80.52,
+    "dayChangePercent": -0.54,
+    "fiftyTwoWeekHigh": 82.28,
+    "fiftyTwoWeekLow": 66.0,
+    "lastSyncedAt": "2026-09-29T13:29:30.931713+00:00"
+  },
+  {
+    "ticker": "AII",
+    "secondaryTickers": [
+      "AIFS"
+    ],
+    "isin": "IE000X59ZHE2",
+    "wkn": "A40H8L",
+    "name": "iShares AI Infrastructure UCITS ETF USD (Acc)",
+    "issuer": "iShares",
+    "benchmarkIndex": "Morningstar Global AI Infrastructure Index",
+    "assetClass": "Thematic Equities (AI Data Centers & Infrastructure)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.35,
+    "trackingDifference5Y": 0.08,
+    "trackingDifference1Y": 0.05,
+    "aumMillionsEUR": 1253.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Full replication)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No lending",
+    "sriRisk": 5,
+    "holdingCount": 55,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "Palantir Technologies, Inc.",
+        "symbol": "PLTR",
+        "weight": 5.57
+      },
+      {
+        "name": "Palo Alto Networks, Inc.",
+        "symbol": "PANW",
+        "weight": 5.12
+      },
+      {
+        "name": "Microsoft Corp.",
+        "symbol": "MSFT",
+        "weight": 5.09
+      },
+      {
+        "name": "Broadcom Inc.",
+        "symbol": "AVGO",
+        "weight": 4.85
+      },
+      {
+        "name": "NVIDIA Corp.",
+        "symbol": "NVDA",
+        "weight": 4.72
+      },
+      {
+        "name": "Arista Networks Inc.",
+        "symbol": "ANET",
+        "weight": 4.45
+      },
+      {
+        "name": "Super Micro Computer Inc.",
+        "symbol": "SMCI",
+        "weight": 3.9
+      },
+      {
+        "name": "Vertiv Holdings Co.",
+        "symbol": "VRT",
+        "weight": 3.8
+      },
+      {
+        "name": "Cisco Systems Inc.",
+        "symbol": "CSCO",
+        "weight": 3.6
+      },
+      {
+        "name": "Taiwan Semiconductor (TSMC)",
+        "symbol": "TSM",
+        "weight": 3.5
+      }
+    ],
+    "countryBreakdown": {
+      "United States": 78.5,
+      "Taiwan": 8.0,
+      "Japan": 4.5,
+      "South Korea": 3.5,
+      "Germany": 2.5,
+      "Other Countries": 3.0
+    },
+    "sectorBreakdown": {
+      "Information Technology (Semiconductors & Software)": 68.5,
+      "Industrials (Data Center Power & Cooling)": 18.0,
+      "Communication Services": 8.5,
+      "Utilities (Grid Capacity)": 5.0
+    },
+    "historicalStatsCurvo": {
+      "period": "2023 - 2026 (AI Infrastructure Index Track)",
+      "cagr": 24.5,
+      "sharpe": 1.15,
+      "stdev": 22.8,
+      "maxDrawdown": -21.4,
+      "recoveryPeriod": "8 months",
+      "bestYear": 48.5,
+      "worstYear": -12.5,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/ishares-ai-infrastructure-ucits-etf-usd-acc/IE000X59ZHE2"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 1.58,
+      "calmar": 1.14,
+      "var95": -9.8,
+      "marketBeta": 1.38,
+      "annualizedTurnover": 25.0,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Sector Equity Technology",
+      "styleBox": "Large Growth",
+      "sustainabilityRating": 3,
+      "peRatio": 32.5,
+      "pbRatio": 6.8,
+      "yieldEquivalent": 0.45,
+      "feeLevel": "Average"
+    },
+    "trackinsight": {
+      "esgScore": "AA",
+      "trackingErrorPercent": 0.08,
+      "liquidityRating": "Tier 1 - Rapid Growth AI Thematic",
+      "avgSpreadPercent": 0.09
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class auto-compounds capital gains",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": false,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://www.ishares.com/uk/individual/en/literature/kiid/kiid-ishares-ai-infrastructure-ucits-etf-usd-acc-ie000x59zhe2-en.pdf",
+      "factsheetUrl": "https://www.ishares.com/uk/individual/en/literature/fact-sheet/aiin-ishares-ai-infrastructure-ucits-etf-fund-fact-sheet-en-gb.pdf",
+      "annualReportUrl": "https://www.ishares.com",
+      "issuerPage": "https://www.ishares.com/uk/individual/en/products/338902/ishares-ai-infrastructure-ucits-etf"
+    },
+    "retailScores": {
+      "composite": 91,
+      "indexCoverage": 85,
+      "costScore": 90,
+      "trackingScore": 94,
+      "fundSizeScore": 90,
+      "taxScore": 98,
+      "brokerScore": 95,
+      "bogleheadsRating": "Targeted AI Enabler Tilt (Data Centers, Power & Cooling Infrastructure)"
+    },
+    "liveMarketData": {
+      "livePrice": 10.332,
+      "currency": "EUR",
+      "previousClose": 10.292,
+      "dayChange": 0.04,
+      "dayChangePercent": 0.39,
+      "fiftyTwoWeekHigh": 10.44,
+      "fiftyTwoWeekLow": 5.61,
+      "regularMarketDayHigh": 10.346,
+      "regularMarketDayLow": 10.248,
+      "regularMarketVolume": 17298,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:29:31.090594+00:00"
+    },
+    "currentPriceEUR": 10.332,
+    "dayChangePercent": 0.39,
+    "fiftyTwoWeekHigh": 10.44,
+    "fiftyTwoWeekLow": 5.61,
+    "lastSyncedAt": "2026-09-29T13:29:31.515634+00:00"
+  },
+  {
+    "ticker": "WTAI",
+    "secondaryTickers": [
+      "2B76"
+    ],
+    "isin": "IE00BDVPNG13",
+    "wkn": "A2N6WP",
+    "name": "WisdomTree Artificial Intelligence UCITS ETF USD Acc",
+    "issuer": "WisdomTree",
+    "benchmarkIndex": "NASDAQ CTA Artificial Intelligence Index (Net Return)",
+    "assetClass": "Thematic Equities (AI Enablers, Engagers & Enhancers)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.4,
+    "trackingDifference5Y": 0.06,
+    "trackingDifference1Y": 0.04,
+    "aumMillionsEUR": 1344.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Full replication)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No lending",
+    "sriRisk": 5,
+    "holdingCount": 68,
+    "isUserWatchlist": true,
+    "topHoldings": [
+      {
+        "name": "Advanced Micro Devices (AMD)",
+        "symbol": "AMD",
+        "weight": 4.78
+      },
+      {
+        "name": "Marvell Technology Inc.",
+        "symbol": "MRVL",
+        "weight": 4.7
+      },
+      {
+        "name": "Micron Technology Inc.",
+        "symbol": "MU",
+        "weight": 3.62
+      },
+      {
+        "name": "Infineon Technologies AG",
+        "symbol": "IFX.DE",
+        "weight": 3.4
+      },
+      {
+        "name": "Qualcomm Inc.",
+        "symbol": "QCOM",
+        "weight": 3.2
+      },
+      {
+        "name": "Cadence Design Systems",
+        "symbol": "CDNS",
+        "weight": 3.1
+      },
+      {
+        "name": "Synopsys Inc.",
+        "symbol": "SNPS",
+        "weight": 3.0
+      },
+      {
+        "name": "Alphabet Inc. (Class A)",
+        "symbol": "GOOGL",
+        "weight": 2.9
+      },
+      {
+        "name": "NVIDIA Corp.",
+        "symbol": "NVDA",
+        "weight": 2.8
+      },
+      {
+        "name": "Meta Platforms Inc.",
+        "symbol": "META",
+        "weight": 2.7
+      }
+    ],
+    "countryBreakdown": {
+      "United States": 82.5,
+      "Taiwan": 6.5,
+      "Germany": 3.8,
+      "Japan": 3.2,
+      "Other Countries": 4.0
+    },
+    "sectorBreakdown": {
+      "Information Technology (Semiconductors & Software)": 84.5,
+      "Communication Services": 10.2,
+      "Consumer Discretionary": 5.3
+    },
+    "historicalStatsCurvo": {
+      "period": "2018 - 2026 (NASDAQ CTA AI Track)",
+      "cagr": 18.2,
+      "sharpe": 0.82,
+      "stdev": 22.4,
+      "maxDrawdown": -41.5,
+      "recoveryPeriod": "1 year 6 months",
+      "bestYear": 58.2,
+      "worstYear": -34.8,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/wisdomtree-artificial-intelligence-ucits-etf-usd-acc/IE00BDVPNG13"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 1.25,
+      "calmar": 0.44,
+      "var95": -9.5,
+      "marketBeta": 1.32,
+      "annualizedTurnover": 28.0,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Sector Equity Technology",
+      "styleBox": "Large Growth",
+      "sustainabilityRating": 4,
+      "peRatio": 29.8,
+      "pbRatio": 5.95,
+      "yieldEquivalent": 0.55,
+      "feeLevel": "Average"
+    },
+    "trackinsight": {
+      "esgScore": "AA",
+      "trackingErrorPercent": 0.07,
+      "liquidityRating": "Tier 1 - Pure Play AI Pioneer",
+      "avgSpreadPercent": 0.08
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class maximizes AI compounding",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": false,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://www.wisdomtree.eu/en-gb/-/media/eu-media-files/key-information-documents/en/ucits/wisdomtree-artificial-intelligence-ucits-etf---usd-acc.pdf",
+      "factsheetUrl": "https://www.wisdomtree.eu/en-gb/etfs/thematic/artificial-intelligence",
+      "annualReportUrl": "https://www.wisdomtree.eu",
+      "issuerPage": "https://www.wisdomtree.eu/en-gb/etfs/thematic/artificial-intelligence"
+    },
+    "retailScores": {
+      "composite": 90,
+      "indexCoverage": 88,
+      "costScore": 86,
+      "trackingScore": 93,
+      "fundSizeScore": 91,
+      "taxScore": 98,
+      "brokerScore": 95,
+      "bogleheadsRating": "Pioneering Pure-Play AI Satellite (Broader Equal-Weight CTA Methodology)"
+    },
+    "liveMarketData": {
+      "livePrice": 19.29,
+      "currency": "EUR",
+      "previousClose": 19.172,
+      "dayChange": 0.118,
+      "dayChangePercent": 0.62,
+      "fiftyTwoWeekHigh": 19.42,
+      "fiftyTwoWeekLow": 12.83,
+      "regularMarketDayHigh": 19.324,
+      "regularMarketDayLow": 19.162,
+      "regularMarketVolume": 51042,
+      "exchange": "XETRA (Frankfurt)",
+      "lastPriceUpdated": "2026-09-29T13:29:31.718803+00:00"
+    },
+    "currentPriceEUR": 19.29,
+    "dayChangePercent": 0.62,
+    "fiftyTwoWeekHigh": 19.42,
+    "fiftyTwoWeekLow": 12.83,
+    "lastSyncedAt": "2026-09-29T13:29:32.206884+00:00"
   }
 ]

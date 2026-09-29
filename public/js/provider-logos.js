@@ -81,6 +81,32 @@ window.ProviderLogos = (function () {
           <span class="provider-name-label">SPDR</span>
         </span>
       `;
+    } else if (name.includes("xtrackers") || name.includes("dws")) {
+      return `
+        <span class="provider-logo-badge" title="Xtrackers by DWS">
+          <svg width="${size}" height="${size}" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="6" fill="#032541" />
+            <!-- Xtrackers stylized X -->
+            <path d="M9 8L15 16L9 24H12.5L16.5 18.5L20.5 24H24L18 16L24 8H20.5L16.5 13.5L12.5 8H9Z" fill="#00D2C4" />
+          </svg>
+          <span class="provider-name-label">Xtrackers</span>
+        </span>
+      `;
+    } else if (name.includes("legal & general") || name.includes("l&g") || name.includes("lgim")) {
+      return `
+        <span class="provider-logo-badge" title="Legal & General (L&G)">
+          <svg width="${size}" height="${size}" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="32" height="32" rx="6" fill="#18181B" />
+            <!-- L&G Umbrella canopy -->
+            <path d="M16 8C10 8 7 13 7 17H25C25 13 22 8 16 8Z" fill="#E11D48" />
+            <path d="M10 17C10 13 12.5 9 16 8C19.5 9 22 13 22 17H10Z" fill="#FBBF24" />
+            <path d="M13 17C13 13.5 14.5 9.5 16 8C17.5 9.5 19 13.5 19 17H13Z" fill="#10B981" />
+            <!-- Umbrella stick & handle -->
+            <path d="M16 17V24C16 25 15 25.5 14 25.5C13 25.5 12.5 25 12.5 24" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" fill="none" />
+          </svg>
+          <span class="provider-name-label">L&amp;G</span>
+        </span>
+      `;
     }
 
     // Generic fallback provider badge

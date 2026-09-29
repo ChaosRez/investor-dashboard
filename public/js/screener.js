@@ -25,6 +25,7 @@ window.ScreenerModule = (function () {
         
         <div class="pill-group" id="acc-filter-group">
           <button class="pill-btn active" data-acc="all">All Funds</button>
+          <button class="pill-btn" data-acc="watchlist" id="filter-watchlist-btn">⭐ My Watchlist (10 Funds)</button>
           <button class="pill-btn" data-acc="acc">✨ Accumulating (Acc) Priority</button>
           <button class="pill-btn" data-acc="dist">Distributing (Dist)</button>
         </div>
@@ -91,10 +92,11 @@ window.ScreenerModule = (function () {
         etf.benchmarkIndex.toLowerCase().includes(query) ||
         (etf.wkn && etf.wkn.toLowerCase().includes(query));
 
-      // Acc/Dist
+      // Acc/Dist / Watchlist
       let matchAcc = true;
-      if (accFilter === "acc") matchAcc = etf.isAccumulating === true;
-      if (accFilter === "dist") matchAcc = etf.isAccumulating === false;
+      if (accFilter === "watchlist") matchAcc = etf.isUserWatchlist === true;
+      else if (accFilter === "acc") matchAcc = etf.isAccumulating === true;
+      else if (accFilter === "dist") matchAcc = etf.isAccumulating === false;
 
       // Domicile
       let matchDom = true;
@@ -151,6 +153,13 @@ window.ScreenerModule = (function () {
           ? `<span class="badge badge-acc">✨ Accumulating (Acc)</span>`
           : `<span class="badge badge-dist">Distributing (Dist)</span>`;
 
+        const isWatchlist = etf.isUserWatchlist === true;
+        const watchlistBadge = isWatchlist
+          ? `<span class="badge badge-watchlist" title="In your personal 10-ETF watchlist">⭐ Watchlist</span>`
+          : "";
+
+        const isComparing = window.ComparisonMatrixModule ? window.ComparisonMatrixModule.isComparing(etf.ticker) : false;
+
         const tdVal = etf.trackingDifference5Y;
         const tdColor = tdVal < 0 ? "val-positive" : "text-primary";
         const tdLabel = tdVal < 0 ? `${tdVal}% (Outperforming Index!)` : `+${tdVal}%`;
@@ -188,6 +197,7 @@ window.ScreenerModule = (function () {
               <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <span style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);">${etf.ticker}</span>
                 ${providerLogo}
+                ${watchlistBadge}
                 <span class="badge ${scoreBadgeClass}">Score ${compositeScore}/100</span>
               </div>
               <span class="table-etf-title">${etf.name}</span>
@@ -225,6 +235,9 @@ window.ScreenerModule = (function () {
             <td style="text-align: right; white-space: nowrap;">
               <button class="btn btn-primary btn-sm view-profile-btn" data-ticker="${etf.ticker}">
                 🔍 Details
+              </button>
+              <button class="btn btn-secondary btn-sm compare-btn ${isComparing ? "active" : ""}" data-ticker="${etf.ticker}" title="${isComparing ? "Remove from comparison matrix" : "Add to comparison matrix"}">
+                ${isComparing ? "✓ Comparing" : "⚖️ Compare"}
               </button>
               <button class="btn btn-secondary btn-sm add-portfolio-btn" data-ticker="${etf.ticker}">
                 + Add to Audit
@@ -292,6 +305,16 @@ window.ScreenerModule = (function () {
       btn.addEventListener("click", (e) => {
         const ticker = e.currentTarget.dataset.ticker;
         showDetailModal(ticker);
+      });
+    });
+
+    container.querySelectorAll(".compare-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const ticker = e.currentTarget.dataset.ticker;
+        if (window.ComparisonMatrixModule) {
+          window.ComparisonMatrixModule.toggleTicker(ticker);
+          renderTable();
+        }
       });
     });
 
@@ -376,6 +399,7 @@ window.ScreenerModule = (function () {
             <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">
               ${etf.isAccumulating ? "✨ Accumulating (Acc)" : "Distributing (Dist)"}
             </span>
+            ${etf.isUserWatchlist ? `<span class="badge badge-watchlist">⭐ My Watchlist</span>` : ""}
             <span class="badge badge-blue">Score ${etf.retailScores?.composite || 95}/100</span>
           </div>
           <div>
@@ -383,9 +407,18 @@ window.ScreenerModule = (function () {
           </div>
         </div>
         <h3 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${etf.name}</h3>
-        <p style="font-size: 0.8rem; color: var(--text-muted);">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
           ISIN: <strong>${etf.isin}</strong> | WKN: <strong>${etf.wkn}</strong> | Provider: <strong>${etf.issuer}</strong> | Domicile: <strong>${etf.domicile}</strong>
         </p>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
+          <button class="btn btn-primary btn-sm modal-action-compare" data-ticker="${etf.ticker}">
+            ⚖️ Add to Comparison Matrix
+          </button>
+          <button class="btn btn-secondary btn-sm modal-action-audit" data-ticker="${etf.ticker}">
+            + Add to Portfolio Overlap Audit
+          </button>
+        </div>
       </div>
 
       ${etf.liveMarketData && etf.liveMarketData.livePrice ? `
@@ -531,7 +564,22 @@ window.ScreenerModule = (function () {
       </div>
     `;
 
-    document.getElementById("detail-modal")?.classList.add("active");
+    const detailModal = document.getElementById("detail-modal");
+    if (detailModal) {
+      detailModal.querySelector(".modal-action-compare")?.addEventListener("click", () => {
+        window.ComparisonMatrixModule?.addTicker(ticker);
+        detailModal.classList.remove("active");
+        window.App?.switchTab("comparison");
+      });
+
+      detailModal.querySelector(".modal-action-audit")?.addEventListener("click", () => {
+        window.OverlapModule?.addEtfToPortfolio(ticker);
+        detailModal.classList.remove("active");
+        window.App?.switchTab("overlap");
+      });
+
+      detailModal.classList.add("active");
+    }
   }
 
   return {

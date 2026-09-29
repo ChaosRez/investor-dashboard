@@ -32,7 +32,16 @@ ETF_MARKET_MAP = {
     "IUSN": {"symbol": "IUSN.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00BF4RFH31"},
     "VUSA": {"symbol": "VUSA.AS", "exchange": "Euronext Amsterdam", "isin": "IE00B3XXRP09"},
     "GGRA": {"symbol": "GGRA.L",  "exchange": "London Stock Exchange", "isin": "IE00BZ56RN96"},
-    "FWRA": {"symbol": "FWIA.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE000716YHJ7"}
+    "FWRA": {"symbol": "FWIA.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE000716YHJ7"},
+    "BATT": {"symbol": "BATE.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00BF0M2Z96"},
+    "RARE": {"symbol": "RARE.L",  "exchange": "London Stock Exchange", "isin": "IE000KHX9DX6"},
+    "IUSQ": {"symbol": "IUSQ.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00B6R52259"},
+    "IMAE": {"symbol": "IMAE.AS", "exchange": "Euronext Amsterdam", "isin": "IE00B4K48X80"},
+    "XCS6": {"symbol": "RQFI.DE", "exchange": "XETRA (Frankfurt)", "isin": "LU0779800910"},
+    "XEON": {"symbol": "XEON.DE", "exchange": "XETRA (Frankfurt)", "isin": "LU0290358497"},
+    "VHYL": {"symbol": "VGWD.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00B8GKDB10"},
+    "AII":  {"symbol": "AIFS.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE000X59ZHE2"},
+    "WTAI": {"symbol": "2B76.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00BDVPNG13"}
 }
 
 def fetch_url(url: str, timeout: int = 5) -> Optional[str]:

@@ -62,6 +62,10 @@ window.App = (function () {
       panel.classList.toggle("active", panel.id === `tab-${targetTab}`);
     });
 
+    if (targetTab === "comparison" && window.ComparisonMatrixModule) {
+      window.ComparisonMatrixModule.renderInterface();
+    }
+
     // Synchronize active stage card in the roadmap navigator
     document.querySelectorAll(".stage-step-card").forEach((card) => {
       card.classList.toggle("active", card.dataset.stage === targetTab);
@@ -201,6 +205,7 @@ window.App = (function () {
 
     // Initialize all modular components
     window.ScreenerModule?.init(etfsData);
+    window.ComparisonMatrixModule?.init(etfsData);
     window.OverlapModule?.init(etfsData, correlationsData);
     window.CurvoModule?.init(etfsData);
     window.PortfolioVisualizerModule?.init(etfsData);
