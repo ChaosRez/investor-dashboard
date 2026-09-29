@@ -62,7 +62,10 @@ window.CurvoModule = (function () {
       <div class="card">
         <div class="card-header">
           <div>
-            <h3 class="card-title">🏆 Curvo Historical Backtest & DCA Growth Engine</h3>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h3 class="card-title" style="margin-bottom: 0;">🏆 Curvo Historical Backtest &amp; DCA Growth Engine</h3>
+              <span class="stage-status-badge badge-essential">Stage 3 (Planning Phase)</span>
+            </div>
             <span class="card-subtitle">Real historical performance metrics from Curvo.eu (2000–2026 data series)</span>
           </div>
           <span class="badge badge-acc">UCITS Real Data</span>

@@ -116,12 +116,16 @@ window.NewsSignalsModule = (function () {
       }
 
       // Related ETFs list
-      const etfListHtml = (item.relatedEtfs || []).map(e => `
-        <div style="margin-bottom: 6px; font-size: 0.82rem;">
-          <span class="etf-tag">${e.ticker}</span>
-          <span style="color: var(--text-secondary); margin-left: 6px;">${e.relation}</span>
-        </div>
-      `).join("");
+      const etfListHtml = (item.relatedEtfs || []).map(e => {
+        const logo = window.ProviderLogos?.getLogoSvg(e.issuer || e.ticker, 16) || "";
+        return `
+          <div style="margin-bottom: 6px; font-size: 0.82rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span class="etf-tag">${e.ticker}</span>
+            ${logo}
+            <span style="color: var(--text-secondary); margin-left: 2px;">${e.relation}</span>
+          </div>
+        `;
+      }).join("");
 
       return `
         <div class="news-card" style="border-left-color: ${sig.biasColor || "var(--accent-blue)"};">

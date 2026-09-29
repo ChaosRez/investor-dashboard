@@ -1828,6 +1828,380 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Distributing Benchmark (Compounding penalty vs Accumulating VUAA/SXR8)"
     }
+  },
+  {
+    "ticker": "GGRA",
+    "secondaryTickers": [
+      "GGRP"
+    ],
+    "isin": "IE00BZ56SW52",
+    "wkn": "A2AG1E",
+    "name": "WisdomTree Global Quality Dividend Growth UCITS ETF USD Acc",
+    "issuer": "WisdomTree",
+    "benchmarkIndex": "WisdomTree Global Quality Dividend Growth Index",
+    "assetClass": "Global Quality Factor Dividend Equities",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.29,
+    "trackingDifference5Y": 0.05,
+    "trackingDifference1Y": 0.03,
+    "aumMillionsEUR": 1850,
+    "domicile": "Ireland",
+    "replication": "Physical (Full replication)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No securities lending",
+    "sriRisk": 4,
+    "holdingCount": 600,
+    "topHoldings": [
+      {
+        "name": "Microsoft Corp.",
+        "symbol": "MSFT",
+        "weight": 5.12
+      },
+      {
+        "name": "Apple Inc.",
+        "symbol": "AAPL",
+        "weight": 4.85
+      },
+      {
+        "name": "Broadcom Inc.",
+        "symbol": "AVGO",
+        "weight": 3.42
+      },
+      {
+        "name": "Alphabet Inc. (Class A)",
+        "symbol": "GOOGL",
+        "weight": 2.74
+      },
+      {
+        "name": "The Coca-Cola Co.",
+        "symbol": "KO",
+        "weight": 2.15
+      },
+      {
+        "name": "Johnson & Johnson",
+        "symbol": "JNJ",
+        "weight": 2.05
+      },
+      {
+        "name": "Procter & Gamble Co.",
+        "symbol": "PG",
+        "weight": 1.95
+      },
+      {
+        "name": "AbbVie Inc.",
+        "symbol": "ABBV",
+        "weight": 1.88
+      },
+      {
+        "name": "Novartis AG",
+        "symbol": "NOVN.SW",
+        "weight": 1.74
+      },
+      {
+        "name": "Unilever PLC",
+        "symbol": "ULVR.L",
+        "weight": 1.62
+      }
+    ],
+    "countryBreakdown": {
+      "United States": 68.4,
+      "Switzerland": 6.8,
+      "United Kingdom": 5.4,
+      "Japan": 4.2,
+      "France": 3.8,
+      "Other Countries": 11.4
+    },
+    "sectorBreakdown": {
+      "Information Technology": 24.5,
+      "Healthcare": 18.2,
+      "Consumer Staples": 15.4,
+      "Industrials": 13.8,
+      "Financials": 11.2,
+      "Consumer Discretionary": 8.5,
+      "Communication Services": 5.4,
+      "Materials": 3.0
+    },
+    "historicalStatsCurvo": {
+      "period": "2016 - 2026 (WisdomTree Global Quality Growth)",
+      "cagr": 11.45,
+      "sharpe": 0.74,
+      "stdev": 14.82,
+      "maxDrawdown": -31.8,
+      "recoveryPeriod": "1 year 4 months",
+      "bestYear": 32.4,
+      "worstYear": -16.8,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/wisdomtree-global-quality-dividend-growth-ucits-etf-usd-acc/IE00BZ56SW52"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 1.18,
+      "calmar": 0.36,
+      "var95": -6.5,
+      "marketBeta": 0.94,
+      "annualizedTurnover": 15.4,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Global Large-Cap Blend Equity",
+      "styleBox": "Large Blend",
+      "sustainabilityRating": 4,
+      "peRatio": 21.2,
+      "pbRatio": 3.85,
+      "yieldEquivalent": 2.15,
+      "feeLevel": "Average"
+    },
+    "trackinsight": {
+      "esgScore": "AA",
+      "trackingErrorPercent": 0.04,
+      "liquidityRating": "Tier 1 - Standard Global Dividend",
+      "avgSpreadPercent": 0.05
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class reinvests high-quality dividends without annual dividend tax drag",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": false,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://www.wisdomtree.eu/en-gb/-/media/eu-media-files/key-information-documents/en/ucits/wisdomtree-global-quality-dividend-growth-ucits-etf---usd-acc.pdf",
+      "factsheetUrl": "https://www.wisdomtree.eu/en-gb/etfs/quality-dividend-growth/wisdomtree-global-quality-dividend-growth-ucits-etf---usd-acc",
+      "annualReportUrl": "https://www.wisdomtree.eu",
+      "issuerPage": "https://www.wisdomtree.eu/en-gb/etfs/quality-dividend-growth/wisdomtree-global-quality-dividend-growth-ucits-etf---usd-acc"
+    },
+    "retailScores": {
+      "composite": 93,
+      "indexCoverage": 91,
+      "costScore": 86,
+      "trackingScore": 92,
+      "fundSizeScore": 92,
+      "taxScore": 98,
+      "brokerScore": 96,
+      "bogleheadsRating": "Quality Factor Engine (High ROE & Sustainable Dividend Growth)"
+    }
+  },
+  {
+    "ticker": "FWRA",
+    "secondaryTickers": [
+      "FWIA"
+    ],
+    "isin": "IE000716YHJ7",
+    "wkn": "A3D7QY",
+    "name": "Invesco FTSE All-World UCITS ETF Acc",
+    "issuer": "Invesco",
+    "benchmarkIndex": "FTSE All-World Index (USD Net Tax)",
+    "assetClass": "Global Equities (Developed + Emerging)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.15,
+    "trackingDifference5Y": -0.01,
+    "trackingDifference1Y": -0.01,
+    "aumMillionsEUR": 1250,
+    "domicile": "Ireland",
+    "replication": "Physical (Optimised sampling)",
+    "securitiesLending": true,
+    "securitiesLendingRevenueShare": "90% net revenue to fund",
+    "sriRisk": 4,
+    "holdingCount": 3650,
+    "topHoldings": [
+      {
+        "name": "NVIDIA Corp.",
+        "symbol": "NVDA",
+        "weight": 4.42
+      },
+      {
+        "name": "Apple Inc.",
+        "symbol": "AAPL",
+        "weight": 4.15
+      },
+      {
+        "name": "Microsoft Corp.",
+        "symbol": "MSFT",
+        "weight": 3.92
+      },
+      {
+        "name": "Amazon.com Inc.",
+        "symbol": "AMZN",
+        "weight": 2.45
+      },
+      {
+        "name": "Alphabet Inc. (Class A)",
+        "symbol": "GOOGL",
+        "weight": 1.41
+      },
+      {
+        "name": "Alphabet Inc. (Class C)",
+        "symbol": "GOOG",
+        "weight": 1.22
+      },
+      {
+        "name": "Meta Platforms Inc.",
+        "symbol": "META",
+        "weight": 1.62
+      },
+      {
+        "name": "Taiwan Semiconductor (TSMC)",
+        "symbol": "TSM",
+        "weight": 1.05
+      },
+      {
+        "name": "Eli Lilly & Co.",
+        "symbol": "LLY",
+        "weight": 0.98
+      },
+      {
+        "name": "Broadcom Inc.",
+        "symbol": "AVGO",
+        "weight": 0.95
+      }
+    ],
+    "countryBreakdown": {
+      "United States": 62.8,
+      "Japan": 5.8,
+      "United Kingdom": 3.5,
+      "China": 2.6,
+      "France": 2.5,
+      "Canada": 2.4,
+      "Switzerland": 2.2,
+      "Taiwan": 2.0,
+      "Germany": 1.9,
+      "India": 1.9,
+      "Other Countries": 12.4
+    },
+    "sectorBreakdown": {
+      "Information Technology": 25.8,
+      "Financials": 15.2,
+      "Healthcare": 11.0,
+      "Consumer Discretionary": 10.4,
+      "Industrials": 10.1,
+      "Communication Services": 7.5,
+      "Consumer Staples": 5.8,
+      "Energy": 4.3,
+      "Materials": 3.9,
+      "Utilities": 3.0,
+      "Real Estate": 3.0
+    },
+    "historicalStatsCurvo": {
+      "period": "2003 - 2026 (FTSE All-World Benchmark)",
+      "cagr": 9.64,
+      "sharpe": 0.68,
+      "stdev": 15.12,
+      "maxDrawdown": -48.4,
+      "recoveryPeriod": "5 years 4 months",
+      "bestYear": 33.8,
+      "worstYear": -40.1,
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/invesco-ftse-all-world-ucits-etf-acc/IE000716YHJ7"
+    },
+    "quantitativeStatsPV": {
+      "sortino": 1.02,
+      "calmar": 0.2,
+      "var95": -7.2,
+      "marketBeta": 1.0,
+      "annualizedTurnover": 4.0,
+      "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
+    },
+    "morningstar": {
+      "category": "Global Large-Cap Blend Equity",
+      "styleBox": "Large Blend",
+      "sustainabilityRating": 4,
+      "peRatio": 19.8,
+      "pbRatio": 2.85,
+      "yieldEquivalent": 1.82,
+      "feeLevel": "Low"
+    },
+    "trackinsight": {
+      "esgScore": "A",
+      "trackingErrorPercent": 0.03,
+      "liquidityRating": "Tier 1 - Rapid Growth",
+      "avgSpreadPercent": 0.04
+    },
+    "taxTreatment": {
+      "domicileEfficiency": "Excellent (Ireland)",
+      "usTreatyAdvantage": "15% US treaty rate, 0% Irish WHT",
+      "localDividendTax": "0% Irish WHT",
+      "reinvestmentEfficiency": "Accumulating share class with ultra-competitive 0.15% TER",
+      "usEstateTax": "Shielded"
+    },
+    "brokerAvailability": {
+      "Trade Republic": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Scalable Capital": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "Interactive Brokers": {
+        "sparplan": true,
+        "fee": "\u20ac1.25",
+        "status": "Available"
+      },
+      "DEGIRO": {
+        "sparplan": false,
+        "fee": "\u20ac1.00 Handling",
+        "status": "Available"
+      },
+      "flatex": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      },
+      "ING": {
+        "sparplan": true,
+        "fee": "\u20ac0",
+        "status": "Available"
+      }
+    },
+    "officialDocs": {
+      "kidUrl": "https://etf.invesco.com/gb/private/en/product/invesco-ftse-all-world-ucits-etf-acc/documents",
+      "factsheetUrl": "https://etf.invesco.com/gb/private/en/product/invesco-ftse-all-world-ucits-etf-acc/documents",
+      "annualReportUrl": "https://etf.invesco.com",
+      "issuerPage": "https://etf.invesco.com/gb/private/en/product/invesco-ftse-all-world-ucits-etf-acc"
+    },
+    "retailScores": {
+      "composite": 95,
+      "indexCoverage": 98,
+      "costScore": 95,
+      "trackingScore": 97,
+      "fundSizeScore": 90,
+      "taxScore": 98,
+      "brokerScore": 96,
+      "bogleheadsRating": "Low-Cost Vanguard Competitor (0.15% TER Core Alternative)"
+    }
   }
 ],
   correlations: {

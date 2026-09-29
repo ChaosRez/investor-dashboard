@@ -157,6 +157,7 @@ window.ScreenerModule = (function () {
 
         const aumStr = (etf.aumMillionsEUR / 1000).toFixed(1) + "B €";
         const compositeScore = etf.retailScores?.composite || 90;
+        const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 20) || "";
 
         let scoreBadgeClass = "badge-blue";
         if (compositeScore >= 95) scoreBadgeClass = "badge-acc";
@@ -165,12 +166,13 @@ window.ScreenerModule = (function () {
         return `
           <tr>
             <td>
-              <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                 <span style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);">${etf.ticker}</span>
+                ${providerLogo}
                 <span class="badge ${scoreBadgeClass}">Score ${compositeScore}/100</span>
               </div>
               <span class="table-etf-title">${etf.name}</span>
-              <span class="table-etf-sub">ISIN: <strong>${etf.isin}</strong> | WKN: ${etf.wkn} | ${etf.issuer}</span>
+              <span class="table-etf-sub">ISIN: <strong>${etf.isin}</strong> | WKN: ${etf.wkn}</span>
             </td>
             <td>
               ${accBadge}
@@ -218,13 +220,34 @@ window.ScreenerModule = (function () {
         <table class="data-table">
           <thead>
             <tr>
-              <th>ETF & Benchmark Index</th>
-              <th>Distribution & Tax</th>
-              <th>Total Cost (TER)</th>
-              <th>Tracking Diff (TD)</th>
-              <th>Fund Size (AUM)</th>
-              <th>Domicile</th>
-              <th>Curvo Historical CAGR</th>
+              <th>
+                ETF & Issuer
+                <span class="info-tip" data-tip="The fund ticker, official issuer logo, underlying benchmark index, and statutory ISIN.">?</span>
+              </th>
+              <th>
+                Distribution & Tax
+                <span class="info-tip" data-tip="Accumulating (Acc) reinvests dividends directly to avoid tax leakage. Distributing (Dist) pays cash, creating annual tax events.">?</span>
+              </th>
+              <th>
+                Total Cost (TER)
+                <span class="info-tip" data-tip="Total Expense Ratio: Ongoing annual operating fees retained directly from NAV. Aim for < 0.25% for core broad market equity.">?</span>
+              </th>
+              <th>
+                Tracking Diff (TD)
+                <span class="info-tip" data-tip="Tracking Difference: Actual annual performance vs benchmark net index. Negative TD means the fund outperformed due to tax optimization & lending!">?</span>
+              </th>
+              <th>
+                Fund Size (AUM)
+                <span class="info-tip" data-tip="Assets Under Management: Funds > €100M eliminate liquidation/merger risk. Funds > €10B provide the tightest bid-ask spreads.">?</span>
+              </th>
+              <th>
+                Domicile
+                <span class="info-tip" data-tip="Ireland (IE) enjoys 15% US dividend treaty withholding (vs 30% statutory) and 100% exemption from the 40% US Estate Tax trap.">?</span>
+              </th>
+              <th>
+                Curvo CAGR
+                <span class="info-tip" data-tip="Compound Annual Growth Rate verified from Curvo historical backtesting data series.">?</span>
+              </th>
               <th style="text-align: right;">Action</th>
             </tr>
           </thead>
@@ -302,14 +325,33 @@ window.ScreenerModule = (function () {
       )
       .join("");
 
+    const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 26) || "";
+
+    let stageBadge = `<span class="stage-status-badge badge-start-here">🏁 Stage 1: Core Foundation (Start Here)</span>`;
+    if (["EIMI", "MEUD", "IUSN", "ZPRV", "GGRA"].includes(etf.ticker)) {
+      stageBadge = `<span class="stage-status-badge badge-optional">🧮 Stage 4: Factor / Regional Tilt (Optional)</span>`;
+    } else if (etf.ticker === "QDVE") {
+      stageBadge = `<span class="stage-status-badge badge-optional">⚡ Satellite Tech Tilt (High Beta)</span>`;
+    } else if (etf.ticker === "AGGU") {
+      stageBadge = `<span class="stage-status-badge badge-essential">🛡️ Defensive Shield (Bonds)</span>`;
+    } else if (etf.ticker === "VUSA") {
+      stageBadge = `<span class="stage-status-badge badge-maintain">⚠️ Distributing Benchmark</span>`;
+    }
+
     modalBody.innerHTML = `
       <div style="margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-          <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--accent-blue);">${etf.ticker}</h2>
-          <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">
-            ${etf.isAccumulating ? "✨ Accumulating (Acc)" : "Distributing (Dist)"}
-          </span>
-          <span class="badge badge-blue">Score ${etf.retailScores?.composite || 95}/100</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--accent-blue);">${etf.ticker}</h2>
+            ${providerLogo}
+            <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">
+              ${etf.isAccumulating ? "✨ Accumulating (Acc)" : "Distributing (Dist)"}
+            </span>
+            <span class="badge badge-blue">Score ${etf.retailScores?.composite || 95}/100</span>
+          </div>
+          <div>
+            ${stageBadge}
+          </div>
         </div>
         <h3 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${etf.name}</h3>
         <p style="font-size: 0.8rem; color: var(--text-muted);">

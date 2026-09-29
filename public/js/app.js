@@ -14,7 +14,9 @@ window.App = (function () {
     initTheme();
     bindNavigation();
     bindModal();
+    bindOnboarding();
     await loadInitialData();
+    switchTab("screener");
   }
 
   function initTheme() {
@@ -59,7 +61,62 @@ window.App = (function () {
       panel.classList.toggle("active", panel.id === `tab-${targetTab}`);
     });
 
+    // Synchronize active stage card in the roadmap navigator
+    document.querySelectorAll(".stage-step-card").forEach((card) => {
+      card.classList.toggle("active", card.dataset.stage === targetTab);
+    });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function bindOnboarding() {
+    const onboardingModal = document.getElementById("onboarding-modal");
+    const openBtn = document.getElementById("open-onboarding-btn");
+    const guideTourLink = document.getElementById("guide-tour-link");
+    const closeBtn = document.getElementById("onboarding-close");
+
+    function openModal() {
+      if (onboardingModal) onboardingModal.classList.add("active");
+    }
+
+    function closeModal() {
+      if (onboardingModal) onboardingModal.classList.remove("active");
+    }
+
+    if (openBtn) openBtn.addEventListener("click", openModal);
+    if (guideTourLink) guideTourLink.addEventListener("click", openModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+
+    if (onboardingModal) {
+      onboardingModal.addEventListener("click", (e) => {
+        if (e.target === onboardingModal) closeModal();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && onboardingModal.classList.contains("active")) {
+          closeModal();
+        }
+      });
+    }
+
+    // Stage navigator cards click to switch tabs
+    document.querySelectorAll(".stage-step-card").forEach((card) => {
+      card.addEventListener("click", () => {
+        const stage = card.dataset.stage;
+        if (stage) switchTab(stage);
+      });
+    });
+
+    // Jump buttons inside onboarding modal
+    document.querySelectorAll(".jump-stage-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target;
+        if (target) {
+          switchTab(target);
+          closeModal();
+        }
+      });
+    });
   }
 
   function bindModal() {

@@ -21,11 +21,15 @@ window.PortfolioVisualizerModule = (function () {
       const q = etf.quantitativeStatsPV || {};
       const c = etf.historicalStatsCurvo || {};
       const m = etf.morningstar || {};
+      const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 18) || "";
 
       return `
         <tr>
           <td>
-            <strong style="color: var(--accent-cyan); font-size: 0.95rem;">${etf.ticker}</strong>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <strong style="color: var(--accent-cyan); font-size: 0.95rem;">${etf.ticker}</strong>
+              ${providerLogo}
+            </div>
             <div style="font-size: 0.74rem; color: var(--text-muted);">${etf.benchmarkIndex}</div>
           </td>
           <td><span class="badge badge-blue">${m.styleBox || "Large Blend"}</span></td>
@@ -49,7 +53,10 @@ window.PortfolioVisualizerModule = (function () {
       <div class="card">
         <div class="card-header">
           <div>
-            <h3 class="card-title">🧮 Advanced Quantitative Analytics (Portfolio Visualizer Model)</h3>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h3 class="card-title" style="margin-bottom: 0;">🧮 Advanced Quantitative Analytics (Portfolio Visualizer Model)</h3>
+              <span class="stage-status-badge badge-optional">Stage 4 (Optional / Advanced)</span>
+            </div>
             <span class="card-subtitle">Downside deviation, Sortino, Tail Risk (VaR 95%), and Factor Sensitivity</span>
           </div>
           <a href="https://www.portfoliovisualizer.com/backtest-portfolio" target="_blank" class="btn btn-secondary btn-sm">
@@ -104,15 +111,30 @@ window.PortfolioVisualizerModule = (function () {
           <table class="data-table">
             <thead>
               <tr>
-                <th>Ticker & Benchmark</th>
-                <th>Style Box</th>
+                <th>Ticker &amp; Benchmark</th>
+                <th>
+                  Style Box
+                  <span class="info-tip" data-tip="Morningstar 3x3 classification of market cap size and investment value/blend/growth style.">?</span>
+                </th>
                 <th>CAGR</th>
                 <th>StDev (Risk)</th>
                 <th>Sharpe</th>
-                <th>Sortino (Downside)</th>
-                <th>Calmar</th>
-                <th>VaR 95% (Monthly)</th>
-                <th>Beta</th>
+                <th>
+                  Sortino (Downside)
+                  <span class="info-tip" data-tip="Sortino Ratio: Penalizes only negative volatility. Preferred metric for long-term equity investors who welcome upside swings.">?</span>
+                </th>
+                <th>
+                  Calmar
+                  <span class="info-tip" data-tip="Calmar Ratio: Annualized CAGR divided by maximum historical drawdown. Measures crash recovery efficiency.">?</span>
+                </th>
+                <th>
+                  VaR 95% (Monthly)
+                  <span class="info-tip" data-tip="Value at Risk (95% confidence): Worst expected monthly drawdown under normal market distribution tails.">?</span>
+                </th>
+                <th>
+                  Beta
+                  <span class="info-tip" data-tip="Market Beta: Covariance sensitivity relative to the global market index (1.00 = market beta; < 1.00 = defensive).">?</span>
+                </th>
                 <th>Action</th>
               </tr>
             </thead>

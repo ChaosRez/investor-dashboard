@@ -19,6 +19,7 @@ window.VerificationDocsModule = (function () {
     const rowsHtml = allEtfs.map(etf => {
       const docs = etf.officialDocs || {};
       const sri = etf.sriRisk || 4;
+      const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 20) || "";
 
       let sriColor = "badge-blue";
       if (sri <= 2) sriColor = "badge-acc";
@@ -27,13 +28,14 @@ window.VerificationDocsModule = (function () {
       return `
         <tr>
           <td>
-            <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <strong style="font-size: 1.05rem; color: var(--accent-cyan);">${etf.ticker}</strong>
+              ${providerLogo}
               <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">${etf.distributionPolicy}</span>
             </div>
             <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">${etf.name}</div>
             <div style="font-size: 0.72rem; color: var(--text-muted);">
-              Provider: <strong>${etf.issuer}</strong> | Domicile: <strong>${etf.domicile}</strong>
+              Domicile: <strong>${etf.domicile}</strong>
             </div>
           </td>
           <td>

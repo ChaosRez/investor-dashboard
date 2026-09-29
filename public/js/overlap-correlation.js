@@ -144,7 +144,10 @@ window.OverlapModule = (function () {
       <div class="card">
         <div class="card-header">
           <div>
-            <h3 class="card-title">🔍 Custom Portfolio Overlap & Redundancy Auditor</h3>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <h3 class="card-title" style="margin-bottom: 0;">🔍 Custom Portfolio Overlap &amp; Redundancy Auditor</h3>
+              <span class="stage-status-badge badge-essential">Stage 2 (Essential if &gt;1 Fund)</span>
+            </div>
             <span class="card-subtitle">Detect constituent overlap, single-stock clustering, and hidden factor tilts</span>
           </div>
           <button id="add-etf-row-btn" class="btn btn-secondary btn-sm">+ Add ETF</button>

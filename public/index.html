@@ -34,9 +34,12 @@
       </div>
 
       <div class="header-actions">
+        <button id="open-onboarding-btn" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #10b981, #06b6d4); border: none; white-space: nowrap;">
+          🚀 Where to Start? (Guide)
+        </button>
         <div style="text-align: right; margin-right: 8px;">
           <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Tracked Verified AUM</div>
-          <div id="stat-total-aum" style="font-weight: 800; font-size: 0.95rem; color: var(--accent-emerald);">312B €</div>
+          <div id="stat-total-aum" style="font-weight: 800; font-size: 0.95rem; color: var(--accent-emerald);">323B €</div>
         </div>
         <button id="theme-toggle" class="theme-toggle-btn">☀️ Light Mode</button>
       </div>
@@ -72,6 +75,83 @@
 
   <!-- Main Content Body -->
   <main class="main-container">
+
+    <!-- Portfolio Lifecycle Roadmap & Onboarding Navigator -->
+    <section class="stage-navigator">
+      <div class="stage-nav-header">
+        <div class="stage-nav-title">
+          <span>🧭 Retail Investor Portfolio Roadmap</span>
+          <span style="font-size: 0.76rem; font-weight: normal; color: var(--text-muted);">
+            • Click any stage to jump directly to the relevant tool and see what is essential vs optional:
+          </span>
+        </div>
+        <button id="guide-tour-link" class="btn btn-secondary btn-sm" style="font-size: 0.74rem;">
+          📖 Open Stage-by-Stage Onboarding Guide
+        </button>
+      </div>
+
+      <div class="stage-steps-grid">
+        <!-- Stage 1 -->
+        <div class="stage-step-card" data-stage="screener">
+          <div class="stage-step-top">
+            <span class="stage-number">Stage 1</span>
+            <span class="stage-status-badge badge-start-here">Start Here (Essential)</span>
+          </div>
+          <div class="stage-title">Foundation &amp; Core Selection</div>
+          <div class="stage-desc">
+            Pick 1 or 2 low-cost, broad-market Accumulating (Acc) ETFs (e.g. VWCE or IWDA+EIMI). Check TER &lt; 0.25%, AUM &gt; €1B, and Ireland domicile.
+          </div>
+        </div>
+
+        <!-- Stage 2 -->
+        <div class="stage-step-card" data-stage="overlap">
+          <div class="stage-step-top">
+            <span class="stage-number">Stage 2</span>
+            <span class="stage-status-badge badge-essential">Essential (If &gt;1 Fund)</span>
+          </div>
+          <div class="stage-title">Overlap &amp; Redundancy Audit</div>
+          <div class="stage-desc">
+            Verify you aren't unintentionally double-dipping into the same tech giants (Apple, NVIDIA, Microsoft). Avoid holding VWCE + IWDA together.
+          </div>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="stage-step-card" data-stage="curvo">
+          <div class="stage-step-top">
+            <span class="stage-number">Stage 3</span>
+            <span class="stage-status-badge badge-essential">Planning Phase</span>
+          </div>
+          <div class="stage-title">DCA &amp; Compounding Plan</div>
+          <div class="stage-desc">
+            Simulate your monthly Sparplan contributions using Curvo historical data. Project real inflation-adjusted purchasing power over 10–30 years.
+          </div>
+        </div>
+
+        <!-- Stage 4 -->
+        <div class="stage-step-card" data-stage="pv">
+          <div class="stage-step-top">
+            <span class="stage-number">Stage 4</span>
+            <span class="stage-status-badge badge-optional">Optional / Advanced</span>
+          </div>
+          <div class="stage-title">Risk Tuning &amp; Factor Tilts</div>
+          <div class="stage-desc">
+            Optional: Add a 10–20% bond shield (AGGU) or small-cap tilt (IUSN) if you want to smooth drawdowns along the Markowitz Efficient Frontier.
+          </div>
+        </div>
+
+        <!-- Stage 5 -->
+        <div class="stage-step-card" data-stage="news">
+          <div class="stage-step-top">
+            <span class="stage-number">Stage 5</span>
+            <span class="stage-status-badge badge-maintain">Maintenance Phase</span>
+          </div>
+          <div class="stage-title">News Radar &amp; Discipline</div>
+          <div class="stage-desc">
+            Monitor macro interest rate &amp; earnings signals. Follow Boglehead action rules: never panic-trade on headlines; maintain automated monthly DCA.
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- TAB 1: ETF Screener & Multi-Factor Score -->
     <section id="tab-screener" class="tab-panel active">
@@ -135,6 +215,131 @@
     </div>
   </div>
 
+  <!-- New User Onboarding & Stage Roadmap Modal -->
+  <div id="onboarding-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 860px;">
+      <button id="onboarding-close" class="modal-close-btn">&times;</button>
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+          <span style="font-size: 1.4rem;">🧭</span>
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--accent-blue);">
+            New Investor Onboarding Guide: Where to Start &amp; Portfolio Stages
+          </h2>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+          Building an ETF portfolio does not require predicting markets. Follow this stage-by-stage retail checklist to understand what is <strong>mandatory</strong>, what is <strong>optional</strong>, and how to maintain your portfolio with zero stress.
+        </p>
+      </div>
+
+      <!-- Stage 1 -->
+      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-emerald);">
+        <div class="onboarding-step-header">
+          <div>
+            <strong style="color: var(--accent-emerald); font-size: 0.95rem;">🏁 Stage 1: Core Foundation (START HERE — Mandatory)</strong>
+            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Establish your core wealth building engine</div>
+          </div>
+          <span class="stage-status-badge badge-start-here">Essential for Beginners</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          Start in the <strong>ETF Screener</strong>. Most retail investors need only <strong>ONE single global fund</strong> ("VWCE and Chill" or Invesco FWRA), or a two-fund split (88% IWDA + 12% EIMI). Ensure:
+        </p>
+        <ul style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 20px; line-height: 1.5; margin-bottom: 10px;">
+          <li><strong>Accumulating (Acc):</strong> Never buy Distributing unless you rely on live dividend income. Acc avoids annual tax leakage!</li>
+          <li><strong>Fund Size (AUM) &gt; €1B:</strong> Protects against fund closure and ensures institutional bid-ask spreads.</li>
+          <li><strong>Ireland Domicile (IE):</strong> Shields you from 40% US Estate Tax and cuts US dividend withholding from 30% to 15%.</li>
+        </ul>
+        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="screener">
+          👉 Go to ETF Screener
+        </button>
+      </div>
+
+      <!-- Stage 2 -->
+      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-blue);">
+        <div class="onboarding-step-header">
+          <div>
+            <strong style="color: var(--accent-blue); font-size: 0.95rem;">🔍 Stage 2: Overlap &amp; Redundancy Audit (Mandatory if holding &gt;1 fund)</strong>
+            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Avoid unintended tech mega-cap concentration</div>
+          </div>
+          <span class="stage-status-badge badge-essential">Essential for Multi-Fund Portfolios</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          Beginners often buy an S&amp;P 500 ETF, an MSCI World ETF, and a Tech ETF, mistakenly believing they have diversified. In reality, they are holding <strong>30%+ in just Apple, Microsoft, and NVIDIA</strong> across three wrappers. Use the <strong>Overlap Auditor</strong> to detect single-stock clustering before committing capital.
+        </p>
+        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="overlap">
+          👉 Audit Portfolio Overlap
+        </button>
+      </div>
+
+      <!-- Stage 3 -->
+      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-cyan);">
+        <div class="onboarding-step-header">
+          <div>
+            <strong style="color: var(--accent-cyan); font-size: 0.95rem;">📈 Stage 3: Wealth Accumulation &amp; DCA Plan (Planning Phase)</strong>
+            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Structure monthly automated contributions</div>
+          </div>
+          <span class="stage-status-badge badge-start-here">Planning Phase</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          Set up a monthly automated savings plan (Sparplan) at your broker (e.g. Trade Republic, Scalable, ING). Use the <strong>Curvo DCA Engine</strong> to simulate your 10–30 year timeline and see real inflation-adjusted purchasing power.
+        </p>
+        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="curvo">
+          👉 Open Curvo DCA Simulator
+        </button>
+      </div>
+
+      <!-- Stage 4 -->
+      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-purple);">
+        <div class="onboarding-step-header">
+          <div>
+            <strong style="color: var(--accent-purple); font-size: 0.95rem;">🧮 Stage 4: Risk Tuning &amp; Factor Tilts (OPTIONAL — Advanced Investors)</strong>
+            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Dampen volatility or add academic factor tilts</div>
+          </div>
+          <span class="stage-status-badge badge-optional">Optional Step</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          <em>This stage is completely optional.</em> If your stomach churns during market downturns, add <strong>10%–20% Global Aggregate Bonds (AGGU EUR Hedged)</strong>. Its near-zero correlation (0.12) cushions drawdowns along the Markowitz Efficient Frontier. If you seek factor premiums, consider a modest 10% tilt toward Small-Cap Value (IUSN / ZPRV).
+        </p>
+        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="pv">
+          👉 View Portfolio Visualizer Quant Risk
+        </button>
+      </div>
+
+      <!-- Stage 5 -->
+      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-amber);">
+        <div class="onboarding-step-header">
+          <div>
+            <strong style="color: var(--accent-amber); font-size: 0.95rem;">📡 Stage 5: News Radar &amp; Maintenance (Ongoing Phase)</strong>
+            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Stay informed without reacting emotionally</div>
+          </div>
+          <span class="stage-status-badge badge-maintain">Maintenance Phase</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          Use the <strong>Market News Radar</strong> to review macro and central bank rate signals. Remember the #1 Bogleheads rule: <strong>Never sell out of panic or pause your DCA</strong>. Rebalance only once a year if your equity/bond split drifts by more than 5%.
+        </p>
+        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="news">
+          👉 Open News Signal Radar
+        </button>
+      </div>
+
+      <!-- Stage 6 -->
+      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-rose);">
+        <div class="onboarding-step-header">
+          <div>
+            <strong style="color: var(--accent-rose); font-size: 0.95rem;">📑 Stage 6: Statutory Check Before Buying (Mandatory Compliance)</strong>
+            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Verify official legal documentation</div>
+          </div>
+          <span class="stage-status-badge badge-start-here">Mandatory Before Purchasing</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          Before transferring money to your broker, open the <strong>Official Documents &amp; KIDs Hub</strong> and download the statutory Key Information Document (KID) to confirm synthetic risk level (SRI 1–7) and ongoing transaction charges.
+        </p>
+        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="verification">
+          👉 Open Official KIDs Hub
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- App Footer -->
   <footer class="app-footer">
     <div>
@@ -153,6 +358,7 @@
 
   <!-- Scripts -->
   <script src="js/data-store.js"></script>
+  <script src="js/provider-logos.js"></script>
   <script src="js/screener.js"></script>
   <script src="js/overlap-correlation.js"></script>
   <script src="js/curvo-engine.js"></script>
