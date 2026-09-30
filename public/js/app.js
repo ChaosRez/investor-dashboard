@@ -18,7 +18,7 @@ window.App = (function () {
     bindLiveSync();
     await loadInitialData();
     
-    const validTabs = ["screener", "comparison", "overlap", "curvo", "pv", "news", "verification", "academy"];
+    const validTabs = ["screener", "comparison", "overlap", "curvo", "parity", "pv", "news", "verification", "academy"];
     let initialTab = "screener";
     
     if (window.location.hash) {
@@ -231,6 +231,7 @@ window.App = (function () {
     window.ComparisonMatrixModule?.init(etfsData);
     window.OverlapModule?.init(etfsData, correlationsData);
     window.CurvoModule?.init(etfsData);
+    window.RegimeRiskParityModule?.init(etfsData, correlationsData);
     window.PortfolioVisualizerModule?.init(etfsData);
     window.NewsSignalsModule?.init(newsData);
     window.VerificationDocsModule?.init(etfsData);

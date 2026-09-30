@@ -204,3 +204,41 @@ When modifying or extending this codebase, follow these rules:
   - `test_sync.py`: Ticker mappings, ISIN formatting, macro news grounding, and network resilience.
   - Run via: `uv run python -m unittest discover tests` or `python3 -m unittest discover tests`.
 
+---
+
+## 🛡️ 9. Advanced Portfolio Analysis for Unpredictable Macro Regimes
+
+### Decision 9.1: Non-Linear Risk Parity (HRP & ERC) Over Naive Mean-Variance Optimization (MPT)
+* **Context:** Classical Markowitz Mean-Variance Optimization requires forecasting expected returns ($\mu$). In unpredictable macro environments with inflation shocks and regime shifts, small forecast errors produce extreme, un-investable portfolio weights ("error maximizers"). Additionally, standard nominal allocations like the institutional 60/40 suffer from the **Equity Risk Concentration Trap**:
+  - In a 60% VWCE / 40% AGGU portfolio, equities account for **over 91.5% of total portfolio volatility risk**.
+  - In the 2022 stagflationary rate-hiking cycle, intermediate bonds fell by -16.8%, compounding equity losses rather than hedging them.
+* **Decision:**
+  1. Implement **Hierarchical Risk Parity (HRP)** (Marcos López de Prado): Uses machine learning graph clustering (single-linkage dendrograms) on the correlation distance matrix $d_{i,j} = \sqrt{2(1 - \rho_{i,j})}$, quasi-diagonalization (seriation), and recursive bisection. It never inverts a covariance matrix, eliminating matrix singularity and stability collapse during regime shifts.
+  2. Implement **Equal Risk Contribution (ERC / Risk Parity)**: Uses exact Cyclical Coordinate Descent (CCD) to solve for weights where each asset contributes identical marginal risk to total portfolio volatility ($w_i (\Sigma w)_i = w_j (\Sigma w)_j$).
+  3. Support **Inverse Volatility ($w_i \propto 1/\sigma_i$)** as a practical, bounded risk-parity baseline.
+
+### Decision 9.2: Tail-Risk Minimization (Mean-CVaR) and Ledoit-Wolf Covariance Shrinkage
+* **Context:** Financial asset returns exhibit fat tails (leptokurtic Student-t distributions) and negative skewness. Optimizing for standard deviation penalizes upside volatility equally with catastrophic downside losses.
+* **Decision:**
+  1. **Mean-CVaR (Conditional Value-at-Risk):** Implemented a projected gradient descent solver that minimizes the expected shortfall (average loss in the worst 5% tail scenarios) rather than naive variance.
+  2. **Ledoit-Wolf Covariance Shrinkage:** Replaces noisy sample covariance matrices with an analytically shrunk matrix $\Sigma^* = \alpha F + (1 - \alpha) S$, where $F$ is a constant-correlation structured target and $\alpha$ is the optimal shrinkage intensity, preventing over-allocation to spurious correlations.
+
+### Decision 9.3: QuantStats Historical Crisis Stress-Testing & Behavioral Drawdown Tolerance Guardrails
+* **Context:** Aggregated Sharpe ratios mask intra-cycle maximum drawdown trauma. Retail investors routinely abandon long-term investment plans when drawdowns breach their emotional tolerance threshold.
+* **Decision:**
+  1. Ground stress-testing in **5 canonical historical crisis windows** with real asset drawdowns:
+     - *2000–2002 Dot-Com Tech Bust*: Heavy drawdown in equities (-44.2%), positive sovereign bond flight (+22.4%), gold resilience (+8.1%).
+     - *2007–2009 Lehman Brothers Global Financial Crisis*: Liquidity freeze across global equities (-53.8%), high-grade bond buffer (+14.2%), cash stability (+3.5%).
+     - *2011 European Sovereign Debt Crisis*: Periphery bank stress and euro equity drawdown (-21.5%), bond flight (+8.2%), gold surge (+29.6%).
+     - *2020 COVID-19 Liquidity Shock*: Rapid compressed equity crash (-33.8%), temporary bond buffer (+3.1%), rapid cash preservation.
+     - *2022 Fed Rate-Hiking / Stagflation Shock*: Simultaneous equity crash (-18.2%) and bond duration collapse (-16.8%); gold (+0.4%) and overnight cash €STR (+0.8%) provided sole capital defense.
+  2. Implement a dynamic **Behavioral Drawdown Tolerance Guardrail**: If historical maximum drawdown exceeds the investor's specified limit (e.g. -20%), the engine calculates the exact reallocation into ultra-short liquidity (€STR XEON) required to bring portfolio drawdown back inside safe emotional tolerance.
+  3. Calculate a comprehensive **QuantStats Downside Tear-Sheet**: CAGR, Volatility, Sharpe, Sortino, Calmar, Max Drawdown, Tail Ratio, Monthly VaR 95%, CVaR 95%, Conditional Drawdown at Risk (CDaR 95%), Ulcer Index (cumulative drawdown stress), and 30-Year Safe Withdrawal Rate (SWR).
+
+### Decision 9.4: Multi-Tier Architecture: Zero-Dependency Core + Python Quant Generators + No-Code Hub
+* **Context:** Users vary between retail investors seeking intuitive visual modeling and quantitative researchers demanding Python code.
+* **Decision:**
+  1. **Zero-Dependency Python Standard Library Core:** All mathematical solvers (HRP, ERC, Mean-CVaR, Ledoit-Wolf, stress-tests) are implemented strictly using Python's standard library `math` and `random` modules, ensuring zero installation friction (`uv run apex-etf`).
+  2. **Open-Source Python Quant Script Generators:** The engine exports ready-to-run, fully formatted Python code for **PyPortfolioOpt** (`HRPOpt`), **Riskfolio-Lib** (`riskfolio.Portfolio`), and **QuantStats** (`qs.reports.full`).
+  3. **Curated No-Code Tools Integration:** Direct guidance, parameter recommendations, and use-case matching for **Portfolio Visualizer**, **Testfol.io**, and **Portfolio Charts**.
+

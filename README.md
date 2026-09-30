@@ -20,11 +20,23 @@ uv run apex-sync
 # 3. Or perform an instant quantitative portfolio overlap audit in the terminal
 uv run apex-etf audit VWCE:70 QDVE:30
 
-# 4. Check installation status & dataset integrity
+# 4. Optimize portfolio using Hierarchical Risk Parity (HRP) or Risk Parity (ERC)
+uv run apex-etf optimize VWCE:60 AGGU:40 SGLD:10 XEON:10 --method hrp
+
+# 5. Stress-test historical downside across 5 crises (Dot-Com, Lehman, COVID, 2022)
+uv run apex-etf stress-test VWCE:60 AGGU:40 --tolerance -20
+
+# 6. Generate QuantStats downside teardown metrics (Sortino, CDaR, VaR, Ulcer Index)
+uv run apex-etf teardown VWCE:60 AGGU:40
+
+# 7. View curated institutional no-code tools (Portfolio Visualizer, Testfol.io, Portfolio Charts)
+uv run apex-etf platforms
+
+# 8. Check installation status & dataset integrity
 uv run apex-etf status
 
-# 5. Run the complete automated test suite (18 tests)
-uv run python -m unittest discover tests
+# 9. Run the complete automated test suite (46 tests across 6 test modules)
+uv run pytest tests
 ```
 
 ### Option 2: Standard Python 3 (No Virtual Environment Needed)
@@ -98,11 +110,31 @@ All figures, metrics, percentages, and document links in this dashboard are grou
   - Real-time SVG Growth Chart: Visualizes **Nominal Portfolio Value**, **Real Purchasing Power (Inflation-Adjusted)**, and **Total Out-of-Pocket Deposits**.
   - Direct deep-link to verify and compare live on `https://curvo.eu/backtest/en`.
 
-### 4. 🧮 Portfolio Visualizer Quantitative Analytics
+### 4. 🛡️ Regime Resilience & Non-Linear Risk Parity Studio
+Built specifically for unpredictable macro regimes where basic Markowitz Mean-Variance Optimization (MPT) fails due to fragile expected return forecasts:
+* **The 3-Step Decision-Making Workflow**:
+  1. *Step 1: Pick Structural Building Blocks*: Manually assemble assets across 5 distinct economic regimes (**Growth Equities**, **Factor Tilts**, **Fixed Income Bonds**, **Cash €STR Liquidity**, and **Real Commodities/Gold**).
+  2. *Step 2: Size with HRP or Risk Parity*: Allocate by true volatility risk contribution rather than subjective return forecasts using **Hierarchical Risk Parity (HRP)** or **Equal Risk Contribution (ERC / Risk Parity)**.
+  3. *Step 3: Stress-Test the Downside*: Evaluate drawdown survival across 5 historical crisis shocks (**2000–2002 Dot-Com**, **2007–2009 Lehman GFC**, **2011 Euro Debt**, **2020 COVID**, and **2022 Fed Rate-Hiking Cycle**). If maximum drawdown breaches your behavioral tolerance, increase your short Treasury / liquidity allocation (€STR).
+* **The 60/40 Equity Risk Trap Exposed**:
+  - In a nominal 60/40 equity/bond portfolio, equities account for **over 91.5% of total portfolio risk**.
+  - In the 2022 stagflation shock, intermediate bonds suffered a **-16.8% drawdown**, failing as a hedge and proving the necessity of non-linear risk parity, cash (€STR), and real assets.
+* **Institutional Quant Engine (Zero External Dependencies)**:
+  - **Hierarchical Risk Parity (HRP)**: Single-linkage agglomerative clustering on tree distance $d_{i,j} = \sqrt{2(1 - \rho_{i,j})}$, quasi-diagonalization (seriation), and recursive bisection.
+  - **Equal Risk Contribution (ERC / Risk Parity)**: Exact Cyclical Coordinate Descent solver balancing marginal risk contributions ($w_i (\Sigma w)_i = w_j (\Sigma w)_j$).
+  - **Mean-CVaR (Conditional Value-at-Risk)**: Projected gradient descent minimizing 95% expected tail loss in extreme black swan scenarios.
+  - **Ledoit-Wolf Covariance Shrinkage**: Constant-correlation target shrinking sample noise to prevent extreme allocations.
+  - **QuantStats Downside Tear-Sheet**: Calculates CAGR, Sharpe, Sortino, Calmar, Max Drawdown, Tail Ratio, Monthly VaR 95%, CVaR 95%, CDaR 95%, Ulcer Index, and 30-Year Safe Withdrawal Rate (SWR).
+* **Open-Source Python Quant Script Generators**:
+  - One-click copyable scripts for **PyPortfolioOpt** (`HRPOpt`), **Riskfolio-Lib** (`riskfolio.Portfolio`), and **QuantStats** (`qs.reports.full`).
+* **Institutional No-Code Tools Integration**:
+  - Interactive deep-dives into **Portfolio Visualizer** (Factor regression & Risk Parity), **Testfol.io** (Synthetic histories & cash drag), and **Portfolio Charts** (Drawdown survival & safe withdrawal rates).
+
+### 5. 🧮 Portfolio Visualizer Quantitative Analytics
 * **Advanced Risk Metrics**: Sortino Ratio (downside risk only), Calmar Ratio (recovery velocity), 95% Monthly Value at Risk (VaR), and Market Beta.
 * **Markowitz Efficient Frontier**: SVG visualization showing the risk-return curve and demonstrating why adding non-correlated bonds (AGGU) reduces portfolio variance with minimal return sacrifice.
 
-### 5. 📰 Market Intelligence & Real-Time Macro Radar
+### 6. 📰 Market Intelligence & Real-Time Macro Radar
 * Real-world financial and macroeconomic developments (ECB policy rate easing, Big Tech AI capex run-rates, Chinese liquidity facilities, sovereign debt term premiums, European competitiveness, semiconductor export controls).
 * **Signal Level Classification**:
   - 🟢 **Bullish** | 🟡 **Watch / Neutral** | 🔴 **Bearish / Caution**
@@ -113,11 +145,11 @@ All figures, metrics, percentages, and document links in this dashboard are grou
   - Or select any ETF in the screener/modal to view all high-impact macro news directly impacting its constituents.
 * **🛡️ Retail Boglehead Action**: Disciplined retail advice to prevent emotional trading, stay the course, and maintain automated DCA.
 
-### 6. 📑 Official Issuer Documents & Final Verification Hub
+### 7. 📑 Official Issuer Documents & Final Verification Hub
 * Comprehensive verification directory with one-click **ISIN Copy** buttons.
 * Direct links to official **PRIIPs Key Information Documents (KIDs)**, **Monthly Factsheets**, and **Annual Reports** directly from Vanguard, BlackRock / iShares, Amundi, and Xtrackers.
 
-### 7. 🎓 Bogleheads Wiki & Tax Academy
+### 8. 🎓 Bogleheads Wiki & Tax Academy
 * **Interactive Compounding Drag Calculator**: Calculate the exact wealth loss of holding Distributing (Dist) vs Accumulating (Acc) ETFs over 10 to 40 years based on local dividend tax rates (e.g. 26.375% German Abgeltungsteuer or 30% Belgian WHT).
 * **Domicile Deep-Dive**: Explains why **Ireland (IE)** is the gold standard for non-US investors (15% US treaty rate, 0% Irish WHT, and complete shielding from the 40% US Estate Tax trap on US-domiciled ETFs like VOO or VTI).
 * **Step-by-Step Investor Roadmap**: Educational guide helping beginners navigate Portfolio Setup, Optimization, Verification, and Maintenance.
@@ -137,30 +169,35 @@ All figures, metrics, percentages, and document links in this dashboard are grou
 │   └── apex_etf/
 │       ├── __init__.py         # Package initialization & public API exports
 │       ├── config.py           # Paths, default ports, watchlist tickers, ISIN market map
-│       ├── cli.py              # CLI entrypoint (serve, sync, audit, status)
+│       ├── cli.py              # CLI entrypoint (serve, sync, audit, optimize, stress-test, teardown, platforms)
 │       ├── server.py           # HTTP server, static asset handling, /api/* REST endpoints
 │       ├── sync.py             # Live data ingestion engine (Yahoo Finance, justETF, ECB RSS)
-│       ├── analysis.py         # Overlap math, single-stock concentration, Curvo DCA engine
+│       ├── analysis.py         # Overlap math, HRP, ERC, Mean-CVaR, Ledoit-Wolf, QuantStats teardown
 │       └── macro_news.py       # Macro events, transmission mechanisms, and Boglehead rules
 ├── tests/
 │   ├── __init__.py
-│   ├── test_analysis.py        # 6 unit tests: overlap, weighted TER, DCA compounding
-│   ├── test_server.py          # 8 integration tests: HTTP REST endpoints on ephemeral port
-│   └── test_sync.py            # 4 unit tests: config, ISIN mappings, network resilience
-├── scripts/                    # Legacy data preparation scripts
+│   ├── test_advanced_analysis.py # 11 tests: HRP, ERC, Mean-CVaR, Shrinkage, Stress-test, QuantStats
+│   ├── test_analysis.py          # 6 tests: overlap math, weighted TER, Curvo DCA compounding
+│   ├── test_cli.py               # 6 tests: CLI subcommands (audit, optimize, stress-test, teardown, platforms)
+│   ├── test_data_integrity.py    # 4 tests: ETF schema, sector sums, holdings sums, correlation matrix
+│   ├── test_server.py            # 15 tests: HTTP REST endpoints on ephemeral port
+│   └── test_sync.py              # 4 tests: config, ISIN mappings, network resilience
+├── scripts/                      # Data maintenance and store generation scripts
 │   ├── build_etf_data.py
 │   ├── build_supporting_data.py
 │   └── build_js_store.py
-└── public/                     # Frontend client (zero framework, vanilla modern JS/CSS)
-    ├── index.html              # Single Page Application HTML5 UI
-    ├── css/styles.css          # Responsive Dark/Light CSS design system
-    ├── data/                   # Verified JSON datasets (etfs.json, news.json, etc.)
-    └── js/                     # Modular frontend controllers
+└── public/                       # Frontend client (zero framework, vanilla modern JS/CSS)
+    ├── index.html                # Single Page Application HTML5 UI
+    ├── css/styles.css            # Responsive Dark/Light CSS design system
+    ├── data/                     # Verified JSON datasets (etfs.json, news.json, correlations.json)
+    └── js/                       # Modular frontend controllers
         ├── app.js
         ├── data-store.js
         ├── screener.js
+        ├── comparison.js
         ├── overlap-correlation.js
         ├── curvo-engine.js
+        ├── regime-risk-parity.js # 3-step decision workflow, SVG risk charts & dendrograms
         ├── pv-engine.js
         ├── news-signals.js
         ├── verification-docs.js
@@ -171,14 +208,14 @@ All figures, metrics, percentages, and document links in this dashboard are grou
 
 ## 🧪 Running Automated Tests
 
-Run the test suite with standard `unittest` or with `uv`:
+Run the comprehensive test suite (46 unit and integration tests across 6 test modules):
 
 ```bash
-# Using uv:
-uv run python -m unittest discover tests
+# Using pytest (Recommended):
+uv run pytest tests
 
-# Using standard Python:
-python3 -m unittest discover tests
+# Or using standard unittest:
+uv run python -m unittest discover tests
 ```
 
 ---

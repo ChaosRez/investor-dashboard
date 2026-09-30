@@ -15,7 +15,16 @@ from . import __version__
 from .config import DEFAULT_PORT, DEFAULT_HOST, DATA_DIR, WATCHLIST_TICKERS
 from .server import run_server
 from .sync import run_full_sync
-from .analysis import calculate_portfolio_overlap
+from .analysis import (
+    calculate_portfolio_overlap,
+    calculate_hierarchical_risk_parity,
+    calculate_equal_risk_contribution,
+    calculate_mean_cvar,
+    calculate_robust_portfolio_optimization,
+    calculate_crisis_stress_test,
+    calculate_quantstats_downside_tear_sheet,
+    get_platforms_metadata,
+)
 
 def cmd_serve(args: argparse.Namespace) -> None:
     """Run HTTP dashboard server."""
@@ -135,6 +144,174 @@ def cmd_audit(args: argparse.Namespace) -> None:
 
     print("=" * 65)
 
+def cmd_optimize(args: argparse.Namespace) -> None:
+    """Run robust optimization algorithms (HRP, Risk Parity, Mean-CVaR)."""
+    etfs_file = os.path.join(DATA_DIR, "etfs.json")
+    etfs_by_ticker = {}
+    if os.path.exists(etfs_file):
+        with open(etfs_file, "r", encoding="utf-8") as f:
+            etfs = json.load(f)
+        etfs_by_ticker = {e["ticker"].upper(): e for e in etfs}
+
+    tickers = []
+    if args.etfs:
+        for item in args.etfs:
+            t = item.split(":")[0].strip().upper()
+            if t and t not in tickers:
+                tickers.append(t)
+    else:
+        tickers = ["VWCE", "AGGU", "XEON", "SGLD"]
+
+    method = getattr(args, "method", "all").lower()
+
+    print("=" * 70)
+    print(f"🛡️ ApexETF Robust Optimization Suite | Target Assets: {tickers}")
+    print("=" * 70)
+
+    if method == "hrp":
+        res = calculate_hierarchical_risk_parity(tickers, etfs_by_ticker)
+        print(f"\n[Hierarchical Risk Parity (HRP)] - Est. Volatility: {res.get('portfolioVolatility', 0):.2f}%")
+        print(f"Clustering Order: {' -> '.join(res.get('seriatedOrder', []))}")
+        print("\nAllocations & Risk Contributions:")
+        for t, w in res.get("weights", {}).items():
+            rc = res.get("percentageRiskContributions", {}).get(t, 0)
+            print(f" • {t:<6} Weight: {w:>6.2f}%  |  Risk Contribution: {rc:>6.2f}%")
+    elif method in ["risk-parity", "erc"]:
+        res = calculate_equal_risk_contribution(tickers, etfs_by_ticker)
+        print(f"\n[Equal Risk Contribution (Risk Parity)] - Est. Volatility: {res.get('portfolioVolatility', 0):.2f}%")
+        print("\nAllocations & Risk Contributions (Guaranteed Equalized):")
+        for t, w in res.get("weights", {}).items():
+            rc = res.get("percentageRiskContributions", {}).get(t, 0)
+            print(f" • {t:<6} Weight: {w:>6.2f}%  |  Risk Contribution: {rc:>6.2f}%")
+    elif method == "mean-cvar":
+        res = calculate_mean_cvar(tickers, etfs_by_ticker)
+        print(f"\n[Mean-CVaR Tail-Risk Optimization] - 95% CVaR Tail Loss: {res.get('cvar95', 0):.2f}%")
+        print("\nAllocations:")
+        for t, w in res.get("weights", {}).items():
+            print(f" • {t:<6} Weight: {w:>6.2f}%")
+    else:
+        res = calculate_robust_portfolio_optimization(tickers, etfs_by_ticker)
+        methods = res.get("methods", {})
+        print(f"{'Asset':<6} | {'HRP':>8} | {'RiskParity':>11} | {'Mean-CVaR':>10} | {'1/N Eq':>8} | {'Markowitz':>10}")
+        print("-" * 65)
+        for t in tickers:
+            w_hrp = methods.get("hrp", {}).get("weights", {}).get(t, 0)
+            w_erc = methods.get("equalRiskContribution", {}).get("weights", {}).get(t, 0)
+            w_cvar = methods.get("meanCvar", {}).get("weights", {}).get(t, 0)
+            w_eq = methods.get("equalWeight", {}).get("weights", {}).get(t, 0)
+            w_mpt = methods.get("markowitzMeanVariance", {}).get("weights", {}).get(t, 0)
+            print(f"{t:<6} | {w_hrp:>7.1f}% | {w_erc:>10.1f}% | {w_cvar:>9.1f}% | {w_eq:>7.1f}% | {w_mpt:>9.1f}%")
+        print("-" * 65)
+        vol_hrp = methods.get("hrp", {}).get("volatility", 0)
+        vol_erc = methods.get("equalRiskContribution", {}).get("volatility", 0)
+        vol_cvar = methods.get("meanCvar", {}).get("volatility", 0)
+        vol_eq = methods.get("equalWeight", {}).get("volatility", 0)
+        vol_mpt = methods.get("markowitzMeanVariance", {}).get("volatility", 0)
+        print(f"{'Vol %':<6} | {vol_hrp:>7.2f}% | {vol_erc:>10.2f}% | {vol_cvar:>9.2f}% | {vol_eq:>7.2f}% | {vol_mpt:>9.2f}%")
+    print("=" * 70)
+
+def cmd_stress_test(args: argparse.Namespace) -> None:
+    """Stress-test portfolio allocation across canonical historical crises."""
+    etfs_file = os.path.join(DATA_DIR, "etfs.json")
+    etfs_by_ticker = {}
+    if os.path.exists(etfs_file):
+        with open(etfs_file, "r", encoding="utf-8") as f:
+            etfs = json.load(f)
+        etfs_by_ticker = {e["ticker"].upper(): e for e in etfs}
+
+    weights = {}
+    if args.etfs:
+        for item in args.etfs:
+            if ":" in item:
+                parts = item.split(":")
+                weights[parts[0].strip().upper()] = float(parts[1])
+            else:
+                weights[item.strip().upper()] = 100.0 / len(args.etfs)
+    else:
+        weights = {"VWCE": 60, "AGGU": 40}
+
+    tolerance = getattr(args, "tolerance", -20.0)
+
+    print("=" * 75)
+    print(f"📉 QuantStats Historical Crisis Stress-Test | Portfolio: {weights}")
+    print(f"🎯 Behavioral Drawdown Tolerance Limit: {tolerance:.1f}%")
+    print("=" * 75)
+
+    res = calculate_crisis_stress_test(weights, etfs_by_ticker, tolerance)
+    crises = res.get("crises", [])
+
+    print(f"{'Historical Crisis':<34} | {'Portfolio':>10} | {'100% Equity':>11} | {'Alpha vs Eq':>11}")
+    print("-" * 75)
+    for c in crises:
+        p_dd = c["portfolioDrawdown"]
+        eq_dd = c["benchmarkEquityDrawdown"]
+        alpha = c["outperformanceVsEquity"]
+        sign = "+" if alpha >= 0 else ""
+        print(f"{c['name']:<34} | {p_dd:>9.1f}% | {eq_dd:>10.1f}% | {sign}{alpha:>9.1f}%")
+    print("-" * 75)
+
+    worst_dd = res.get("worstHistoricalDrawdown", 0)
+    worst_crisis = res.get("worstCrisisName", "")
+    print(f"\n🚨 Worst Historical Drawdown: {worst_dd:.1f}% during '{worst_crisis}'")
+    print(f"\nAdvisory & Guardrail Assessment:")
+    print(f" {res.get('remedyAdvice', '')}")
+    print("=" * 75)
+
+def cmd_teardown(args: argparse.Namespace) -> None:
+    """Generate QuantStats-style downside teardown tear-sheet."""
+    etfs_file = os.path.join(DATA_DIR, "etfs.json")
+    etfs_by_ticker = {}
+    if os.path.exists(etfs_file):
+        with open(etfs_file, "r", encoding="utf-8") as f:
+            etfs = json.load(f)
+        etfs_by_ticker = {e["ticker"].upper(): e for e in etfs}
+
+    weights = {}
+    if args.etfs:
+        for item in args.etfs:
+            if ":" in item:
+                parts = item.split(":")
+                weights[parts[0].strip().upper()] = float(parts[1])
+            else:
+                weights[item.strip().upper()] = 100.0 / len(args.etfs)
+    else:
+        weights = {"VWCE": 60, "AGGU": 40}
+
+    print("=" * 70)
+    print(f"📋 QuantStats Downside Teardown Tear-Sheet | Allocation: {weights}")
+    print("=" * 70)
+
+    res = calculate_quantstats_downside_tear_sheet(weights, etfs_by_ticker)
+    m = res.get("metrics", {})
+
+    print(f" • Expected CAGR:              {m.get('cagr', 0):>6.2f}%")
+    print(f" • Annualized Volatility:      {m.get('annualizedVolatility', 0):>6.2f}%")
+    print(f" • Sharpe Ratio (Rf=2.5%):     {m.get('sharpeRatio', 0):>6.2f}")
+    print(f" • Sortino Ratio (Downside):   {m.get('sortinoRatio', 0):>6.2f}")
+    print(f" • Calmar Ratio (CAGR/MaxDD):  {m.get('calmarRatio', 0):>6.2f}")
+    print(f" • Maximum Historical Drawdown:{m.get('maxDrawdown', 0):>6.2f}%")
+    print(f" • Tail Ratio (95th/5th tail): {m.get('tailRatio', 0):>6.2f}")
+    print(f" • Monthly VaR 95%:            {m.get('var95Monthly', 0):>6.2f}%")
+    print(f" • Monthly CVaR (Tail Loss):   {m.get('cvar95Monthly', 0):>6.2f}%")
+    print(f" • CDaR 95% (Conditional DD):  {m.get('cdar95', 0):>6.2f}%")
+    print(f" • Ulcer Index (Depth+Length): {m.get('ulcerIndex', 0):>6.2f}")
+    print(f" • Safe Withdrawal Rate (30Y): {m.get('swr30Y', 0):>6.2f}%")
+    print(f" • Longest Underwater Period:  {m.get('longestUnderwaterMonths', 0)} months")
+    print("=" * 70)
+
+def cmd_platforms(args: argparse.Namespace) -> None:
+    """List open-source quant libraries and no-code interactive web platforms."""
+    platforms = get_platforms_metadata()
+    print("=" * 80)
+    print("🌐 Institutional Quant Libraries & Interactive ETF Decision Platforms")
+    print("=" * 80)
+    for p in platforms:
+        print(f"\n[{p['name']}] ({p['type']}) - {p['badge']}")
+        print(f" • Key Strength: {p['keyStrengths']}")
+        print(f" • Best Used For: {p['bestUsedFor']}")
+        print(f" • Link: {p['url']}")
+    print("=" * 80)
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="apex-etf",
@@ -159,6 +336,23 @@ def main() -> None:
     audit_parser = subparsers.add_parser("audit", help="Run portfolio overlap audit on ETFs")
     audit_parser.add_argument("etfs", nargs="*", help="List of tickers (e.g. VWCE IWDA) or weighted pairs (e.g. VWCE:70 IWDA:30)")
 
+    # Command: optimize
+    opt_parser = subparsers.add_parser("optimize", help="Run robust portfolio optimization (HRP, Risk Parity, Mean-CVaR)")
+    opt_parser.add_argument("etfs", nargs="*", help="List of tickers to optimize (e.g. VWCE AGGU XEON SGLD)")
+    opt_parser.add_argument("--method", "-m", choices=["all", "hrp", "risk-parity", "erc", "mean-cvar"], default="all", help="Optimization algorithm (default: all)")
+
+    # Command: stress-test
+    stress_parser = subparsers.add_parser("stress-test", help="Stress-test portfolio against 2000 Dot-Com, 2008 Lehman, 2020 COVID, 2022 Fed rate hiking")
+    stress_parser.add_argument("etfs", nargs="*", help="Weighted portfolio (e.g. VWCE:60 AGGU:40)")
+    stress_parser.add_argument("--tolerance", "-t", type=float, default=-20.0, help="Maximum tolerable drawdown percentage (default: -20.0)")
+
+    # Command: teardown
+    td_parser = subparsers.add_parser("teardown", help="Generate QuantStats-style downside teardown tear-sheet (Ulcer Index, CDaR, SWR)")
+    td_parser.add_argument("etfs", nargs="*", help="Weighted portfolio (e.g. VWCE:60 AGGU:40)")
+
+    # Command: platforms
+    subparsers.add_parser("platforms", help="Display comparative guide for PyPortfolioOpt, Riskfolio, QuantStats, Portfolio Visualizer, Testfol.io, Portfolio Charts")
+
     args = parser.parse_args()
 
     if args.command == "serve":
@@ -169,6 +363,14 @@ def main() -> None:
         cmd_status(args)
     elif args.command == "audit":
         cmd_audit(args)
+    elif args.command == "optimize":
+        cmd_optimize(args)
+    elif args.command == "stress-test":
+        cmd_stress_test(args)
+    elif args.command == "teardown":
+        cmd_teardown(args)
+    elif args.command == "platforms":
+        cmd_platforms(args)
     else:
         # Default behavior: run server
         cmd_serve(argparse.Namespace(port=DEFAULT_PORT, host=DEFAULT_HOST))

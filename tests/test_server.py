@@ -107,5 +107,55 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertIn("results", data)
         self.assertEqual(data["results"]["totalInvested"], 5000 + 300 * 60)
 
+    def test_get_portfolio_regimes(self):
+        data = self.get_json("/api/portfolio/regimes")
+        self.assertIn("taxonomy", data)
+        self.assertIn("presets", data)
+        self.assertIn("growth_equity", data["taxonomy"])
+        self.assertIn("all_weather", data["presets"])
+
+    def test_get_portfolio_platforms(self):
+        data = self.get_json("/api/portfolio/platforms")
+        self.assertIn("platforms", data)
+        p_ids = [p["id"] for p in data["platforms"]]
+        self.assertIn("portfoliovisualizer", p_ids)
+        self.assertIn("riskfolio", p_ids)
+
+    def test_get_portfolio_crises(self):
+        data = self.get_json("/api/portfolio/crises")
+        self.assertIn("crises", data)
+        self.assertEqual(len(data["crises"]), 5)
+
+    def test_post_portfolio_optimize(self):
+        payload = {"tickers": ["VWCE", "AGGU", "XEON"], "method": "all"}
+        data = self.post_json("/api/portfolio/optimize", payload)
+        self.assertIn("methods", data)
+        self.assertIn("hrp", data["methods"])
+        self.assertIn("equalRiskContribution", data["methods"])
+        self.assertIn("meanCvar", data["methods"])
+
+    def test_post_portfolio_stress_test(self):
+        payload = {"portfolio": {"VWCE": 70, "AGGU": 30}, "behavioralTolerance": -25.0}
+        data = self.post_json("/api/portfolio/stress-test", payload)
+        self.assertIn("crises", data)
+        self.assertEqual(len(data["crises"]), 5)
+        self.assertIn("worstHistoricalDrawdown", data)
+        self.assertIn("remedyAdvice", data)
+
+    def test_post_portfolio_teardown(self):
+        payload = {"portfolio": {"VWCE": 60, "AGGU": 40}}
+        data = self.post_json("/api/portfolio/teardown", payload)
+        self.assertIn("metrics", data)
+        self.assertIn("cagr", data["metrics"])
+        self.assertIn("ulcerIndex", data["metrics"])
+        self.assertIn("swr30Y", data["metrics"])
+
+    def test_post_portfolio_code_snippets(self):
+        payload = {"portfolio": {"VWCE": 60, "AGGU": 40}}
+        data = self.post_json("/api/portfolio/code-snippets", payload)
+        self.assertIn("pyportfolioopt", data)
+        self.assertIn("riskfolio", data)
+        self.assertIn("quantstats", data)
+
 if __name__ == "__main__":
     unittest.main()

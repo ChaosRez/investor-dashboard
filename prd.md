@@ -164,7 +164,27 @@ To prevent beginner cognitive overload, the UI organizes the investment lifecycl
   - Verification table with direct links to statutory Key Information Documents (PRIIPs KIDs) and monthly Factsheet PDFs.
   - 1-Click copy button for ISIN and WKN codes.
   - Domicile Deep-Dive comparing Ireland vs Luxembourg vs US domiciles (15% US withholding tax treaty advantage under Irish UCITS vs 30% US domestic withholding and US Estate Tax risks).
-  - Interactive **Compounding Tax Drag Calculator** computing the monetary terminal wealth lost to dividend tax leakages over 10 to 30 years.
+### FR-9: Regime Resilience & Non-Linear Risk Parity Engine
+- **Specification:**
+  - Addresses macro regime uncertainty where classical Markowitz Mean-Variance Optimization fails due to unstable return forecasting and quadratic upside volatility penalties.
+  - **3-Step Decision-Making Workflow:**
+    1. *Step 1: Structural Building Blocks Selection:* User manually chooses assets across 5 distinct economic regimes (**Growth Equities**, **Factor Tilts**, **Fixed Income Bonds**, **Cash €STR Liquidity**, and **Real Commodities/Gold**). Includes pre-engineered presets: "Single-Fund VWCE", "Institutional 60/40", "Ray Dalio All-Weather", "Harry Browne Permanent Portfolio", "Golden Butterfly", "Growth & T-Bill Barbell", and "Tech Momentum Tilt".
+    2. *Step 2: Non-Linear Position Sizing:*
+       - **Hierarchical Risk Parity (HRP):** Single-linkage clustering on tree distance $d_{i,j} = \sqrt{2(1 - \rho_{i,j})}$, seriation, and recursive bisection without covariance matrix inversion.
+       - **Equal Risk Contribution (ERC / Risk Parity):** Cyclical Coordinate Descent solver balancing marginal risk contributions.
+       - **Mean-CVaR (Conditional Value-at-Risk):** Projected gradient descent minimizing expected shortfall at 95% confidence level under jump/fat-tailed scenarios.
+       - **Ledoit-Wolf Covariance Shrinkage:** Shrinking sample covariance toward constant-correlation target.
+       - **Inverse Volatility & Equal Weight:** Bounded benchmark allocations.
+    3. *Step 3: Downside Stress-Testing & Crisis Analysis:*
+       - Historical drawdown simulation across 5 canonical crises: 2000–2002 Dot-Com (-44.2% equity), 2007–2009 Lehman GFC (-53.8% equity), 2011 Euro Debt (-21.5% equity), 2020 COVID (-33.8% equity), and 2022 Fed Rate-Hiking Cycle (-18.2% equity, -16.8% bond duration collapse).
+       - Behavioral Drawdown Tolerance Guardrail: Interactive slider (-45% to -10%) that warns when crisis drawdown exceeds user tolerance and computes exact capital reallocation into ultra-short liquidity (€STR XEON).
+       - **QuantStats Comprehensive Downside Tear-Sheet:** Computes CAGR, Volatility, Sharpe, Sortino, Calmar, Max Drawdown, Tail Ratio, Monthly VaR 95%, CVaR 95%, Conditional Drawdown at Risk (CDaR 95%), Ulcer Index, and 30-Year Safe Withdrawal Rate (SWR).
+  - **Interactive Visualizations:**
+    - Real-Time SVG Risk Contribution Decomposition Chart exposing the 60/40 equity trap (91.5% equity risk in a nominal 60/40).
+    - SVG Dendrogram Clustering Tree rendering the hierarchical correlation distance hierarchy.
+  - **Tool Integration & Exportability:**
+    - 1-Click copyable Python scripts for **PyPortfolioOpt**, **Riskfolio-Lib**, and **QuantStats**.
+    - Curated institutional no-code tools directory with direct links and parameter recommendations for **Portfolio Visualizer**, **Testfol.io**, and **Portfolio Charts**.
 
 ---
 
@@ -232,6 +252,7 @@ flowchart TD
         CMP["comparison-matrix.js (Side-by-Side 5-Fund Grid)"]
         OVR["overlap-correlation.js (Holdings Overlap & Correlation)"]
         CRV["curvo-engine.js (DCA Historical Simulator)"]
+        PAR["regime-risk-parity.js (Regime Resilience, HRP & Crisis Teardown)"]
         PV["pv-engine.js (Modern Portfolio Theory & VaR)"]
         NWS["news-signals.js (Two-Sided Macro Radar)"]
         DOC["verification-docs.js (PRIIPs KIDs & Factsheets)"]
@@ -257,6 +278,7 @@ flowchart TD
     APP --> CMP
     APP --> OVR
     APP --> CRV
+    APP --> PAR
     APP --> PV
     APP --> NWS
     APP --> DOC
@@ -269,6 +291,13 @@ flowchart TD
 - `GET /api/correlations` — Returns the 10-year monthly return correlation matrix.
 - `POST /api/overlap` — Accepts portfolio weight allocations `{ "IUSQ": 70, "XEON": 30 }` and returns aggregated holdings, country/sector exposure, and pairwise redundancy analysis.
 - `POST /api/portfolio/backtest` — Computes DCA historical compound simulation.
+- `POST /api/portfolio/optimize` — Computes robust portfolio allocations across 6 methods (HRP, Equal Risk Contribution, Mean-CVaR, Inverse Volatility, Equal Weight, Markowitz MPT).
+- `POST /api/portfolio/stress-test` — Simulates historical downside drawdown across 5 canonical crises (2000–2002 Dot-Com, 2008 Lehman GFC, 2011 Euro Debt, 2020 COVID, 2022 Fed Rate Hikes) with dynamic behavioral tolerance guardrail.
+- `POST /api/portfolio/teardown` — Calculates comprehensive QuantStats downside tear-sheet (CAGR, Sharpe, Sortino, Calmar, Max Drawdown, Tail Ratio, Monthly VaR 95%, CVaR 95%, CDaR 95%, Ulcer Index, SWR 30Y).
+- `POST /api/portfolio/code-snippets` — Generates copyable, production-ready Python quant scripts for PyPortfolioOpt, Riskfolio-Lib, and QuantStats.
+- `GET /api/portfolio/regimes` — Returns the 5 macro economic regimes and pre-engineered portfolio presets.
+- `GET /api/portfolio/platforms` — Returns curated no-code quantitative web tools (Portfolio Visualizer, Testfol.io, Portfolio Charts).
+- `GET /api/portfolio/crises` — Returns metadata and asset drawdown statistics for canonical historical crisis periods.
 - `POST /api/sync` — Executes on-demand synchronization against Yahoo Finance, justETF, and ECB RSS, updating data files and triggering live browser reload.
 - `GET /api/market-status` — Returns server timestamp, tracking status, and upstream data freshness telemetry.
 

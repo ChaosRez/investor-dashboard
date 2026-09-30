@@ -9,7 +9,9 @@
     "QDVE",
     "AGGU",
     "IUSN",
-    "VUSA"
+    "VUSA",
+    "SGLD",
+    "XEON"
   ],
   "matrix": {
     "VWCE": {
@@ -22,7 +24,9 @@
       "QDVE": 0.89,
       "AGGU": 0.12,
       "IUSN": 0.91,
-      "VUSA": 0.96
+      "VUSA": 0.96,
+      "SGLD": 0.06,
+      "XEON": 0.01
     },
     "IWDA": {
       "VWCE": 0.99,
@@ -34,7 +38,9 @@
       "QDVE": 0.9,
       "AGGU": 0.11,
       "IUSN": 0.92,
-      "VUSA": 0.97
+      "VUSA": 0.97,
+      "SGLD": 0.06,
+      "XEON": 0.01
     },
     "SXR8": {
       "VWCE": 0.96,
@@ -46,7 +52,9 @@
       "QDVE": 0.94,
       "AGGU": 0.08,
       "IUSN": 0.89,
-      "VUSA": 1.0
+      "VUSA": 1.0,
+      "SGLD": 0.04,
+      "XEON": 0.0
     },
     "VUAA": {
       "VWCE": 0.96,
@@ -58,7 +66,9 @@
       "QDVE": 0.94,
       "AGGU": 0.08,
       "IUSN": 0.89,
-      "VUSA": 1.0
+      "VUSA": 1.0,
+      "SGLD": 0.04,
+      "XEON": 0.0
     },
     "EIMI": {
       "VWCE": 0.82,
@@ -70,7 +80,9 @@
       "QDVE": 0.64,
       "AGGU": 0.22,
       "IUSN": 0.73,
-      "VUSA": 0.69
+      "VUSA": 0.69,
+      "SGLD": 0.18,
+      "XEON": 0.02
     },
     "MEUD": {
       "VWCE": 0.88,
@@ -82,7 +94,9 @@
       "QDVE": 0.73,
       "AGGU": 0.24,
       "IUSN": 0.84,
-      "VUSA": 0.81
+      "VUSA": 0.81,
+      "SGLD": 0.08,
+      "XEON": 0.01
     },
     "QDVE": {
       "VWCE": 0.89,
@@ -94,7 +108,9 @@
       "QDVE": 1.0,
       "AGGU": 0.04,
       "IUSN": 0.81,
-      "VUSA": 0.94
+      "VUSA": 0.94,
+      "SGLD": 0.02,
+      "XEON": -0.02
     },
     "AGGU": {
       "VWCE": 0.12,
@@ -106,7 +122,9 @@
       "QDVE": 0.04,
       "AGGU": 1.0,
       "IUSN": 0.16,
-      "VUSA": 0.08
+      "VUSA": 0.08,
+      "SGLD": 0.18,
+      "XEON": 0.05
     },
     "IUSN": {
       "VWCE": 0.91,
@@ -118,7 +136,9 @@
       "QDVE": 0.81,
       "AGGU": 0.16,
       "IUSN": 1.0,
-      "VUSA": 0.89
+      "VUSA": 0.89,
+      "SGLD": 0.07,
+      "XEON": 0.01
     },
     "VUSA": {
       "VWCE": 0.96,
@@ -130,7 +150,37 @@
       "QDVE": 0.94,
       "AGGU": 0.08,
       "IUSN": 0.89,
-      "VUSA": 1.0
+      "VUSA": 1.0,
+      "SGLD": 0.04,
+      "XEON": 0.0
+    },
+    "SGLD": {
+      "VWCE": 0.06,
+      "IWDA": 0.06,
+      "SXR8": 0.04,
+      "VUAA": 0.04,
+      "EIMI": 0.18,
+      "MEUD": 0.08,
+      "QDVE": 0.02,
+      "AGGU": 0.18,
+      "IUSN": 0.07,
+      "VUSA": 0.04,
+      "SGLD": 1.0,
+      "XEON": 0.0
+    },
+    "XEON": {
+      "VWCE": 0.01,
+      "IWDA": 0.01,
+      "SXR8": 0.0,
+      "VUAA": 0.0,
+      "EIMI": 0.02,
+      "MEUD": 0.01,
+      "QDVE": -0.02,
+      "AGGU": 0.05,
+      "IUSN": 0.01,
+      "VUSA": 0.0,
+      "SGLD": 0.0,
+      "XEON": 1.0
     }
   },
   "pvMethodology": {

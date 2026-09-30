@@ -1,16 +1,9 @@
 /**
- * ApexETF Grounded Data Store
- * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
- * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
- * Last Synced: 2026-09-30T15:08:26.531958+00:00
+ * ApexETF Real Data Store
+ * Grounded verified data from justETF, extraETF, Curvo, Portfolio Visualizer, Morningstar, Trackinsight, and official KIDs.
  */
 
 window.APEX_DATA_STORE = {
-  syncMeta: {
-    lastSyncedAt: "2026-09-30T15:08:26.531979+00:00",
-    isLiveDynamic: true,
-    sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
-  },
   etfs: [
   {
     "ticker": "VWCE",
@@ -1916,7 +1909,13 @@ window.APEX_DATA_STORE = {
       "Financials": 13.1,
       "Healthcare": 11.8,
       "Consumer Discretionary": 10.1,
-      "Communication Services": 9.1
+      "Communication Services": 9.1,
+      "Industrials": 8.3,
+      "Consumer Staples": 5.8,
+      "Energy": 3.4,
+      "Utilities": 2.5,
+      "Real Estate": 2.1,
+      "Materials": 1.7
     },
     "historicalStatsCurvo": {
       "period": "2012 - 2026",
@@ -4211,6 +4210,70 @@ window.APEX_DATA_STORE = {
     "fiftyTwoWeekHigh": 19.42,
     "fiftyTwoWeekLow": 12.83,
     "lastSyncedAt": "2026-09-29T14:15:00.702558+00:00"
+  },
+  {
+    "ticker": "SGLD",
+    "secondaryTickers": [
+      "SGLD.L",
+      "8PSG"
+    ],
+    "isin": "IE00B579F325",
+    "wkn": "A0N62G",
+    "name": "Invesco Physical Gold ETC",
+    "issuer": "Invesco",
+    "benchmarkIndex": "LBMA Gold Price PM Index",
+    "assetClass": "Commodities (Physical Gold ETC)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.12,
+    "trackingDifference5Y": -0.05,
+    "trackingDifference1Y": -0.02,
+    "aumMillionsEUR": 17450.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Allocated gold bullion)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No securities lending - physically segregated vaulted bars",
+    "sriRisk": 4,
+    "holdingCount": 1,
+    "topHoldings": [
+      {
+        "name": "Physical Allocated Gold Bullion Bars (LBMA Vaults)",
+        "symbol": "GOLD",
+        "weight": 100.0
+      }
+    ],
+    "countryBreakdown": {
+      "Global": 100.0
+    },
+    "sectorBreakdown": {
+      "Precious Metals": 100.0
+    },
+    "historicalStatsCurvo": {
+      "cagr": 8.4,
+      "sharpe": 0.55,
+      "stdev": 13.8,
+      "maxDrawdown": -21.4
+    },
+    "quantitativeStatsPV": {
+      "sortino": 0.88,
+      "calmar": 0.39,
+      "var95": -5.2,
+      "marketBeta": 0.05
+    },
+    "morningstar": {
+      "styleBox": "Commodity",
+      "esgRating": 3
+    },
+    "savingsPlanBrokers": [
+      "Trade Republic",
+      "Scalable Capital",
+      "Interactive Brokers",
+      "flatex",
+      "DEGIRO",
+      "ING"
+    ],
+    "kidUrl": "https://etf.invesco.com/gb/private/en/product/invesco-physical-gold-etc/key-information-document",
+    "factsheetUrl": "https://etf.invesco.com/gb/private/en/product/invesco-physical-gold-etc/documents"
   }
 ],
   correlations: {
@@ -4224,7 +4287,9 @@ window.APEX_DATA_STORE = {
     "QDVE",
     "AGGU",
     "IUSN",
-    "VUSA"
+    "VUSA",
+    "SGLD",
+    "XEON"
   ],
   "matrix": {
     "VWCE": {
@@ -4237,7 +4302,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.89,
       "AGGU": 0.12,
       "IUSN": 0.91,
-      "VUSA": 0.96
+      "VUSA": 0.96,
+      "SGLD": 0.06,
+      "XEON": 0.01
     },
     "IWDA": {
       "VWCE": 0.99,
@@ -4249,7 +4316,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.9,
       "AGGU": 0.11,
       "IUSN": 0.92,
-      "VUSA": 0.97
+      "VUSA": 0.97,
+      "SGLD": 0.06,
+      "XEON": 0.01
     },
     "SXR8": {
       "VWCE": 0.96,
@@ -4261,7 +4330,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.94,
       "AGGU": 0.08,
       "IUSN": 0.89,
-      "VUSA": 1.0
+      "VUSA": 1.0,
+      "SGLD": 0.04,
+      "XEON": 0.0
     },
     "VUAA": {
       "VWCE": 0.96,
@@ -4273,7 +4344,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.94,
       "AGGU": 0.08,
       "IUSN": 0.89,
-      "VUSA": 1.0
+      "VUSA": 1.0,
+      "SGLD": 0.04,
+      "XEON": 0.0
     },
     "EIMI": {
       "VWCE": 0.82,
@@ -4285,7 +4358,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.64,
       "AGGU": 0.22,
       "IUSN": 0.73,
-      "VUSA": 0.69
+      "VUSA": 0.69,
+      "SGLD": 0.18,
+      "XEON": 0.02
     },
     "MEUD": {
       "VWCE": 0.88,
@@ -4297,7 +4372,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.73,
       "AGGU": 0.24,
       "IUSN": 0.84,
-      "VUSA": 0.81
+      "VUSA": 0.81,
+      "SGLD": 0.08,
+      "XEON": 0.01
     },
     "QDVE": {
       "VWCE": 0.89,
@@ -4309,7 +4386,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 1.0,
       "AGGU": 0.04,
       "IUSN": 0.81,
-      "VUSA": 0.94
+      "VUSA": 0.94,
+      "SGLD": 0.02,
+      "XEON": -0.02
     },
     "AGGU": {
       "VWCE": 0.12,
@@ -4321,7 +4400,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.04,
       "AGGU": 1.0,
       "IUSN": 0.16,
-      "VUSA": 0.08
+      "VUSA": 0.08,
+      "SGLD": 0.18,
+      "XEON": 0.05
     },
     "IUSN": {
       "VWCE": 0.91,
@@ -4333,7 +4414,9 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.81,
       "AGGU": 0.16,
       "IUSN": 1.0,
-      "VUSA": 0.89
+      "VUSA": 0.89,
+      "SGLD": 0.07,
+      "XEON": 0.01
     },
     "VUSA": {
       "VWCE": 0.96,
@@ -4345,7 +4428,37 @@ window.APEX_DATA_STORE = {
       "QDVE": 0.94,
       "AGGU": 0.08,
       "IUSN": 0.89,
-      "VUSA": 1.0
+      "VUSA": 1.0,
+      "SGLD": 0.04,
+      "XEON": 0.0
+    },
+    "SGLD": {
+      "VWCE": 0.06,
+      "IWDA": 0.06,
+      "SXR8": 0.04,
+      "VUAA": 0.04,
+      "EIMI": 0.18,
+      "MEUD": 0.08,
+      "QDVE": 0.02,
+      "AGGU": 0.18,
+      "IUSN": 0.07,
+      "VUSA": 0.04,
+      "SGLD": 1.0,
+      "XEON": 0.0
+    },
+    "XEON": {
+      "VWCE": 0.01,
+      "IWDA": 0.01,
+      "SXR8": 0.0,
+      "VUAA": 0.0,
+      "EIMI": 0.02,
+      "MEUD": 0.01,
+      "QDVE": -0.02,
+      "AGGU": 0.05,
+      "IUSN": 0.01,
+      "VUSA": 0.0,
+      "SGLD": 0.0,
+      "XEON": 1.0
     }
   },
   "pvMethodology": {

@@ -69,6 +69,9 @@
       <button class="nav-tab" data-tab="curvo">
         📈 Curvo Historical Backtest &amp; DCA
       </button>
+      <button class="nav-tab" data-tab="parity">
+        🛡️ Robust Parity &amp; Stress-Test
+      </button>
       <button class="nav-tab" data-tab="pv">
         🧮 Portfolio Visualizer Quant Risk
       </button>
@@ -139,9 +142,21 @@
         </div>
 
         <!-- Stage 4 -->
-        <div class="stage-step-card" data-stage="pv">
+        <div class="stage-step-card" data-stage="parity">
           <div class="stage-step-top">
             <span class="stage-number">Stage 4</span>
+            <span class="stage-status-badge badge-essential">Regime Resilience</span>
+          </div>
+          <div class="stage-title">Robust Parity &amp; Stress-Test</div>
+          <div class="stage-desc">
+            Size positions with HRP or Equal Risk Contribution (Risk Parity). Stress-test downside across 2000, 2008 &amp; 2022 crises against behavioral drawdown limits.
+          </div>
+        </div>
+
+        <!-- Stage 5 -->
+        <div class="stage-step-card" data-stage="pv">
+          <div class="stage-step-top">
+            <span class="stage-number">Stage 5</span>
             <span class="stage-status-badge badge-optional">Optional / Advanced</span>
           </div>
           <div class="stage-title">Risk Tuning &amp; Factor Tilts</div>
@@ -150,10 +165,10 @@
           </div>
         </div>
 
-        <!-- Stage 5 -->
+        <!-- Stage 6 -->
         <div class="stage-step-card" data-stage="news">
           <div class="stage-step-top">
-            <span class="stage-number">Stage 5</span>
+            <span class="stage-number">Stage 6</span>
             <span class="stage-status-badge badge-maintain">Maintenance Phase</span>
           </div>
           <div class="stage-title">News Radar &amp; Discipline</div>
@@ -162,10 +177,10 @@
           </div>
         </div>
 
-        <!-- Stage 6 -->
+        <!-- Stage 7 -->
         <div class="stage-step-card" data-stage="verification">
           <div class="stage-step-top">
-            <span class="stage-number">Stage 6</span>
+            <span class="stage-number">Stage 7</span>
             <span class="stage-status-badge badge-start-here">Mandatory Check</span>
           </div>
           <div class="stage-title">Statutory Verification</div>
@@ -197,6 +212,11 @@
     <!-- TAB 3: Curvo Historical Backtest & DCA -->
     <section id="tab-curvo" class="tab-panel">
       <div id="curvo-backtest-container"></div>
+    </section>
+
+    <!-- TAB: Robust Parity & Stress-Test -->
+    <section id="tab-parity" class="tab-panel">
+      <div id="regime-risk-parity-container"></div>
     </section>
 
     <!-- TAB 4: Portfolio Visualizer Quant Risk -->
@@ -392,6 +412,7 @@
   <script src="js/overlap-correlation.js"></script>
   <script src="js/curvo-engine.js"></script>
   <script src="js/pv-engine.js"></script>
+  <script src="js/regime-risk-parity.js"></script>
   <script src="js/news-signals.js"></script>
   <script src="js/verification-docs.js"></script>
   <script src="js/bogleheads-academy.js"></script>

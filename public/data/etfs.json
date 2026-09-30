@@ -1903,7 +1903,13 @@
       "Financials": 13.1,
       "Healthcare": 11.8,
       "Consumer Discretionary": 10.1,
-      "Communication Services": 9.1
+      "Communication Services": 9.1,
+      "Industrials": 8.3,
+      "Consumer Staples": 5.8,
+      "Energy": 3.4,
+      "Utilities": 2.5,
+      "Real Estate": 2.1,
+      "Materials": 1.7
     },
     "historicalStatsCurvo": {
       "period": "2012 - 2026",
@@ -4198,5 +4204,69 @@
     "fiftyTwoWeekHigh": 19.42,
     "fiftyTwoWeekLow": 12.83,
     "lastSyncedAt": "2026-09-29T14:15:00.702558+00:00"
+  },
+  {
+    "ticker": "SGLD",
+    "secondaryTickers": [
+      "SGLD.L",
+      "8PSG"
+    ],
+    "isin": "IE00B579F325",
+    "wkn": "A0N62G",
+    "name": "Invesco Physical Gold ETC",
+    "issuer": "Invesco",
+    "benchmarkIndex": "LBMA Gold Price PM Index",
+    "assetClass": "Commodities (Physical Gold ETC)",
+    "distributionPolicy": "Accumulating",
+    "isAccumulating": true,
+    "ter": 0.12,
+    "trackingDifference5Y": -0.05,
+    "trackingDifference1Y": -0.02,
+    "aumMillionsEUR": 17450.0,
+    "domicile": "Ireland",
+    "replication": "Physical (Allocated gold bullion)",
+    "securitiesLending": false,
+    "securitiesLendingRevenueShare": "No securities lending - physically segregated vaulted bars",
+    "sriRisk": 4,
+    "holdingCount": 1,
+    "topHoldings": [
+      {
+        "name": "Physical Allocated Gold Bullion Bars (LBMA Vaults)",
+        "symbol": "GOLD",
+        "weight": 100.0
+      }
+    ],
+    "countryBreakdown": {
+      "Global": 100.0
+    },
+    "sectorBreakdown": {
+      "Precious Metals": 100.0
+    },
+    "historicalStatsCurvo": {
+      "cagr": 8.4,
+      "sharpe": 0.55,
+      "stdev": 13.8,
+      "maxDrawdown": -21.4
+    },
+    "quantitativeStatsPV": {
+      "sortino": 0.88,
+      "calmar": 0.39,
+      "var95": -5.2,
+      "marketBeta": 0.05
+    },
+    "morningstar": {
+      "styleBox": "Commodity",
+      "esgRating": 3
+    },
+    "savingsPlanBrokers": [
+      "Trade Republic",
+      "Scalable Capital",
+      "Interactive Brokers",
+      "flatex",
+      "DEGIRO",
+      "ING"
+    ],
+    "kidUrl": "https://etf.invesco.com/gb/private/en/product/invesco-physical-gold-etc/key-information-document",
+    "factsheetUrl": "https://etf.invesco.com/gb/private/en/product/invesco-physical-gold-etc/documents"
   }
 ]

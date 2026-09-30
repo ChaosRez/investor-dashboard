@@ -12,7 +12,22 @@ from datetime import datetime, timezone
 from typing import Dict, Any, List
 
 from .config import PUBLIC_DIR, DATA_DIR, DEFAULT_PORT, DEFAULT_HOST
-from .analysis import calculate_portfolio_overlap, calculate_curvo_portfolio_simulation
+from .analysis import (
+    calculate_portfolio_overlap,
+    calculate_curvo_portfolio_simulation,
+    calculate_hierarchical_risk_parity,
+    calculate_equal_risk_contribution,
+    calculate_mean_cvar,
+    calculate_covariance_shrinkage,
+    calculate_robust_portfolio_optimization,
+    calculate_crisis_stress_test,
+    calculate_quantstats_downside_tear_sheet,
+    generate_quant_code_snippets,
+    get_platforms_metadata,
+    REGIME_TAXONOMY,
+    REGIME_PRESETS,
+    HISTORICAL_CRISES,
+)
 from .sync import run_full_sync
 
 def load_json(rel_path: str):
@@ -90,6 +105,25 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(EDUCATION_DATA)
             return
 
+        elif path == "/api/portfolio/regimes":
+            self.send_json({
+                "taxonomy": REGIME_TAXONOMY,
+                "presets": REGIME_PRESETS
+            })
+            return
+
+        elif path == "/api/portfolio/platforms":
+            self.send_json({
+                "platforms": get_platforms_metadata()
+            })
+            return
+
+        elif path == "/api/portfolio/crises":
+            self.send_json({
+                "crises": HISTORICAL_CRISES
+            })
+            return
+
         elif path == "/api/market-status":
             self.send_json({
                 "status": "online",
@@ -115,6 +149,7 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+
         content_length = int(self.headers.get("Content-Length", 0))
         post_data = self.rfile.read(content_length).decode("utf-8") if content_length > 0 else "{}"
 
@@ -146,6 +181,61 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
 
         elif path == "/api/portfolio/backtest":
             result = calculate_curvo_portfolio_simulation(body, ETFS_BY_TICKER)
+            self.send_json(result)
+            return
+
+        elif path == "/api/portfolio/optimize":
+            tickers = body.get("tickers") or body.get("assets")
+            if not tickers and isinstance(body.get("portfolio"), dict):
+                tickers = list(body["portfolio"].keys())
+            elif not tickers and isinstance(body.get("etfs"), list):
+                tickers = body["etfs"]
+            elif not tickers:
+                tickers = ["VWCE", "AGGU", "XEON", "SGLD"]
+
+            method = body.get("method", "all").lower()
+            if method == "hrp":
+                result = calculate_hierarchical_risk_parity(tickers, ETFS_BY_TICKER, CORRELATIONS_DATA)
+            elif method in ["risk_parity", "erc"]:
+                result = calculate_equal_risk_contribution(tickers, ETFS_BY_TICKER, CORRELATIONS_DATA)
+            elif method == "mean_cvar":
+                result = calculate_mean_cvar(tickers, ETFS_BY_TICKER)
+            elif method == "shrinkage":
+                result = calculate_covariance_shrinkage(tickers, ETFS_BY_TICKER, CORRELATIONS_DATA)
+            else:
+                result = calculate_robust_portfolio_optimization(tickers, ETFS_BY_TICKER, CORRELATIONS_DATA)
+
+            self.send_json(result)
+            return
+
+        elif path == "/api/portfolio/stress-test":
+            portfolio = body.get("portfolio") or body.get("holdings")
+            if not portfolio and isinstance(body.get("assets"), list):
+                eq_w = 100.0 / len(body["assets"])
+                portfolio = {t: eq_w for t in body["assets"]}
+            elif not portfolio or not isinstance(portfolio, dict):
+                portfolio = {"VWCE": 60, "AGGU": 40}
+
+            tolerance = float(body.get("behavioralTolerance", body.get("tolerance", -20.0)))
+            result = calculate_crisis_stress_test(portfolio, ETFS_BY_TICKER, tolerance)
+            self.send_json(result)
+            return
+
+        elif path in ["/api/portfolio/teardown", "/api/portfolio/tear-sheet"]:
+            portfolio = body.get("portfolio") or body.get("holdings")
+            if not portfolio or not isinstance(portfolio, dict):
+                portfolio = {"VWCE": 60, "AGGU": 40}
+
+            result = calculate_quantstats_downside_tear_sheet(portfolio, ETFS_BY_TICKER)
+            self.send_json(result)
+            return
+
+        elif path == "/api/portfolio/code-snippets":
+            portfolio = body.get("portfolio") or body.get("holdings")
+            if not portfolio or not isinstance(portfolio, dict):
+                portfolio = {"VWCE": 60, "AGGU": 40}
+
+            result = generate_quant_code_snippets(portfolio)
             self.send_json(result)
             return
 
