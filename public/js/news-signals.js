@@ -169,7 +169,7 @@ window.NewsSignalsModule = (function () {
       const cautionCount = etfNews.filter(n => n.signal?.bias.toLowerCase().includes("bearish") || n.signal?.bias.toLowerCase().includes("caution")).length;
 
       profileBannerHtml = `
-        <div class="card" style="border-left: 4px solid var(--accent-blue); margin-bottom: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.05));">
+        <div id="macro-profile-banner" class="card" style="border-left: 4px solid var(--accent-blue); margin-bottom: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.05));">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
             <div>
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
