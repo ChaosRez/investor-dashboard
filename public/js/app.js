@@ -17,7 +17,26 @@ window.App = (function () {
     bindOnboarding();
     bindLiveSync();
     await loadInitialData();
-    switchTab("screener");
+    
+    const validTabs = ["screener", "comparison", "overlap", "curvo", "pv", "news", "verification", "academy"];
+    let initialTab = "screener";
+    
+    if (window.location.hash) {
+      const hashTab = window.location.hash.substring(1);
+      if (validTabs.includes(hashTab)) {
+        initialTab = hashTab;
+      }
+    }
+    switchTab(initialTab, true);
+
+    window.addEventListener("hashchange", () => {
+      const hashTab = window.location.hash.substring(1);
+      if (validTabs.includes(hashTab)) {
+        switchTab(hashTab, true);
+      } else {
+        switchTab("screener", true);
+      }
+    });
   }
 
   function initTheme() {
@@ -53,7 +72,7 @@ window.App = (function () {
     });
   }
 
-  function switchTab(targetTab) {
+  function switchTab(targetTab, skipHash = false) {
     document.querySelectorAll(".nav-tab").forEach((t) => {
       t.classList.toggle("active", t.dataset.tab === targetTab);
     });
@@ -70,6 +89,10 @@ window.App = (function () {
     document.querySelectorAll(".stage-step-card").forEach((card) => {
       card.classList.toggle("active", card.dataset.stage === targetTab);
     });
+
+    if (!skipHash) {
+      window.location.hash = targetTab;
+    }
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }

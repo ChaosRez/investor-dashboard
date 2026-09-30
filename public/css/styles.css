@@ -847,7 +847,7 @@ body {
 
 .stage-steps-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 12px;
 }
 
@@ -1189,3 +1189,45 @@ body {
   vertical-align: middle;
 }
 
+/* Mobile responsive navigation */
+@media (max-width: 768px) {
+  .header-inner {
+    flex-wrap: wrap;
+    padding: 10px 16px;
+  }
+  
+  .sources-provenance {
+    display: none; /* Hide provenance tags on mobile to save space */
+  }
+  
+  .nav-inner {
+    gap: 2px;
+    padding: 0 8px;
+  }
+  
+  .nav-tab {
+    padding: 10px 12px;
+    font-size: 0.78rem;
+  }
+  
+  .main-container {
+    padding: 16px 12px;
+  }
+  
+  .grid-2, .grid-3, .grid-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-bar {
+    padding: 10px 12px;
+  }
+  
+  .filter-input {
+    min-width: 100%;
+  }
+  
+  .modal-content {
+    padding: 16px;
+    max-height: 95vh;
+  }
+}

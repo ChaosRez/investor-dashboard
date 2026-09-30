@@ -593,6 +593,36 @@ window.OverlapModule = (function () {
     const container = document.getElementById("overlap-audit-results");
     if (!container || !data) return;
 
+    // Normalize server API response to match expected flat structure
+    if (data.summary) {
+      data.weightedTer = data.summary.weightedTER;
+      data.weightedTrackingDifference = data.summary.weightedTrackingDifference;
+      data.accumulatingShare = data.summary.accumulatingShare;
+    }
+    if (data.topAggregatedHoldings && !data.topConstituents) {
+      data.topConstituents = data.topAggregatedHoldings;
+    }
+    if (data.pairwiseOverlaps && data.pairwiseOverlaps.length > 0 && data.pairwiseOverlaps[0].etf1) {
+      data.pairwiseOverlaps = data.pairwiseOverlaps.map(p => ({
+        ...p,
+        pair: `${p.etf1} + ${p.etf2}`,
+        overlapPercent: p.overlapPercentage,
+        redundancyLevel: p.overlapPercentage > 70 ? 'Extreme (>70%)' : (p.overlapPercentage > 35 ? 'High (>35%)' : 'Complementary (<10%)')
+      }));
+    }
+    if (data.warnings && !data.redundancyWarnings) {
+      data.redundancyWarnings = data.warnings.map(w => {
+        let severity = 'info';
+        if (w.level === 'warning') severity = 'high';
+        else if (w.level === 'redundancy') severity = 'medium';
+        return {
+          ...w,
+          severity: severity,
+          type: w.title
+        };
+      });
+    }
+
     const warningsHtml = (data.redundancyWarnings || []).map(w => {
       let icon = "⚠️";
       let border = "var(--accent-amber)";

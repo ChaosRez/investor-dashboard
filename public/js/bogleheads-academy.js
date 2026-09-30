@@ -44,7 +44,7 @@ window.BogleheadsAcademyModule = (function () {
           </div>
           <div>
             <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Local Dividend Tax Rate (%)</label>
-            <input type="number" id="drag-tax" class="filter-input" style="width: 100%; margin-top: 4px;" value="26.375" min="0" max="45" step="0.5" />
+            <input type="number" id="drag-tax" class="filter-input" style="width: 100%; margin-top: 4px;" value="26.375" min="0" max="45" step="any" />
           </div>
           <div>
             <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Time Horizon (Years)</label>
