@@ -12,7 +12,7 @@ window.ScreenerModule = (function () {
     allEtfs = etfs || [];
     filteredEtfs = [...allEtfs];
     renderFilters();
-    renderTable();
+    applyFilters();
   }
 
   function renderFilters() {
@@ -24,8 +24,8 @@ window.ScreenerModule = (function () {
         <input type="text" id="screener-search" class="filter-input" placeholder="Search by Ticker, ISIN, Index (e.g. VWCE, S&P 500)..." />
         
         <div class="pill-group" id="acc-filter-group">
-          <button class="pill-btn active" data-acc="all">All Funds</button>
-          <button class="pill-btn" data-acc="watchlist" id="filter-watchlist-btn">⭐ My Watchlist (10 Funds)</button>
+          <button class="pill-btn" data-acc="all">All Funds</button>
+          <button class="pill-btn active" data-acc="watchlist" id="filter-watchlist-btn">⭐ My Watchlist (10 Funds)</button>
           <button class="pill-btn" data-acc="acc">✨ Accumulating (Acc) Priority</button>
           <button class="pill-btn" data-acc="dist">Distributing (Dist)</button>
         </div>

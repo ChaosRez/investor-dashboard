@@ -5,6 +5,8 @@ aggregated holdings/sectors/countries, and Curvo DCA historical compounding simu
 """
 
 import math
+import json
+import urllib.parse
 from typing import Dict, Any, List
 
 def calculate_portfolio_overlap(
@@ -169,10 +171,10 @@ def calculate_curvo_portfolio_simulation(
     """
     Computes real-world DCA (Dollar-Cost Averaging) compound growth using Curvo monthly historical returns.
     """
-    initial_sum = float(params.get("initialDeposit", params.get("initialSum", 10000)))
+    initial_sum = float(params.get("initialDeposit", params.get("initialAmount", params.get("initialSum", 10000))))
     monthly_dca = float(params.get("monthlyContribution", params.get("monthlyDca", 500)))
     years = int(params.get("periodYears", params.get("years", 10)))
-    weights = params.get("weights") or params.get("portfolio") or params.get("etfs") or {"VWCE": 100}
+    weights = params.get("holdings") or params.get("weights") or params.get("portfolio") or params.get("etfs") or {"VWCE": 100}
     if isinstance(weights, list):
         eq_w = 100.0 / len(weights) if len(weights) > 0 else 0
         weights = {t: eq_w for t in weights}
@@ -233,26 +235,42 @@ def calculate_curvo_portfolio_simulation(
                 "realValue": round(current_real, 2)
             })
 
-    total_profit = current_nominal - total_invested
+    # Calculate additional metrics for parity with JS
+    sharpe_ratio = round((weighted_cagr - 3.0) / (weighted_vol if weighted_vol else 1.0), 2)
+    sortino_ratio = round((weighted_cagr - 3.0) / (weighted_vol * 0.7 if weighted_vol else 1.0), 2)
+    calmar_ratio = round(abs(weighted_cagr / (weighted_max_dd if weighted_max_dd else 1.0)), 2)
+
+    curvo_url = "https://curvo.eu/backtest/en/compare?portfolios=" + urllib.parse.quote(
+        json.dumps([{"funds": [{"isin": etfs_by_ticker.get(t, {}).get("isin", ""), "weight": w} for t, w in norm_w.items()]}])
+    )
+
+    # Convert timeline to match JS keys
+    js_timeline = []
+    for point in timeline:
+        js_timeline.append({
+            "month": point["month"],
+            "year": point["year"],
+            "totalDeposits": point["invested"],
+            "portfolioNominal": point["nominalValue"],
+            "portfolioReal": point["realValue"]
+        })
 
     return {
-        "inputs": {
-            "initialDeposit": initial_sum,
-            "monthlyContribution": monthly_dca,
-            "periodYears": years,
-            "portfolioWeights": norm_w
+        "blendedMetrics": {
+            "cagrPercent": round(weighted_cagr, 2),
+            "annualizedVolatility": round(weighted_vol, 2),
+            "sharpeRatio": sharpe_ratio,
+            "sortinoRatio": sortino_ratio,
+            "maxDrawdown": round(weighted_max_dd, 2),
+            "calmarRatio": calmar_ratio
         },
-        "curvoMetrics": {
-            "effectiveCAGR": round(weighted_cagr, 2),
-            "expectedAnnualVolatility": round(weighted_vol, 2),
-            "estimatedMaxDrawdown": round(weighted_max_dd, 2)
+        "simulationSummary": {
+            "finalNominalValue": round(current_nominal),
+            "finalRealValue": round(current_real),
+            "totalContributions": round(total_invested),
+            "compoundWealthCreated": round(total_profit),
+            "returnMultiple": round(current_nominal / total_invested, 2) if total_invested > 0 else 0
         },
-        "results": {
-            "finalNominalValue": round(current_nominal, 2),
-            "finalRealValue": round(current_real, 2),
-            "totalInvested": round(total_invested, 2),
-            "netProfit": round(total_profit, 2),
-            "moneyWeightedReturn": round((total_profit / total_invested) * 100, 2) if total_invested > 0 else 0
-        },
-        "growthTimeline": timeline
+        "timeline": js_timeline,
+        "curvoVerificationUrl": curvo_url
     }

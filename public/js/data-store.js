@@ -2,12 +2,12 @@
  * ApexETF Grounded Data Store
  * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
  * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
- * Last Synced: 2026-09-29T14:25:46.861564+00:00
+ * Last Synced: 2026-09-29T18:20:48.549535+00:00
  */
 
 window.APEX_DATA_STORE = {
   syncMeta: {
-    lastSyncedAt: "2026-09-29T14:25:46.861572+00:00",
+    lastSyncedAt: "2026-09-29T18:20:48.549548+00:00",
     isLiveDynamic: true,
     sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
   },
