@@ -4469,12 +4469,12 @@ window.APEX_DATA_STORE = {
 },
   news: [
   {
-    "id": "mw-95631000",
-    "title": "\ud83c\udf10 MarketWatch: \u2018We lived within our means\u2019: I earned $30,000 as a pastor and still retired comfortably. Why don\u2019t you tell people that?",
-    "summary": "\u201cAs a country, we have grown dangerously comfortable.\u201d",
-    "date": "Wed, 30 Sep 2026 15:00:00 GMT",
+    "id": "mw-56221780",
+    "title": "\ud83c\udf10 MarketWatch: The 15 worst-performing S&P 500 stocks during a dismal September",
+    "summary": "The S&P 500 has gained slightly in September, but three-quarters of its components have declined.",
+    "date": "Wed, 30 Sep 2026 21:22:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/we-lived-within-our-means-i-earned-30-000-as-a-pastor-and-still-retired-comfortably-why-dont-you-tell-people-that-6b9f231e?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/the-15-worst-performing-s-p-500-stocks-during-a-dismal-september-991f8a07?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",
@@ -4508,51 +4508,12 @@ window.APEX_DATA_STORE = {
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-47558558",
-    "title": "\ud83c\udf10 MarketWatch: Citi tells investors it\u2019s time to sell Moderna after 600%-plus stock gains",
-    "summary": "Revenue and profit forecasts fail to justify the hype baked into Moderna\u2019s share price, according to Citi\u2019s analysts.",
-    "date": "Wed, 30 Sep 2026 14:59:00 GMT",
+    "id": "mw-26179853",
+    "title": "\ud83c\udf10 MarketWatch: Trump touts economic wins in battleground states \u2014 like a $54 billion Alaskan pipeline \u2014 as the midterms draw closer",
+    "summary": "President Donald Trump is spending time this week talking up big job-creating projects in battleground states.",
+    "date": "Wed, 30 Sep 2026 21:16:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/citi-tells-investors-its-time-to-sell-moderna-after-600-plus-stock-gains-84cb9b62?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Bullish Sentiment",
-      "biasColor": "var(--accent-emerald)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-88314796",
-    "title": "\ud83c\udf10 MarketWatch: Adding Lilly\u2019s new drug to Zepbound helped people lose up to 23% of their weight. But there were more side effects.",
-    "summary": "The company is working on an experimental amylin drug to see if it can help people lose weight and manage their diabetes \u2014 much like a GLP-1.",
-    "date": "Wed, 30 Sep 2026 14:32:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/adding-lillys-new-drug-to-zepbound-helped-people-lose-up-to-23-of-their-weight-but-there-were-more-side-effects-b7b7c6c0?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/trump-touts-economic-wins-in-battleground-states-like-a-54-billion-alaskan-pipeline-as-the-midterms-draw-closer-46db0149?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",
@@ -4586,53 +4547,14 @@ window.APEX_DATA_STORE = {
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-40010752",
-    "title": "\ud83c\udf10 MarketWatch: This is the big risk that stock investors should be watching as rising bond yields menace markets",
-    "summary": "While investors worry a spike in global bond yields will drag U.S. equities into correction territory, strategists at BofA Global Research say the real threat lies elsewhere.",
-    "date": "Wed, 30 Sep 2026 14:31:00 GMT",
+    "id": "mw-60435306",
+    "title": "\ud83c\udf10 MarketWatch: How the \u2018AI Put\u2019 has become the only thing that matters for stocks",
+    "summary": "While investors worry a spike in global bond yields will trigger a selloff in U.S. equities, strategists at BofA Global Research say the real threat lies elsewhere.",
+    "date": "Wed, 30 Sep 2026 20:59:00 GMT",
     "source": "MarketWatch Wire Service",
     "sourceUrl": "https://www.marketwatch.com/story/this-is-the-big-risk-that-stock-investors-should-be-watching-as-rising-bond-yields-menace-markets-904cae0a?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-12199946",
-    "title": "\ud83c\udf10 MarketWatch: Americans get back to their spending ways. Economy might be speeding up again.",
-    "summary": "Consumer spending snapped back in August after a brief lull, adding to mounting evidence of an acceleration in the U.S. economy despite a series of strains.",
-    "date": "Wed, 30 Sep 2026 14:08:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/americans-get-back-to-their-spending-ways-economy-might-be-speeding-up-again-7884c424?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
       "bias": "Bullish Sentiment",
       "biasColor": "var(--accent-emerald)",
       "impact": "Moderate Impact",
@@ -4664,12 +4586,12 @@ window.APEX_DATA_STORE = {
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-84388256",
-    "title": "\ud83c\udf10 MarketWatch: The No. 1 mistake beginners make with travel cards, according to The Points Guy",
-    "summary": "The Points Guy\u2019s Brian Kelly gave me a crash course in annual fees and redemptions to offset rising travel costs",
-    "date": "Wed, 30 Sep 2026 14:03:00 GMT",
+    "id": "mw-11359324",
+    "title": "\ud83c\udf10 MarketWatch: A brutal September for bonds points to an even darker October",
+    "summary": "September has been a brutal month for the bond market. If history is any guide, October might be even worse.",
+    "date": "Wed, 30 Sep 2026 20:56:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/the-no-1-mistake-beginners-make-with-travel-cards-according-to-the-points-guy-3502e859?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/a-brutal-september-for-bonds-points-to-an-even-darker-october-239d0fb5?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",
@@ -4703,12 +4625,90 @@ window.APEX_DATA_STORE = {
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-30811028",
-    "title": "\ud83c\udf10 MarketWatch: \u2018I\u2019d rather be on a beach in Bali\u2019: My husband resents my $8 million net worth. Should I pay for his retirement?",
-    "summary": "\u201cWe have an ironclad prenup.\u201d",
-    "date": "Wed, 30 Sep 2026 14:00:00 GMT",
+    "id": "mw-91652095",
+    "title": "\ud83c\udf10 MarketWatch: I\u2019m 71 and still working. I earn $108,000 a year. Am I doing the right thing?",
+    "summary": "\u201cI have $152,000 in my IRA and Roth accounts.\u201d",
+    "date": "Wed, 30 Sep 2026 20:45:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/i-feel-like-hes-holding-me-back-i-have-8-million-my-husband-resents-my-success-should-i-pay-for-more-things-08a4221b?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/im-71-and-still-working-i-earn-108-000-a-year-am-i-doing-the-right-thing-aaedcaa4?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-31688037",
+    "title": "\ud83c\udf10 MarketWatch: U.S. bond yields post biggest jump in a generation as global rout rattles investors",
+    "summary": "Yields in the global bond market have risen with startling speed over the past few months, and the more than $30 trillion market for U.S. government debt certainly hasn\u2019t been immune.",
+    "date": "Wed, 30 Sep 2026 20:32:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/u-s-bond-yields-head-for-biggest-jump-in-a-generation-as-global-rout-rattles-investors-7dede2f2?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-70983891",
+    "title": "\ud83c\udf10 MarketWatch: Paramount\u2019s mega debt sale reveals how higher bond yields are squeezing corporate America",
+    "summary": "\u2018Over the near term, we expect supply to fall off, unless someone has to borrow,\u2019 says Invesco\u2019s Matt Brill",
+    "date": "Wed, 30 Sep 2026 19:42:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/paramounts-mega-debt-sale-reveals-how-higher-bond-yields-are-squeezing-corporate-america-e9694ec3?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",

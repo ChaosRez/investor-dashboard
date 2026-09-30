@@ -52,13 +52,15 @@ The system was developed under the following mandatory product directives:
 - **The Core-Satellite Builder:** Holds a broad accumulating foundation (e.g. MSCI ACWI or Core S&P 500) and wants to add controlled, disciplined satellite tilts (e.g. AI infrastructure, strategic metals, European blue chips, or cash preservation €STR swaps) without overlapping holdings.
 - **The Cost & Tax Optimizer:** Wants to quantify the lost compound wealth resulting from distributing dividend taxes and synthetic swap counterparty risk vs physical replication.
 
-### 3.2 User Lifecycle Journey (5-Stage Roadmap)
-To prevent beginner cognitive overload, the UI organizes the investment lifecycle into 5 logical stages:
-1. **Stage 1 — Core Foundation (Start Here):** Selecting a broad, market-cap-weighted all-world or S&P 500 accumulating anchor fund.
-2. **Stage 2 — Asset Allocation (Mandatory):** Defining the equity-to-bond or cash risk balance (e.g. 80/20 equity/bonds or €STR cash buffer).
-3. **Stage 3 — DCA Automation (Essential):** Establishing automated monthly dollar-cost averaging into low-cost broker savings plans.
-4. **Stage 4 — Factor & Thematic Tilts (Optional):** Evaluating strategic satellites (clean energy, artificial intelligence, China A-shares, rare earths) capped at ≤5–10% of portfolio value.
-5. **Stage 5 — Rebalancing & Risk Audit (Maintenance):** Monitoring portfolio drift, pairwise overlap, and correlation shifts.
+### 3.2 User Lifecycle Journey (7-Stage Roadmap)
+To prevent beginner cognitive overload, the UI organizes the investment lifecycle into 7 logical stages:
+1. **Stage 1 — Core Foundation (Start Here / Screener):** Selecting a broad, market-cap-weighted all-world accumulating anchor fund (`VWCE`, `FWRA`, `IUSQ`).
+2. **Stage 2 — Overlap & Redundancy Audit (Mandatory if >1 Fund / Overlap):** Auditing constituent duplication to eliminate accidental mega-cap concentration (avoiding `VWCE` + `IWDA` or triple-stacking tech).
+3. **Stage 3 — DCA Automation & Wealth Compounding (Planning Phase / Curvo):** Establishing automated monthly dollar-cost averaging into low-cost broker savings plans, tracking nominal vs real purchasing power.
+4. **Stage 4 — Regime Resilience & Non-Linear Risk Parity (Drawdown Protection / Parity):** Sizing positions via HRP or Equal Risk Contribution (ERC) across 5 macro regimes; stress-testing historical downside across 5 crises with behavioral drawdown tolerance guardrails.
+5. **Stage 5 — Risk Tuning & Factor Tilts (Optional / PV):** Evaluating strategic tilts (Small-Cap Value `IUSN`, bonds `AGGU`) along the Markowitz Efficient Frontier.
+6. **Stage 6 — News Radar & Maintenance (Ongoing Phase / News):** Monitoring macro interest rate transmissions & corporate earnings with disciplined Boglehead action rules.
+7. **Stage 7 — Statutory Verification (Mandatory Before Buying / Verification):** Inspecting official PRIIPs KIDs, SRI risk ratings (1–7), and issuer factsheets.
 
 ---
 

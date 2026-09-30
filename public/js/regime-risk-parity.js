@@ -131,7 +131,7 @@ window.RegimeRiskParityModule = (function () {
               <h2 class="card-title" style="margin-bottom: 0; font-size: 1.35rem;">
                 🛡️ Regime Resilience &amp; Robust Risk Parity Studio
               </h2>
-              <span class="stage-status-badge badge-essential">Institutional Quant Upgrade</span>
+              <span class="stage-status-badge badge-essential">Stage 4: Regime Resilience &amp; Stress-Testing</span>
             </div>
             <span class="card-subtitle" style="font-size: 0.88rem; margin-top: 4px;">
               Moving beyond fragile Mean-Variance optimization to non-linear risk parity, machine learning dendrograms, and downside crisis stress-testing.

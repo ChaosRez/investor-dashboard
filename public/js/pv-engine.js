@@ -55,7 +55,7 @@ window.PortfolioVisualizerModule = (function () {
           <div>
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <h3 class="card-title" style="margin-bottom: 0;">🧮 Advanced Quantitative Analytics (Portfolio Visualizer Model)</h3>
-              <span class="stage-status-badge badge-optional">Stage 4 (Optional / Advanced)</span>
+              <span class="stage-status-badge badge-optional">Stage 5 (Optional / Advanced)</span>
             </div>
             <span class="card-subtitle">Downside deviation, Sortino, Tail Risk (VaR 95%), and Factor Sensitivity</span>
           </div>

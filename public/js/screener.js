@@ -435,12 +435,16 @@ window.ScreenerModule = (function () {
     const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 26) || "";
 
     let stageBadge = `<span class="stage-status-badge badge-start-here">🏁 Stage 1: Core Foundation (Start Here)</span>`;
-    if (["EIMI", "MEUD", "IUSN", "ZPRV", "GGRA"].includes(etf.ticker)) {
-      stageBadge = `<span class="stage-status-badge badge-optional">🧮 Stage 4: Factor / Regional Tilt (Optional)</span>`;
-    } else if (etf.ticker === "QDVE") {
-      stageBadge = `<span class="stage-status-badge badge-optional">⚡ Satellite Tech Tilt (High Beta)</span>`;
+    if (etf.ticker === "XEON") {
+      stageBadge = `<span class="stage-status-badge badge-essential">💶 Stage 4: Overnight Cash Buffer (€STR)</span>`;
+    } else if (etf.ticker === "SGLD") {
+      stageBadge = `<span class="stage-status-badge badge-essential">🪙 Stage 4: Real Commodity / Gold ETC</span>`;
     } else if (etf.ticker === "AGGU") {
-      stageBadge = `<span class="stage-status-badge badge-essential">🛡️ Defensive Shield (Bonds)</span>`;
+      stageBadge = `<span class="stage-status-badge badge-essential">🛡️ Stage 4/5: Defensive Shield (Bonds)</span>`;
+    } else if (["EIMI", "MEUD", "IUSN", "ZPRV", "GGRA"].includes(etf.ticker)) {
+      stageBadge = `<span class="stage-status-badge badge-optional">🧮 Stage 5: Factor / Regional Tilt (Optional)</span>`;
+    } else if (etf.ticker === "QDVE") {
+      stageBadge = `<span class="stage-status-badge badge-optional">⚡ Stage 5: Satellite Tech Tilt (High Beta)</span>`;
     } else if (etf.ticker === "VUSA") {
       stageBadge = `<span class="stage-status-badge badge-maintain">⚠️ Distributing Benchmark</span>`;
     }
