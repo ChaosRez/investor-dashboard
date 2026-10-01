@@ -1647,7 +1647,7 @@ window.APEX_DATA_STORE = {
     "secondaryTickers": [
       "WSML"
     ],
-    "isin": "IE00BF4RFH90",
+    "isin": "IE00BF4RFH31",
     "wkn": "A2DWBY",
     "name": "iShares MSCI World Small Cap UCITS ETF USD (Acc)",
     "issuer": "BlackRock / iShares",
@@ -1750,7 +1750,7 @@ window.APEX_DATA_STORE = {
       "recoveryPeriod": "10 years 2 months",
       "bestYear": 36.4,
       "worstYear": -42.8,
-      "curvoUrl": "https://curvo.eu/backtest/en/fund/ishares-msci-world-small-cap-ucits-etf-acc/IE00BF4RFH90"
+      "curvoUrl": "https://curvo.eu/backtest/en/fund/ishares-msci-world-small-cap-ucits-etf-acc/IE00BF4RFH31"
     },
     "quantitativeStatsPV": {
       "sortino": 0.74,
