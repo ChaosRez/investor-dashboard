@@ -418,7 +418,19 @@ window.OverlapModule = (function () {
       `;
 
       document.getElementById("portfolio-rows-container")?.appendChild(newRow);
-      bindInputEvents();
+
+      // Bind events only for the new row to prevent exponential listener duplication
+      newRow.querySelector(".etf-weight-input")?.addEventListener("input", updateTotalWeight);
+      newRow.querySelector(".etf-select")?.addEventListener("change", (e) => {
+        newRow.dataset.ticker = e.target.value;
+      });
+      newRow.querySelector(".remove-row-btn")?.addEventListener("click", () => {
+        const ticker = newRow.dataset.ticker;
+        newRow.remove();
+        delete currentPortfolio[ticker];
+        updateTotalWeight();
+      });
+
       updateTotalWeight();
     });
 
@@ -440,6 +452,13 @@ window.OverlapModule = (function () {
   }
 
   async function runPortfolioAudit() {
+    const btn = document.getElementById("run-audit-btn");
+    const originalText = btn ? btn.innerHTML : "⚡ Run Overlap Audit";
+    if (btn) {
+      btn.innerHTML = "⏳ Auditing...";
+      btn.disabled = true;
+    }
+
     const portfolio = {};
     document.querySelectorAll(".portfolio-item-row").forEach(row => {
       const ticker = row.querySelector(".etf-select")?.value || row.dataset.ticker;
@@ -451,6 +470,9 @@ window.OverlapModule = (function () {
 
     if (Object.keys(portfolio).length === 0) {
       portfolio["VWCE"] = 100;
+      currentPortfolio = { "VWCE": 100 };
+      renderPortfolioInputs();
+      showNotification("💡 Auto-filled empty portfolio with VWCE");
     }
 
     try {
@@ -462,15 +484,23 @@ window.OverlapModule = (function () {
       if (res.ok) {
         const data = await res.json();
         renderAuditResults(data);
+        if (btn) {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }
         return;
       }
     } catch (e) {
-      // Fall through to clientside calculation
+      console.warn("API overlap failed, falling back to clientside:", e);
     }
 
     // Clientside calculation fallback
     const localData = computePortfolioOverlapClientside(portfolio);
     renderAuditResults(localData);
+    if (btn) {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+    }
   }
 
   function computePortfolioOverlapClientside(portfolioWeights) {
@@ -534,15 +564,37 @@ window.OverlapModule = (function () {
     for (let i = 0; i < tickers.length; i++) {
       for (let j = i + 1; j < tickers.length; j++) {
         const t1 = tickers[i], t2 = tickers[j];
+        const e1 = etfsByTicker[t1];
+        const e2 = etfsByTicker[t2];
+        
         let overlap = 0.0;
+        if (e1 && e2) {
+          const h1 = {};
+          (e1.topHoldings || []).forEach(h => h1[h.name] = h.weight);
+          const h2 = {};
+          (e2.topHoldings || []).forEach(h => h2[h.name] = h.weight);
+          
+          let minWeightSum = 0;
+          for (let name in h1) {
+            if (h2[name]) {
+              minWeightSum += Math.min(h1[name], h2[name]);
+            }
+          }
+          overlap = minWeightSum;
+        }
+
+        // Heuristics for broad indices
         if ((t1 === "VWCE" && t2 === "IWDA") || (t1 === "IWDA" && t2 === "VWCE")) overlap = 88.4;
         else if (["VWCE", "IWDA"].includes(t1) && ["SXR8", "VUAA"].includes(t2)) overlap = 64.2;
+        else if (["SXR8", "VUAA"].includes(t1) && ["IWDA"].includes(t2)) overlap = 70.8;
         else if (t1 === "QDVE" || t2 === "QDVE") overlap = 32.1;
+        else if (["IUSQ"].includes(t1) && ["SXR8"].includes(t2)) overlap = 63.8;
+        else if (["SXR8"].includes(t1) && ["IUSQ"].includes(t2)) overlap = 63.8;
         else if (t1 === "EIMI" || t2 === "EIMI" || t1 === "AGGU" || t2 === "AGGU") overlap = 0.0;
 
         pairwise.push({
           pair: `${t1} + ${t2}`,
-          overlapPercent: overlap,
+          overlapPercent: parseFloat(overlap.toFixed(1)),
           redundancyLevel: overlap > 70 ? "Extreme (>70%)" : (overlap > 35 ? "High (>35%)" : "Complementary (<10%)")
         });
       }
@@ -593,16 +645,25 @@ window.OverlapModule = (function () {
     const container = document.getElementById("overlap-audit-results");
     if (!container || !data) return;
 
-    // Normalize server API response to match expected flat structure
-    if (data.summary) {
-      data.weightedTer = data.summary.weightedTER;
-      data.weightedTrackingDifference = data.summary.weightedTrackingDifference;
-      data.accumulatingShare = data.summary.accumulatingShare;
-    }
-    if (data.topAggregatedHoldings && !data.topConstituents) {
-      data.topConstituents = data.topAggregatedHoldings;
-    }
-    if (data.pairwiseOverlaps && data.pairwiseOverlaps.length > 0 && data.pairwiseOverlaps[0].etf1) {
+    // Pulse animation to show it updated
+    container.style.transition = "opacity 0.2s ease-in-out";
+    container.style.opacity = "0.4";
+    setTimeout(() => { container.style.opacity = "1"; }, 250);
+
+    // Scroll to results if out of view
+    container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+    try {
+      // Normalize server API response to match expected flat structure
+      if (data.summary) {
+        data.weightedTer = data.summary.weightedTER;
+        data.weightedTrackingDifference = data.summary.weightedTrackingDifference;
+        data.accumulatingShare = data.summary.accumulatingShare;
+      }
+      if (data.topAggregatedHoldings && !data.topConstituents) {
+        data.topConstituents = data.topAggregatedHoldings;
+      }
+      if (data.pairwiseOverlaps && data.pairwiseOverlaps.length > 0 && data.pairwiseOverlaps[0].etf1) {
       data.pairwiseOverlaps = data.pairwiseOverlaps.map(p => ({
         ...p,
         pair: `${p.etf1} + ${p.etf2}`,
@@ -736,8 +797,11 @@ window.OverlapModule = (function () {
         </div>
       </div>
     `;
+    } catch (err) {
+      console.error("Audit Render Error:", err);
+      container.innerHTML = `<div class="card" style="border-color: var(--accent-rose); color: var(--accent-rose);">Error rendering audit results. Please try again.</div>`;
+    }
   }
-
   function showNotification(msg) {
     const existing = document.getElementById("portfolio-toast-alert");
     if (existing) existing.remove();
