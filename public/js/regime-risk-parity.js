@@ -5,1020 +5,941 @@
  * 2. Position Sizing via Non-Linear Optimization (HRP, Risk Parity / ERC, Mean-CVaR, Shrinkage)
  * 3. Downside Stress-Testing & Crisis Analysis (QuantStats historical crisis teardown & tolerance guardrails)
  * Plus Python Quant Code Generators (PyPortfolioOpt, Riskfolio, QuantStats) and No-Code Platforms.
+ *
+ * Notes
+ *  - Analytics run lazily (first time the tab is shown) and keep the previous render dimmed
+ *    while refreshing. If the local server is unreachable, each section says so and offers Retry.
+ *  - The risk-decomposition chart plots the CURRENT portfolio's real risk contribution,
+ *    w_i·(Σw)_i / wᵀΣw, computed from the API's covariance matrix (not the ERC solution's).
+ *  - The dendrogram places each merge at its true correlation distance.
  */
 
 window.RegimeRiskParityModule = (function () {
+  const { esc, icon, fmt } = UI;
+
   let allEtfs = [];
   let correlationsData = null;
   let etfsByTicker = {};
+  let bound = false;
+  let runId = 0;
 
-  // Active Portfolio State
+  // Active state (survives data refreshes)
   let activePortfolio = { VWCE: 60, AGGU: 40 };
-  let selectedMethod = "hrp";
+  let activePreset = "classic_60_40";
   let behavioralTolerance = -20.0;
   let optimizationData = null;
   let stressTestData = null;
   let tearSheetData = null;
+  let codeSnippets = null;
+  let codeTab = "pyportfolioopt";
 
   const presets = {
-    "vwce_chill": {
+    vwce_chill: {
       name: "Single-Fund 'VWCE and Chill'",
-      tag: "Bogleheads Simplicity",
+      tag: "Bogleheads simplicity",
       desc: "100% Vanguard FTSE All-World (USD) Acc. Maximum long-term equity compounding, 100% drawdown exposure.",
-      portfolio: { VWCE: 100 }
+      portfolio: { VWCE: 100 },
     },
-    "classic_60_40": {
+    classic_60_40: {
       name: "Institutional 60/40 Core",
-      tag: "Traditional Benchmark",
+      tag: "Traditional benchmark",
       desc: "60% All-World + 40% Global Aggregate Bonds. The multi-asset baseline for balanced growth and duration defense.",
-      portfolio: { VWCE: 60, AGGU: 40 }
+      portfolio: { VWCE: 60, AGGU: 40 },
     },
-    "all_weather": {
+    all_weather: {
       name: "Ray Dalio All-Weather Regime",
-      tag: "All-Quadrant Resilience",
+      tag: "All-quadrant resilience",
       desc: "30% Equities (VWCE), 40% Aggregate Bonds (AGGU), 15% Cash (€STR XEON), 7.5% Physical Gold (SGLD), 7.5% Critical Resources (RARE).",
-      portfolio: { VWCE: 30, AGGU: 40, XEON: 15, SGLD: 7.5, RARE: 7.5 }
+      portfolio: { VWCE: 30, AGGU: 40, XEON: 15, SGLD: 7.5, RARE: 7.5 },
     },
-    "permanent": {
+    permanent: {
       name: "Harry Browne Permanent Portfolio",
-      tag: "Sleep-Well Four-Pillar",
+      tag: "Sleep-well four-pillar",
       desc: "Equal 25% allocation across Equities (VWCE), Bonds (AGGU), Cash (XEON), and Physical Gold (SGLD).",
-      portfolio: { VWCE: 25, AGGU: 25, XEON: 25, SGLD: 25 }
+      portfolio: { VWCE: 25, AGGU: 25, XEON: 25, SGLD: 25 },
     },
-    "golden_butterfly": {
+    golden_butterfly: {
       name: "Golden Butterfly Portfolio",
-      tag: "Small-Cap Value Accelerated",
+      tag: "Small-cap value accelerated",
       desc: "20% Large US (SXR8) + 20% Small-Cap (IUSN) + 20% Agg Bonds (AGGU) + 20% Cash (XEON) + 20% Gold (SGLD).",
-      portfolio: { SXR8: 20, IUSN: 20, AGGU: 20, XEON: 20, SGLD: 20 }
+      portfolio: { SXR8: 20, IUSN: 20, AGGU: 20, XEON: 20, SGLD: 20 },
     },
-    "barbell_regime": {
+    barbell_regime: {
       name: "Growth & T-Bill Barbell Strategy",
-      tag: "Zero Duration Risk",
+      tag: "Zero duration risk",
       desc: "80% Global Equity (VWCE) + 20% Ultra-Short Cash Yield (€STR XEON). Eliminates bond duration crash risk.",
-      portfolio: { VWCE: 80, XEON: 20 }
+      portfolio: { VWCE: 80, XEON: 20 },
     },
-    "tech_momentum_tilt": {
+    tech_momentum_tilt: {
       name: "US Core + Tech Momentum Tilt",
-      tag: "High Cyclical Beta",
+      tag: "High cyclical beta",
       desc: "70% S&P 500 (SXR8) + 30% Information Technology (QDVE). High upside alpha with elevated rate-shock drawdown.",
-      portfolio: { SXR8: 70, QDVE: 30 }
-    }
+      portfolio: { SXR8: 70, QDVE: 30 },
+    },
   };
 
   const macroRegimes = [
-    {
-      id: "growth_equity",
-      name: "Broad Growth & Global Equities",
-      icon: "🌍",
-      color: "var(--accent-blue)",
-      role: "Capital growth during economic expansion regimes",
-      tickers: ["VWCE", "IWDA", "SXR8", "VUAA", "MEUD", "IMAE", "IUSQ", "FWRA"]
-    },
-    {
-      id: "factor_tilt",
-      name: "Factor Tilts & Tech Momentum",
-      icon: "⚡",
-      color: "var(--accent-purple)",
-      role: "Harvesting structural factor risk premia (Small-Cap, Quality, Tech)",
-      tickers: ["IUSN", "GGRA", "QDVE", "VHYL", "EIMI", "XCS6", "AII", "WTAI"]
-    },
-    {
-      id: "fixed_income",
-      name: "Fixed Income & Intermediate Bonds",
-      icon: "🛡️",
-      color: "var(--accent-cyan)",
-      role: "Deflation protection & flight-to-safety duration buffer",
-      tickers: ["AGGU"]
-    },
-    {
-      id: "liquidity_cash",
-      name: "Ultra-Short Liquidity / Cash (€STR)",
-      icon: "💶",
-      color: "var(--accent-emerald)",
-      role: "Duration-free dry powder earning risk-free overnight rates",
-      tickers: ["XEON"]
-    },
-    {
-      id: "real_assets",
-      name: "Real Assets, Commodities & Gold",
-      icon: "🪙",
-      color: "var(--accent-amber)",
-      role: "Stagflation, supply shocks, and monetary debasement hedge",
-      tickers: ["SGLD", "RARE", "BATT"]
-    }
+    { id: "growth_equity", name: "Broad Growth & Global Equities", icon: "🌍", role: "Capital growth during economic expansion regimes", tickers: ["VWCE", "IWDA", "SXR8", "VUAA", "MEUD", "IMAE", "IUSQ", "FWRA"] },
+    { id: "factor_tilt", name: "Factor Tilts & Tech Momentum", icon: "⚡", role: "Harvesting structural factor risk premia (Small-Cap, Quality, Tech)", tickers: ["IUSN", "GGRA", "QDVE", "VHYL", "EIMI", "XCS6", "AII", "WTAI"] },
+    { id: "fixed_income", name: "Fixed Income & Intermediate Bonds", icon: "🛡️", role: "Deflation protection & flight-to-safety duration buffer", tickers: ["AGGU"] },
+    { id: "liquidity_cash", name: "Ultra-Short Liquidity / Cash (€STR)", icon: "💶", role: "Duration-free dry powder earning risk-free overnight rates", tickers: ["XEON"] },
+    { id: "real_assets", name: "Real Assets, Commodities & Gold", icon: "🪙", role: "Stagflation, supply shocks, and monetary debasement hedge", tickers: ["SGLD", "RARE", "BATT"] },
   ];
 
+  const METHOD_ORDER = ["hrp", "equalRiskContribution", "meanCvar", "inverseVolatility", "equalWeight", "markowitzMeanVariance"];
+
+  /* ------------------------------------------------------------- lifecycle */
   function init(etfs, correlations) {
     allEtfs = etfs || [];
     correlationsData = correlations || null;
     etfsByTicker = {};
-    allEtfs.forEach(e => { etfsByTicker[e.ticker.toUpperCase()] = e; });
+    allEtfs.forEach((e) => { etfsByTicker[e.ticker.toUpperCase()] = e; });
 
     renderInterface();
-    runAllAnalytics();
+    ensureDialogs();
+    // Three API calls only matter once the tab is on screen
+    UI.whenTabActive("parity", () => runAllAnalytics(), "analytics");
+    bindOnce();
   }
 
+  function bindOnce() {
+    if (bound) return;
+    bound = true;
+    const root = document.getElementById("regime-risk-parity-container");
+
+    root.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      if (btn.matches(".preset-regime-btn")) {
+        const key = btn.dataset.preset;
+        if (presets[key]) {
+          activePreset = key;
+          activePortfolio = { ...presets[key].portfolio };
+          refreshSelectionUi();
+          runAllAnalytics();
+        }
+      } else if (btn.matches(".block-ticker-badge")) {
+        const ticker = btn.dataset.ticker;
+        if (Object.prototype.hasOwnProperty.call(activePortfolio, ticker)) delete activePortfolio[ticker];
+        else activePortfolio[ticker] = 10;
+        activePreset = "";
+        normalizeActiveWeights();
+        refreshSelectionUi();
+        runAllAnalytics();
+      } else if (btn.matches(".remove-ticker-btn")) {
+        delete activePortfolio[btn.dataset.ticker];
+        activePreset = "";
+        normalizeActiveWeights();
+        refreshSelectionUi();
+        runAllAnalytics();
+      } else if (btn.id === "equalize-weights-btn") {
+        const keys = Object.keys(activePortfolio);
+        if (keys.length === 0) return;
+        const eq = parseFloat((100.0 / keys.length).toFixed(1));
+        keys.forEach((k) => { activePortfolio[k] = eq; });
+        activePreset = "";
+        normalizeActiveWeights();
+        refreshSelectionUi();
+        runAllAnalytics();
+      } else if (btn.id === "recalculate-all-btn" || btn.matches(".parity-retry-btn")) {
+        runAllAnalytics();
+      } else if (btn.matches(".apply-optimized-weights-btn")) {
+        const m = optimizationData?.methods?.[btn.dataset.method];
+        if (m && m.weights) {
+          activePortfolio = { ...m.weights };
+          activePreset = "";
+          refreshSelectionUi();
+          runAllAnalytics();
+          UI.toast(`Applied ${m.name} weights.`, { type: "success" });
+        }
+      } else if (btn.id === "open-quant-code-btn") {
+        openCodeDialog(btn);
+      } else if (btn.id === "open-platforms-btn") {
+        openPlatformsDialog(btn);
+      } else if (btn.id === "apply-remedy-btn") {
+        const shift = Math.round(stressTestData?.recommendedCashShift || 15);
+        activePortfolio["XEON"] = (activePortfolio["XEON"] || 0) + shift;
+        activePreset = "";
+        normalizeActiveWeights();
+        refreshSelectionUi();
+        runAllAnalytics();
+        UI.toast(`Added a ${shift}% XEON liquidity buffer.`, { type: "success" });
+      }
+    });
+
+    root.addEventListener("change", (e) => {
+      if (e.target.matches(".holding-weight-input")) {
+        activePortfolio[e.target.dataset.ticker] = parseFloat(e.target.value) || 0;
+        activePreset = "";
+        updateSumIndicator();
+        syncPresetPressed();
+      }
+    });
+
+    const refreshStress = UI.debounce(() => refreshStressOnly(), 450);
+    root.addEventListener("input", (e) => {
+      if (!e.target.matches("#tolerance-slider")) return;
+      behavioralTolerance = parseFloat(e.target.value);
+      updateToleranceLabel();
+      if (stressTestData) renderToleranceAlert(stressTestData); // instant breach feedback
+      refreshStress(); // then refresh the server's remedy for the new threshold
+    });
+  }
+
+  /* ------------------------------------------------------------- interface */
   function renderInterface() {
     const container = document.getElementById("regime-risk-parity-container");
     if (!container) return;
 
+    const presetsHtml = Object.entries(presets)
+      .map(([key, p]) => `
+        <button type="button" class="preset-card preset-regime-btn${key === activePreset ? " active" : ""}" data-preset="${key}" aria-pressed="${key === activePreset}">
+          <span class="preset-card-head"><span class="preset-card-title">${esc(p.name)}</span></span>
+          <span class="badge badge-neutral badge-sm">${esc(p.tag)}</span>
+          <span class="preset-card-desc">${esc(p.desc)}</span>
+        </button>`)
+      .join("");
+
+    const regimesHtml = macroRegimes
+      .map((reg) => `
+        <div class="regime-panel">
+          <div class="regime-head"><span class="regime-icon" aria-hidden="true">${reg.icon}</span><strong>${esc(reg.name)}</strong></div>
+          <div class="text-muted text-xs regime-role">${esc(reg.role)}</div>
+          <div class="chip-row" data-regime="${reg.id}">${reg.tickers.map((t) => chipHtml(t)).join("")}</div>
+        </div>`)
+      .join("");
+
     container.innerHTML = `
-      <!-- Header Banner & Workflow Guide -->
-      <div class="card" style="margin-bottom: 24px; border-left: 4px solid var(--accent-emerald); background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);">
-        <div class="card-header" style="padding-bottom: 8px;">
-          <div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <h2 class="card-title" style="margin-bottom: 0; font-size: 1.35rem;">
-                🛡️ Regime Resilience &amp; Robust Risk Parity Studio
-              </h2>
-              <span class="stage-status-badge badge-essential">Stage 4: Regime Resilience &amp; Stress-Testing</span>
-            </div>
-            <span class="card-subtitle" style="font-size: 0.88rem; margin-top: 4px;">
-              Moving beyond fragile Mean-Variance optimization to non-linear risk parity, machine learning dendrograms, and downside crisis stress-testing.
-            </span>
-          </div>
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="open-quant-code-btn" class="btn btn-secondary btn-sm">
-              💻 Python Quant Scripts
-            </button>
-            <button id="open-platforms-btn" class="btn btn-secondary btn-sm">
-              🌐 No-Code Web Platforms
-            </button>
-          </div>
-        </div>
-
-        <!-- 3-Step Interactive Workflow Banner -->
-        <div class="grid-3" style="margin-top: 14px; gap: 12px;">
-          <div class="metric-box" style="border: 1px solid rgba(59, 130, 246, 0.25); background: var(--bg-primary);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span style="background: var(--accent-blue); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">1</span>
-              <strong style="color: var(--text-primary); font-size: 0.88rem;">Pick Structural Building Blocks</strong>
-            </div>
-            <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">
-              Don't let an optimizer pick your assets. Manually select assets representing distinct economic regimes (Equities, Tilts, Bonds, Cash, Gold).
-            </p>
-          </div>
-
-          <div class="metric-box" style="border: 1px solid rgba(16, 185, 129, 0.25); background: var(--bg-primary);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span style="background: var(--accent-emerald); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">2</span>
-              <strong style="color: var(--text-primary); font-size: 0.88rem;">Size with HRP or Risk Parity</strong>
-            </div>
-            <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">
-              Size positions by <strong>volatility risk contribution</strong> rather than subjective return guesses using PyPortfolioOpt (HRP) or Riskfolio (ERC).
-            </p>
-          </div>
-
-          <div class="metric-box" style="border: 1px solid rgba(245, 158, 11, 0.25); background: var(--bg-primary);">
-            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-              <span style="background: var(--accent-amber); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">3</span>
-              <strong style="color: var(--text-primary); font-size: 0.88rem;">Stress-Test the Downside</strong>
-            </div>
-            <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">
-              Run through QuantStats crisis teardowns (2000 Dot-Com, 2008 Lehman, 2022 Stagflation). If drawdown breaches tolerance, increase liquidity!
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- WORKFLOW STEP 1: STRUCTURAL BUILDING BLOCKS -->
-      <div class="card" style="margin-bottom: 24px;">
+      <div class="card parity-intro">
         <div class="card-header">
           <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="badge" style="background: var(--accent-blue); color: #fff; font-weight: 800;">Step 1</span>
-              <h3 class="card-title" style="margin-bottom: 0;">Macro Structural Building Blocks &amp; Portfolio Blueprints</h3>
+            <div class="cluster">
+              <h2 class="card-title">${icon("shield")} Regime resilience &amp; robust risk parity studio</h2>
+              <span class="stage-status-badge badge-essential">Stage 4 · Regime resilience</span>
             </div>
-            <span class="card-subtitle">Choose from battle-tested regime blueprints or customize your building block allocations:</span>
+            <span class="card-subtitle">Moving beyond fragile mean-variance optimisation to non-linear risk parity, graph-clustering dendrograms and downside crisis stress-testing.</span>
+          </div>
+          <div class="cluster">
+            <button type="button" id="open-quant-code-btn" class="btn btn-secondary btn-sm">${icon("code")} Python quant scripts</button>
+            <button type="button" id="open-platforms-btn" class="btn btn-secondary btn-sm">${icon("globe")} No-code web platforms</button>
           </div>
         </div>
-
-        <!-- Presets Grid -->
-        <div style="margin-bottom: 18px;">
-          <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">
-            Classic Regime Presets:
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
-            ${Object.entries(presets).map(([key, p]) => `
-              <button class="btn btn-secondary preset-regime-btn ${key === 'classic_60_40' ? 'active' : ''}" data-preset="${key}" style="text-align: left; padding: 10px 14px; border-radius: var(--radius-md);">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <strong style="color: var(--text-primary); font-size: 0.88rem;">${p.name}</strong>
-                  <span class="badge badge-sm" style="font-size: 0.65rem; background: var(--bg-tertiary);">${p.tag}</span>
-                </div>
-                <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 4px; line-height: 1.3;">${p.desc}</div>
-              </button>
-            `).join("")}
-          </div>
-        </div>
-
-        <!-- Regime Building Blocks Selector -->
-        <div style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-            <div style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">
-              Macro Regime Inventory &amp; Asset Building Blocks:
-            </div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">
-              Click any ETF tag to toggle its inclusion in the portfolio
-            </div>
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-            ${macroRegimes.map(reg => `
-              <div style="background: var(--bg-primary); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-                  <span style="font-size: 1.1rem;">${reg.icon}</span>
-                  <strong style="font-size: 0.8rem; color: var(--text-primary);">${reg.name}</strong>
-                </div>
-                <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px; line-height: 1.3;">${reg.role}</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
-                  ${reg.tickers.map(t => {
-                    const isSelected = activePortfolio.hasOwnProperty(t);
-                    return `
-                      <button class="badge block-ticker-badge ${isSelected ? 'badge-acc' : 'badge-dist'}" data-ticker="${t}" style="cursor: pointer; font-size: 0.72rem; padding: 3px 7px;">
-                        ${t} ${isSelected ? `(${activePortfolio[t]}%)` : '+'}
-                      </button>
-                    `;
-                  }).join("")}
-                </div>
-              </div>
-            `).join("")}
-          </div>
-        </div>
-
-        <!-- Active Holdings Allocation Bar & Inputs -->
-        <div id="active-holdings-editor" style="background: var(--bg-primary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-            <div>
-              <strong style="font-size: 0.9rem; color: var(--text-primary);">Current Target Allocation:</strong>
-              <span id="allocation-sum-indicator" style="font-size: 0.8rem; font-weight: 700; margin-left: 8px; color: var(--accent-emerald);">Total: 100%</span>
-            </div>
-            <div style="display: flex; gap: 6px;">
-              <button id="equalize-weights-btn" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">⚖️ Equalize (1/N)</button>
-              <button id="recalculate-all-btn" class="btn btn-primary btn-sm">🚀 Run Robust Parity &amp; Stress Test</button>
-            </div>
-          </div>
-
-          <div id="holdings-inputs-row" style="display: flex; flex-wrap: wrap; gap: 10px;">
-            <!-- Rendered dynamically -->
-          </div>
-        </div>
+        <ol class="workflow-grid">
+          <li class="workflow-step"><span class="step-badge step-1" aria-hidden="true">1</span><div><strong>Pick structural building blocks</strong><p>Don't let an optimiser pick your assets. Manually select assets representing distinct economic regimes (equities, tilts, bonds, cash, gold).</p></div></li>
+          <li class="workflow-step"><span class="step-badge step-2" aria-hidden="true">2</span><div><strong>Size with HRP or risk parity</strong><p>Size positions by <strong>volatility risk contribution</strong> rather than subjective return guesses, using PyPortfolioOpt (HRP) or Riskfolio (ERC).</p></div></li>
+          <li class="workflow-step"><span class="step-badge step-3" aria-hidden="true">3</span><div><strong>Stress-test the downside</strong><p>Run QuantStats crisis teardowns (2000 Dot-Com, 2008 Lehman, 2022 Stagflation). If drawdown breaches your tolerance, increase liquidity.</p></div></li>
+        </ol>
       </div>
 
-      <!-- WORKFLOW STEP 2: SIZING VIA NON-LINEAR OPTIMIZATION -->
-      <div class="card" style="margin-bottom: 24px;">
+      <section class="card" aria-labelledby="step1-title">
         <div class="card-header">
           <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="badge" style="background: var(--accent-emerald); color: #fff; font-weight: 800;">Step 2</span>
-              <h3 class="card-title" style="margin-bottom: 0;">Position Sizing via Non-Linear Parity &amp; ML Clustering</h3>
-            </div>
-            <span class="card-subtitle">PyPortfolioOpt (HRP &amp; Mean-CVaR) vs Riskfolio-Lib (Equal Risk Contribution) vs Traditional Markowitz</span>
+            <div class="cluster"><span class="step-pill step-1">Step 1</span><h3 id="step1-title" class="card-title">Macro structural building blocks &amp; portfolio blueprints</h3></div>
+            <span class="card-subtitle">Choose a battle-tested regime blueprint, or customise your own building-block allocation.</span>
           </div>
         </div>
 
-        <!-- Algorithm Comparison Table -->
-        <div class="table-responsive" style="margin-bottom: 20px;">
+        <h4 class="section-label">Classic regime presets</h4>
+        <div class="preset-grid mb-5" role="group" aria-label="Regime presets">${presetsHtml}</div>
+
+        <div class="panel mb-4">
+          <div class="row-between wrap-gap mb-3">
+            <h4 class="section-label" style="margin:0">Macro regime inventory &amp; asset building blocks</h4>
+            <span class="text-muted text-xs">Click an ETF to add or remove it from the portfolio</span>
+          </div>
+          <div class="regime-grid">${regimesHtml}</div>
+        </div>
+
+        <div class="panel" id="active-holdings-editor">
+          <div class="row-between wrap-gap mb-3">
+            <div><strong>Current target allocation</strong> <span id="allocation-sum-indicator" class="alloc-total" role="status">Total: 100%</span></div>
+            <div class="cluster">
+              <button type="button" id="equalize-weights-btn" class="btn btn-secondary btn-sm">${icon("scale")} Equalise (1/N)</button>
+              <button type="button" id="recalculate-all-btn" class="btn btn-primary btn-sm">${icon("zap")} Run robust parity &amp; stress test</button>
+            </div>
+          </div>
+          <div id="holdings-inputs-row" class="holding-row"></div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="step2-title">
+        <div class="card-header">
+          <div>
+            <div class="cluster"><span class="step-pill step-2">Step 2</span><h3 id="step2-title" class="card-title">Position sizing via non-linear parity &amp; ML clustering</h3></div>
+            <span class="card-subtitle">PyPortfolioOpt (HRP &amp; Mean-CVaR) vs Riskfolio-Lib (Equal Risk Contribution) vs traditional Markowitz</span>
+          </div>
+        </div>
+
+        <div class="table-responsive mb-5" id="optimization-region">
           <table class="data-table" id="optimization-comparison-table">
+            <caption class="sr-only">Optimisation methods compared for the current building blocks</caption>
             <thead>
               <tr>
-                <th>Optimization Algorithm</th>
-                <th>Underlying Model &amp; Library</th>
-                <th>Target Weights</th>
-                <th>Est. Annual Volatility</th>
-                <th>Key Resilience Advantage</th>
-                <th>Action</th>
+                <th scope="col">Optimisation algorithm</th>
+                <th scope="col">Model &amp; library</th>
+                <th scope="col">Target weights</th>
+                <th scope="col" class="num">Est. volatility</th>
+                <th scope="col">Key resilience advantage</th>
+                <th scope="col"><span class="sr-only">Action</span></th>
               </tr>
             </thead>
             <tbody id="optimization-table-body">
-              <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Calculating robust allocations...</td></tr>
+              <tr><td colspan="6" class="text-muted">Waiting for the analytics engine…</td></tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Risk Decomposition & Dendrogram SVG Section -->
-        <div class="grid-2" style="gap: 16px;">
-          <!-- Risk Contribution Decomposition -->
-          <div class="card" style="background: var(--bg-secondary); margin: 0;">
-            <div class="card-header" style="padding-bottom: 4px;">
-              <div>
-                <h4 class="card-title" style="font-size: 0.95rem;">⚖️ Nominal Weight vs. Volatility Risk Contribution</h4>
-                <span class="card-subtitle" style="font-size: 0.74rem;">The 60/40 Equity Trap: Equities dominate ~90% of variance unless equalized by Risk Parity.</span>
-              </div>
-            </div>
-            <div id="risk-decomposition-chart" class="chart-container" style="height: 220px;">
-              <!-- Rendered via SVG -->
-            </div>
+        <div class="grid-2">
+          <div class="panel" id="risk-chart-panel">
+            ${UI.chart.frameHtml({
+              title: "Nominal weight vs share of portfolio risk",
+              subtitle: "The 60/40 equity trap: one asset can drive most of the variance on a fraction of the capital.",
+              legend: `<span class="legend-item" role="listitem"><span class="legend-key is-rect" style="--c:var(--series-1)"></span>Nominal allocation</span><span class="legend-item" role="listitem"><span class="legend-key is-rect" style="--c:var(--series-2)"></span>Share of portfolio risk</span>`,
+              plotStyle: "height:260px",
+            })}
+            <p id="risk-insight" class="text-secondary text-sm mt-3" role="status"></p>
           </div>
-
-          <!-- Dendrogram ML Graph Clustering Tree -->
-          <div class="card" style="background: var(--bg-secondary); margin: 0;">
-            <div class="card-header" style="padding-bottom: 4px;">
-              <div>
-                <h4 class="card-title" style="font-size: 0.95rem;">🌳 HRP Machine-Learning Dendrogram Tree</h4>
-                <span class="card-subtitle" style="font-size: 0.74rem;">Hierarchical graph clustering orders assets by correlation distance d = √(2(1-ρ)).</span>
-              </div>
-            </div>
-            <div id="dendrogram-tree-chart" class="chart-container" style="height: 220px;">
-              <!-- Rendered via SVG -->
-            </div>
+          <div class="panel" id="dendro-chart-panel">
+            ${UI.chart.frameHtml({
+              title: "HRP dendrogram",
+              subtitle: "Hierarchical clustering orders assets by correlation distance d = √(2(1 − ρ)).",
+              plotStyle: "height:260px",
+            })}
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- WORKFLOW STEP 3: HISTORICAL CRISIS STRESS-TESTING & TEARDOWN -->
-      <div class="card" style="margin-bottom: 24px;">
+      <section class="card" aria-labelledby="step3-title">
         <div class="card-header">
           <div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="badge" style="background: var(--accent-amber); color: #fff; font-weight: 800;">Step 3</span>
-              <h3 class="card-title" style="margin-bottom: 0;">Downside Stress-Testing &amp; QuantStats Teardown</h3>
-            </div>
-            <span class="card-subtitle">Actual performance across canonical historical macro crises vs 100% Equity and 60/40 benchmarks:</span>
+            <div class="cluster"><span class="step-pill step-3">Step 3</span><h3 id="step3-title" class="card-title">Downside stress-testing &amp; QuantStats teardown</h3></div>
+            <span class="card-subtitle">Performance across canonical historical macro crises vs 100% equity and 60/40 benchmarks.</span>
           </div>
         </div>
 
-        <!-- Behavioral Drawdown Tolerance Guardrail Slider -->
-        <div style="background: var(--bg-secondary); padding: 14px 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 8px;">
-            <div>
-              <strong style="color: var(--text-primary); font-size: 0.88rem;">🎯 Behavioral Drawdown Tolerance Limit:</strong>
-              <span id="tolerance-val-display" style="font-weight: 800; color: var(--accent-amber); margin-left: 6px;">-20.0%</span>
-            </div>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">
-              Adjust to reflect your psychological threshold before panic selling at market bottoms
-            </span>
+        <div class="panel mb-5">
+          <div class="row-between wrap-gap mb-2">
+            <label for="tolerance-slider" class="tolerance-label">${icon("target")} Behavioural drawdown tolerance limit: <strong id="tolerance-val-display">-20.0%</strong></label>
+            <span class="text-muted text-xs">Your psychological threshold before panic-selling at the bottom</span>
           </div>
-          <input type="range" id="tolerance-slider" min="-45" max="-10" step="1" value="-20" style="width: 100%; accent-color: var(--accent-amber);" />
-          <div id="tolerance-alert-box" style="margin-top: 10px;">
-            <!-- Dynamically populated alert -->
-          </div>
+          <input type="range" id="tolerance-slider" min="-45" max="-10" step="1" value="${behavioralTolerance}" class="tolerance-slider" aria-valuetext="${behavioralTolerance} percent" />
+          <div id="tolerance-alert-box" class="mt-3" aria-live="polite"></div>
         </div>
 
-        <!-- Crisis Breakdown Cards Grid -->
-        <div id="crisis-cards-container" class="grid-3" style="gap: 12px; margin-bottom: 20px;">
-          <!-- Dynamically populated crisis cards -->
-        </div>
+        <div id="crisis-cards-container" class="crisis-grid mb-5"></div>
 
-        <!-- QuantStats Comprehensive Downside Tear-Sheet -->
-        <h4 class="card-title" style="font-size: 0.95rem; margin-top: 24px; margin-bottom: 10px;">
-          📋 QuantStats Comprehensive Downside Tear-Sheet
-        </h4>
-        <div id="quantstats-tearsheet-container">
-          <!-- Dynamically populated tear-sheet grid -->
-        </div>
-      </div>
+        <h4 class="card-title mb-3">QuantStats downside tear-sheet</h4>
+        <div id="quantstats-tearsheet-container"></div>
+      </section>`;
 
-      <!-- INTERACTIVE PLATFORMS & CODE MODALS -->
-      <div id="quant-code-modal" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width: 850px;">
-          <div class="modal-header">
-            <h3 class="modal-title">💻 Open-Source Python Quant Script Generators</h3>
-            <button class="modal-close-btn" id="close-quant-modal">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div style="display: flex; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-              <button class="btn btn-secondary btn-sm code-tab-btn active" data-tab="pyportfolioopt">PyPortfolioOpt (HRP &amp; Mean-CVaR)</button>
-              <button class="btn btn-secondary btn-sm code-tab-btn" data-tab="riskfolio">Riskfolio-Lib (Tail-Risk &amp; Parity)</button>
-              <button class="btn btn-secondary btn-sm code-tab-btn" data-tab="quantstats">QuantStats (Tear-Sheet &amp; Crises)</button>
-            </div>
-            <div id="quant-code-display-container">
-              <pre style="background: var(--bg-tertiary); padding: 14px; border-radius: var(--radius-sm); font-size: 0.78rem; overflow-x: auto; color: var(--text-primary); font-family: monospace; max-height: 400px;"><code id="quant-code-block">Loading code snippet...</code></pre>
-            </div>
-            <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
-              <button id="copy-code-btn" class="btn btn-primary btn-sm">📋 Copy Python Script</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="platforms-modal" class="modal-backdrop">
-        <div class="modal-dialog" style="max-width: 850px;">
-          <div class="modal-header">
-            <h3 class="modal-title">🌐 Institutional No-Code &amp; Quant Tools Hub</h3>
-            <button class="modal-close-btn" id="close-platforms-modal">&times;</button>
-          </div>
-          <div class="modal-body" id="platforms-modal-body">
-            <!-- Dynamically populated platform cards -->
-          </div>
-        </div>
-      </div>
-    `;
-
-    bindInterfaceEvents();
+    UI.chart.wireFrame(container.querySelector("#risk-chart-panel"));
+    UI.chart.wireFrame(container.querySelector("#dendro-chart-panel"));
     renderHoldingsInputs();
+    updateToleranceLabel();
+    syncChips();
   }
 
-  function bindInterfaceEvents() {
-    // Preset buttons
-    document.querySelectorAll(".preset-regime-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".preset-regime-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        const presetKey = btn.dataset.preset;
-        if (presets[presetKey]) {
-          activePortfolio = { ...presets[presetKey].portfolio };
-          renderHoldingsInputs();
-          runAllAnalytics();
-        }
-      });
-    });
+  function chipHtml(t) {
+    const selected = Object.prototype.hasOwnProperty.call(activePortfolio, t);
+    return `<button type="button" class="badge block-ticker-badge ${selected ? "badge-acc" : "badge-neutral"}" data-ticker="${esc(t)}" aria-pressed="${selected}" aria-label="${esc(t)}">${esc(t)} ${selected ? `(${esc(activePortfolio[t])}%)` : icon("plus")}</button>`;
+  }
 
-    // Block ticker toggle badges
-    document.querySelectorAll(".block-ticker-badge").forEach(badge => {
-      badge.addEventListener("click", () => {
-        const ticker = badge.dataset.ticker;
-        if (activePortfolio.hasOwnProperty(ticker)) {
-          delete activePortfolio[ticker];
-        } else {
-          activePortfolio[ticker] = 10;
-        }
-        normalizeActiveWeights();
-        renderHoldingsInputs();
-        runAllAnalytics();
-      });
-    });
+  /** Update chips, editor, and preset state after the allocation changes. */
+  function refreshSelectionUi() {
+    syncChips();
+    renderHoldingsInputs();
+    syncPresetPressed();
+  }
 
-    // Equalize weights
-    document.getElementById("equalize-weights-btn")?.addEventListener("click", () => {
-      const keys = Object.keys(activePortfolio);
-      if (keys.length === 0) return;
-      const eq = parseFloat((100.0 / keys.length).toFixed(1));
-      keys.forEach(k => { activePortfolio[k] = eq; });
-      normalizeActiveWeights();
-      renderHoldingsInputs();
-      runAllAnalytics();
+  function syncChips() {
+    document.querySelectorAll(".block-ticker-badge").forEach((btn) => {
+      const t = btn.dataset.ticker;
+      const selected = Object.prototype.hasOwnProperty.call(activePortfolio, t);
+      btn.className = `badge block-ticker-badge ${selected ? "badge-acc" : "badge-neutral"}`;
+      btn.setAttribute("aria-pressed", String(selected));
+      btn.innerHTML = `${esc(t)} ${selected ? `(${esc(activePortfolio[t])}%)` : icon("plus")}`;
     });
+  }
 
-    // Run Recalculate
-    document.getElementById("recalculate-all-btn")?.addEventListener("click", () => {
-      runAllAnalytics();
-    });
-
-    // Tolerance slider
-    const slider = document.getElementById("tolerance-slider");
-    slider?.addEventListener("input", (e) => {
-      behavioralTolerance = parseFloat(e.target.value);
-      const disp = document.getElementById("tolerance-val-display");
-      if (disp) disp.innerText = `${behavioralTolerance.toFixed(1)}%`;
-      if (stressTestData) {
-        renderToleranceAlert(stressTestData);
-      }
-    });
-
-    // Modals
-    document.getElementById("open-quant-code-btn")?.addEventListener("click", () => {
-      document.getElementById("quant-code-modal")?.classList.add("active");
-      loadQuantCodeSnippet("pyportfolioopt");
-    });
-
-    document.getElementById("close-quant-modal")?.addEventListener("click", () => {
-      document.getElementById("quant-code-modal")?.classList.remove("active");
-    });
-
-    document.getElementById("open-platforms-btn")?.addEventListener("click", () => {
-      document.getElementById("platforms-modal")?.classList.add("active");
-      loadPlatformsContent();
-    });
-
-    document.getElementById("close-platforms-modal")?.addEventListener("click", () => {
-      document.getElementById("platforms-modal")?.classList.remove("active");
-    });
-
-    // Code tabs
-    document.querySelectorAll(".code-tab-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".code-tab-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        loadQuantCodeSnippet(btn.dataset.tab);
-      });
-    });
-
-    // Copy code button
-    document.getElementById("copy-code-btn")?.addEventListener("click", () => {
-      const code = document.getElementById("quant-code-block")?.innerText || "";
-      navigator.clipboard.writeText(code).then(() => {
-        const copyBtn = document.getElementById("copy-code-btn");
-        if (copyBtn) {
-          copyBtn.innerText = "✅ Copied to Clipboard!";
-          setTimeout(() => { copyBtn.innerText = "📋 Copy Python Script"; }, 2000);
-        }
-      });
+  function syncPresetPressed() {
+    document.querySelectorAll(".preset-regime-btn").forEach((btn) => {
+      const on = btn.dataset.preset === activePreset;
+      btn.classList.toggle("active", on);
+      btn.setAttribute("aria-pressed", String(on));
     });
   }
 
   function renderHoldingsInputs() {
     const row = document.getElementById("holdings-inputs-row");
     if (!row) return;
-
-    row.innerHTML = Object.entries(activePortfolio).map(([t, w]) => {
-      return `
-        <div style="display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-          <strong style="color: var(--accent-cyan); font-size: 0.85rem;">${t}</strong>
-          <input type="number" class="holding-weight-input" data-ticker="${t}" value="${w}" min="1" max="100" step="1" style="width: 55px; padding: 2px 4px; font-size: 0.8rem; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); text-align: right;" />
-          <span style="font-size: 0.75rem; color: var(--text-muted);">%</span>
-          <button class="remove-ticker-btn" data-ticker="${t}" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; padding: 0 4px;">&times;</button>
-        </div>
-      `;
-    }).join("");
-
-    // Bind inputs
-    row.querySelectorAll(".holding-weight-input").forEach(input => {
-      input.addEventListener("change", (e) => {
-        const ticker = e.target.dataset.ticker;
-        const val = parseFloat(e.target.value) || 0;
-        activePortfolio[ticker] = val;
-        updateSumIndicator();
-      });
-    });
-
-    row.querySelectorAll(".remove-ticker-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const ticker = btn.dataset.ticker;
-        delete activePortfolio[ticker];
-        normalizeActiveWeights();
-        renderHoldingsInputs();
-        runAllAnalytics();
-      });
-    });
-
+    const entries = Object.entries(activePortfolio);
+    row.innerHTML = entries.length
+      ? entries
+          .map(([t, w]) => `
+            <div class="holding-chip">
+              <strong class="ticker">${esc(t)}</strong>
+              <label class="sr-only" for="hw-${esc(t)}">Weight of ${esc(t)} in percent</label>
+              <input id="hw-${esc(t)}" type="number" class="holding-weight-input" data-ticker="${esc(t)}" value="${esc(w)}" min="0" max="100" step="any" inputmode="decimal" />
+              <span class="text-muted text-xs" aria-hidden="true">%</span>
+              <button type="button" class="remove-ticker-btn" data-ticker="${esc(t)}" aria-label="Remove ${esc(t)}">${icon("x")}</button>
+            </div>`)
+          .join("")
+      : `<span class="text-muted text-sm">Select at least one building block above.</span>`;
     updateSumIndicator();
   }
 
   function normalizeActiveWeights() {
     const total = Object.values(activePortfolio).reduce((a, b) => a + b, 0);
     if (total <= 0) return;
-    for (let k in activePortfolio) {
-      activePortfolio[k] = parseFloat(((activePortfolio[k] / total) * 100).toFixed(1));
-    }
+    for (const k in activePortfolio) activePortfolio[k] = parseFloat(((activePortfolio[k] / total) * 100).toFixed(1));
   }
 
   function updateSumIndicator() {
     const total = Object.values(activePortfolio).reduce((a, b) => a + b, 0);
     const ind = document.getElementById("allocation-sum-indicator");
-    if (ind) {
-      ind.innerText = `Total: ${total.toFixed(1)}%`;
-      ind.style.color = Math.abs(total - 100) < 0.5 ? "var(--accent-emerald)" : "var(--accent-amber)";
-    }
+    if (!ind) return;
+    const ok = Math.abs(total - 100) < 0.5;
+    ind.textContent = `Total: ${total.toFixed(1)}%${ok ? "" : " (normalised on run)"}`;
+    ind.classList.toggle("is-off", !ok);
+  }
+
+  function updateToleranceLabel() {
+    const disp = document.getElementById("tolerance-val-display");
+    if (disp) disp.textContent = `${behavioralTolerance.toFixed(1)}%`;
+    document.getElementById("tolerance-slider")?.setAttribute("aria-valuetext", `${behavioralTolerance} percent`);
+  }
+
+  /* ------------------------------------------------------------- analytics */
+  const post = (url, body) =>
+    fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))));
+
+  function setBusy(on) {
+    ["optimization-region", "risk-chart-panel", "dendro-chart-panel", "crisis-cards-container", "quantstats-tearsheet-container"].forEach((id) => {
+      document.getElementById(id)?.classList.toggle("is-refreshing", on);
+    });
+    const btn = document.getElementById("recalculate-all-btn");
+    if (btn) { btn.disabled = on; btn.classList.toggle("is-loading", on); }
   }
 
   async function runAllAnalytics() {
     normalizeActiveWeights();
-    updateSumIndicator();
-
+    refreshSelectionUi(); // show the normalised weights
     const tickers = Object.keys(activePortfolio);
     if (tickers.length === 0) return;
 
-    // 1. Optimization call
-    try {
-      const optRes = await fetch("/api/portfolio/optimize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tickers, method: "all" })
-      });
-      if (optRes.ok) {
-        optimizationData = await optRes.json();
-      }
-    } catch (e) {
-      // Fallback local mock/computation if offline
+    const myRun = ++runId;
+    setBusy(true);
+    const [opt, stress, tear] = await Promise.allSettled([
+      post("/api/portfolio/optimize", { tickers, method: "all" }),
+      post("/api/portfolio/stress-test", { portfolio: activePortfolio, behavioralTolerance }),
+      post("/api/portfolio/teardown", { portfolio: activePortfolio }),
+    ]);
+    if (myRun !== runId) return; // superseded by a newer run
+    setBusy(false);
+
+    optimizationData = opt.status === "fulfilled" ? opt.value : null;
+    stressTestData = stress.status === "fulfilled" ? stress.value : null;
+    tearSheetData = tear.status === "fulfilled" ? tear.value : null;
+
+    if (!optimizationData && !stressTestData && !tearSheetData) {
+      renderUnavailable();
+      return;
     }
-
-    // 2. Stress-test call
-    try {
-      const stressRes = await fetch("/api/portfolio/stress-test", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolio: activePortfolio, behavioralTolerance })
-      });
-      if (stressRes.ok) {
-        stressTestData = await stressRes.json();
-      }
-    } catch (e) {}
-
-    // 3. Teardown call
-    try {
-      const tearRes = await fetch("/api/portfolio/teardown", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolio: activePortfolio })
-      });
-      if (tearRes.ok) {
-        tearSheetData = await tearRes.json();
-      }
-    } catch (e) {}
-
     renderOptimizationResults();
     renderStressTestResults();
     renderTearSheetResults();
   }
 
+  async function refreshStressOnly() {
+    if (Object.keys(activePortfolio).length === 0) return;
+    try {
+      stressTestData = await post("/api/portfolio/stress-test", { portfolio: activePortfolio, behavioralTolerance });
+      renderStressTestResults();
+    } catch (e) { /* keep the current render */ }
+  }
+
+  function unavailableHtml() {
+    return `<div class="callout callout-warning">${icon("alert")}<div>
+      <div class="callout-title">Analytics engine unreachable</div>
+      HRP, risk parity, CVaR and the crisis stress tests are computed by the local server. Start it with <code>uv run apex-etf</code> (or <code>python3 server.py</code>) and press Retry.
+      <div class="mt-2"><button type="button" class="btn btn-secondary btn-sm parity-retry-btn">${icon("refresh")} Retry</button></div>
+    </div></div>`;
+  }
+
+  function renderUnavailable() {
+    document.getElementById("optimization-table-body").innerHTML = `<tr><td colspan="6">${unavailableHtml()}</td></tr>`;
+    ["risk-chart-panel", "dendro-chart-panel"].forEach((id) => {
+      const host = document.querySelector(`#${id} [data-view-panel="chart"]`);
+      if (host) { host.querySelector("svg")?.remove(); }
+    });
+    document.getElementById("risk-insight").textContent = "";
+    document.getElementById("crisis-cards-container").innerHTML = unavailableHtml();
+    document.getElementById("quantstats-tearsheet-container").innerHTML = "";
+    document.getElementById("tolerance-alert-box").innerHTML = "";
+  }
+
+  /* ---------------------------------------------------- step 2: optimisation */
   function renderOptimizationResults() {
     const tbody = document.getElementById("optimization-table-body");
-    if (!tbody || !optimizationData || !optimizationData.methods) return;
-
-    const methods = optimizationData.methods;
-    const methodOrder = ["hrp", "equalRiskContribution", "meanCvar", "inverseVolatility", "equalWeight", "markowitzMeanVariance"];
-
-    tbody.innerHTML = methodOrder.map(mKey => {
-      const m = methods[mKey];
-      if (!m) return "";
-
-      const weightsStr = Object.entries(m.weights || {})
-        .map(([t, w]) => `<strong>${t}</strong>: ${w}%`)
-        .join(" | ");
-
-      const isRecommended = mKey === "hrp" || mKey === "equalRiskContribution";
-
-      return `
-        <tr class="${isRecommended ? 'highlight-row' : ''}">
-          <td>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <strong>${m.name}</strong>
-              ${isRecommended ? '<span class="badge badge-acc" style="font-size: 0.65rem;">Recommended</span>' : ''}
-            </div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">${m.tag}</div>
-          </td>
-          <td><span class="badge badge-blue">${m.library}</span></td>
-          <td style="font-size: 0.8rem; line-height: 1.4;">${weightsStr}</td>
-          <td><strong style="color: var(--accent-emerald);">${m.volatility}%</strong></td>
-          <td style="font-size: 0.76rem; color: var(--text-secondary); max-width: 250px;">${m.description}</td>
-          <td>
-            <button class="btn btn-secondary btn-sm apply-optimized-weights-btn" data-method="${mKey}" style="font-size: 0.72rem; padding: 4px 8px;">
-              👉 Apply Weights
-            </button>
-          </td>
-        </tr>
-      `;
-    }).join("");
-
-    // Bind apply weight buttons
-    tbody.querySelectorAll(".apply-optimized-weights-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const mKey = btn.dataset.method;
-        if (methods[mKey] && methods[mKey].weights) {
-          activePortfolio = { ...methods[mKey].weights };
-          renderHoldingsInputs();
-          runAllAnalytics();
-        }
-      });
-    });
-
-    renderRiskDecompositionChart();
-    renderDendrogramChart();
-  }
-
-  function renderRiskDecompositionChart() {
-    const container = document.getElementById("risk-decomposition-chart");
-    if (!container || !optimizationData) return;
-
-    const width = container.clientWidth || 450;
-    const height = 220;
-    const pad = { top: 20, right: 20, bottom: 40, left: 60 };
-
-    const tickers = Object.keys(activePortfolio);
-    if (tickers.length === 0) return;
-
-    // Compare nominal weight vs risk contribution
-    const nominalWeights = activePortfolio;
-    const ercRc = optimizationData.methods?.equalRiskContribution?.riskContributions || {};
-
-    const barWidth = Math.max(16, Math.min(36, (width - pad.left - pad.right) / (tickers.length * 2.5)));
-    const groupWidth = (width - pad.left - pad.right) / tickers.length;
-
-    let barsHtml = "";
-    tickers.forEach((t, i) => {
-      const xGroup = pad.left + i * groupWidth + groupWidth / 2;
-      const nomW = nominalWeights[t] || 0;
-      const rcW = ercRc[t] || (100 / tickers.length);
-
-      const maxVal = 100;
-      const nomHeight = (nomW / maxVal) * (height - pad.top - pad.bottom);
-      const rcHeight = (rcW / maxVal) * (height - pad.top - pad.bottom);
-
-      const yNom = height - pad.bottom - nomHeight;
-      const yRc = height - pad.bottom - rcHeight;
-
-      barsHtml += `
-        <!-- Nominal Weight Bar -->
-        <rect x="${xGroup - barWidth}" y="${yNom}" width="${barWidth - 2}" height="${nomHeight}" fill="var(--accent-blue)" rx="3">
-          <title>${t} Nominal Weight: ${nomW.toFixed(1)}%</title>
-        </rect>
-        <text x="${xGroup - barWidth/2}" y="${yNom - 4}" text-anchor="middle" font-size="9" fill="var(--text-muted)">${nomW.toFixed(0)}%</text>
-
-        <!-- Risk Contribution Bar -->
-        <rect x="${xGroup}" y="${yRc}" width="${barWidth - 2}" height="${rcHeight}" fill="var(--accent-emerald)" rx="3">
-          <title>${t} Risk Contribution: ${rcW.toFixed(1)}%</title>
-        </rect>
-        <text x="${xGroup + barWidth/2}" y="${yRc - 4}" text-anchor="middle" font-size="9" fill="var(--accent-emerald)">${rcW.toFixed(0)}%</text>
-
-        <!-- Ticker Label -->
-        <text x="${xGroup}" y="${height - pad.bottom + 16}" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--text-primary)">
-          ${t}
-        </text>
-      `;
-    });
-
-    container.innerHTML = `
-      <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%;">
-        <!-- Legend -->
-        <g transform="translate(${pad.left}, 12)">
-          <rect x="0" y="0" width="10" height="10" fill="var(--accent-blue)" rx="2"/>
-          <text x="14" y="9" font-size="10" fill="var(--text-secondary)">Nominal Allocation (%)</text>
-          <rect x="145" y="0" width="10" height="10" fill="var(--accent-emerald)" rx="2"/>
-          <text x="159" y="9" font-size="10" fill="var(--text-secondary)">Volatility Risk Contribution (%)</text>
-        </g>
-        <!-- Baseline -->
-        <line x1="${pad.left}" y1="${height - pad.bottom}" x2="${width - pad.right}" y2="${height - pad.bottom}" stroke="var(--border-color)" stroke-width="1"/>
-        ${barsHtml}
-      </svg>
-    `;
-  }
-
-  function renderDendrogramChart() {
-    const container = document.getElementById("dendrogram-tree-chart");
-    if (!container || !optimizationData) return;
-
-    const width = container.clientWidth || 450;
-    const height = 220;
-    const tree = optimizationData.methods?.hrp?.dendrogramTree;
-    const seriated = optimizationData.methods?.hrp?.seriatedOrder || Object.keys(activePortfolio);
-
-    if (!tree || seriated.length === 0) {
-      container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding-top: 80px;">Dendrogram clustering active with 2+ assets.</div>`;
+    if (!tbody) return;
+    const methods = optimizationData?.methods;
+    if (!methods) {
+      tbody.innerHTML = `<tr><td colspan="6">${unavailableHtml()}</td></tr>`;
       return;
     }
 
-    const pad = { top: 30, right: 30, bottom: 40, left: 30 };
-    const n = seriated.length;
-    const stepX = (width - pad.left - pad.right) / Math.max(1, n - 1);
-
-    // Leaves positions
-    const leafPos = {};
-    seriated.forEach((t, i) => {
-      leafPos[t] = pad.left + i * stepX;
-    });
-
-    let pathsHtml = "";
-    let nodesHtml = "";
-
-    function traverse(node, depth = 0) {
-      if (!node) return null;
-      if (node.left === null && node.right === null) {
-        const x = leafPos[node.ticker] || pad.left;
-        const y = height - pad.bottom;
-        return { x, y };
-      }
-
-      const leftCoords = traverse(node.left, depth + 1);
-      const rightCoords = traverse(node.right, depth + 1);
-
-      if (leftCoords && rightCoords) {
-        const midX = (leftCoords.x + rightCoords.x) / 2;
-        const nodeY = pad.top + Math.max(10, Math.min(height - pad.bottom - 30, 20 + depth * 35));
-
-        // Inverted U branch
-        pathsHtml += `
-          <path d="M ${leftCoords.x} ${leftCoords.y} V ${nodeY} H ${rightCoords.x} V ${rightCoords.y}" fill="none" stroke="var(--accent-purple)" stroke-width="2" stroke-linecap="round"/>
-        `;
-        nodesHtml += `
-          <circle cx="${midX}" cy="${nodeY}" r="4" fill="var(--accent-purple)" stroke="#fff" stroke-width="1.5">
-            <title>Clustered Distance: ${node.distance || 0}</title>
-          </circle>
-        `;
-        return { x: midX, y: nodeY };
-      }
-      return null;
-    }
-
-    traverse(tree);
-
-    // Leaves labels
-    const leavesHtml = seriated.map((t) => {
-      const x = leafPos[t];
+    tbody.innerHTML = METHOD_ORDER.map((key) => {
+      const m = methods[key];
+      if (!m) return "";
+      const recommended = key === "hrp" || key === "equalRiskContribution";
+      const weights = Object.entries(m.weights || {})
+        .map(([t, w]) => `<span class="w-chip"><strong>${esc(t)}</strong> ${esc(fmt.num(w, 1))}%</span>`)
+        .join("");
       return `
-        <circle cx="${x}" cy="${height - pad.bottom}" r="5" fill="var(--accent-cyan)" stroke="#fff" stroke-width="1.5" />
-        <text x="${x}" y="${height - pad.bottom + 18}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--text-primary)">
-          ${t}
-        </text>
-      `;
+        <tr class="${recommended ? "highlight-row" : ""}">
+          <th scope="row" class="algo-cell">
+            <div class="cluster"><strong>${esc(m.name)}</strong>${recommended ? `<span class="badge badge-acc badge-sm">Recommended</span>` : ""}</div>
+            <div class="text-muted text-xs">${esc(m.tag)}</div>
+          </th>
+          <td><span class="badge badge-blue">${esc(m.library)}</span></td>
+          <td><div class="cluster w-chips">${weights}</div></td>
+          <td class="num"><strong>${esc(fmt.pct(m.volatility, 2))}</strong></td>
+          <td class="algo-desc">${esc(m.description)}</td>
+          <td><button type="button" class="btn btn-secondary btn-sm apply-optimized-weights-btn" data-method="${key}" aria-label="Apply ${esc(m.name)} weights">${icon("check")} Apply</button></td>
+        </tr>`;
     }).join("");
 
-    container.innerHTML = `
-      <svg viewBox="0 0 ${width} ${height}" style="width: 100%; height: 100%;">
-        <text x="${pad.left}" y="18" font-size="10" fill="var(--text-muted)">Machine Learning Single-Linkage Dendrogram</text>
-        ${pathsHtml}
-        ${nodesHtml}
-        ${leavesHtml}
-      </svg>
-    `;
+    renderRiskDecomposition();
+    renderDendrogram();
+  }
+
+  /** Risk contribution of the CURRENT portfolio: w_i·(Σw)_i / wᵀΣw, from the API covariance. */
+  function currentRiskContributions() {
+    const tickers = optimizationData?.tickers;
+    const cov = optimizationData?.shrinkage?.sampleCovariance;
+    if (!Array.isArray(tickers) || !Array.isArray(cov) || cov.length !== tickers.length) return null;
+    const total = tickers.reduce((s, t) => s + (activePortfolio[t] || 0), 0);
+    if (total <= 0) return null;
+    const w = tickers.map((t) => (activePortfolio[t] || 0) / total);
+    const sigmaW = cov.map((row) => row.reduce((s, c, j) => s + c * w[j], 0));
+    const variance = w.reduce((s, wi, i) => s + wi * sigmaW[i], 0);
+    if (!(variance > 0)) return null;
+    return tickers.map((t, i) => ({
+      ticker: t,
+      weight: w[i] * 100,
+      risk: ((w[i] * sigmaW[i]) / variance) * 100,
+    }));
+  }
+
+  function barPath(x, y, w, h, r) {
+    r = Math.max(0, Math.min(r, w / 2, h));
+    return `M${x} ${y + h}V${y + r}Q${x} ${y} ${x + r} ${y}H${x + w - r}Q${x + w} ${y} ${x + w} ${y + r}V${y + h}Z`;
+  }
+
+  function renderRiskDecomposition() {
+    const panel = document.getElementById("risk-chart-panel");
+    const host = panel?.querySelector('[data-view-panel="chart"]');
+    const tableHost = panel?.querySelector('[data-view-panel="table"]');
+    const insight = document.getElementById("risk-insight");
+    if (!host) return;
+
+    host.querySelector(".chart-empty")?.remove();
+    const data = currentRiskContributions();
+    if (!data) {
+      host.querySelector("svg")?.remove();
+      host.insertAdjacentHTML("afterbegin", `<p class="text-muted text-sm chart-empty">Risk decomposition needs the covariance matrix from the analytics engine.</p>`);
+      if (insight) insight.textContent = "";
+      return;
+    }
+
+    tableHost.textContent = "";
+    tableHost.appendChild(UI.chart.dataTable({
+      caption: "Nominal allocation versus share of portfolio risk",
+      columns: [
+        { key: "ticker", label: "Asset" },
+        { key: "weight", label: "Nominal allocation", align: "right", format: (v) => fmt.pct(v, 1) },
+        { key: "risk", label: "Share of risk", align: "right", format: (v) => fmt.pct(v, 1) },
+      ],
+      rows: data,
+    }));
+
+    const top = data.slice().sort((a, b) => b.risk - a.risk)[0];
+    if (insight) {
+      insight.textContent = data.length > 1
+        ? `${top.ticker} drives ${fmt.pct(top.risk, 1)} of this portfolio's risk on ${fmt.pct(top.weight, 1)} of the capital.`
+        : "";
+    }
+
+    const tooltip = host._tip || (host._tip = UI.chart.tooltip(host));
+    UI.chart.mountResponsive(host, (width) => {
+      const height = host.clientHeight || 260;
+      const pad = { top: 22, right: 12, bottom: 34, left: 40 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+      const n = data.length;
+      const band = Math.min(plotW / n, 160); // few assets → keep groups compact
+      const startX = pad.left + (plotW - band * n) / 2;
+      const barW = Math.max(8, Math.min(24, band * 0.3));
+      const gap = 2;
+      const Y = (v) => pad.top + plotH - (Math.max(0, Math.min(100, v)) / 100) * plotH;
+      const showValues = band >= 64;
+
+      const grid = [0, 25, 50, 75, 100]
+        .map((t) => `<line class="chart-grid-line" x1="${pad.left}" x2="${width - pad.right}" y1="${Y(t)}" y2="${Y(t)}"></line>
+                     <text class="chart-axis-text" x="${pad.left - 6}" y="${Y(t) + 4}" text-anchor="end">${t}%</text>`)
+        .join("");
+
+      const groups = data.map((d, i) => {
+        const cx = startX + band * i + band / 2;
+        const x1 = cx - barW - gap / 2;
+        const x2 = cx + gap / 2;
+        const h1 = Math.max(1, pad.top + plotH - Y(d.weight));
+        const h2 = Math.max(1, pad.top + plotH - Y(d.risk));
+        return `
+          <g class="bar-group" data-i="${i}" tabindex="0" role="img"
+             aria-label="${esc(d.ticker)}: nominal allocation ${esc(fmt.pct(d.weight, 1))}, share of portfolio risk ${esc(fmt.pct(d.risk, 1))}">
+            <rect class="bar-hit" x="${startX + band * i}" y="${pad.top}" width="${band}" height="${plotH}" fill="transparent"></rect>
+            <path d="${barPath(x1, pad.top + plotH - h1, barW, h1, 4)}" fill="var(--series-1)"></path>
+            <path d="${barPath(x2, pad.top + plotH - h2, barW, h2, 4)}" fill="var(--series-2)"></path>
+            ${showValues ? `<text class="chart-label" x="${x1 + barW / 2}" y="${pad.top + plotH - h1 - 5}" text-anchor="middle">${esc(fmt.num(d.weight, 0))}%</text>
+                            <text class="chart-label" x="${x2 + barW / 2}" y="${pad.top + plotH - h2 - 5}" text-anchor="middle">${esc(fmt.num(d.risk, 0))}%</text>` : ""}
+            <text class="chart-label tick-label" x="${cx}" y="${height - pad.bottom + 18}" text-anchor="middle">${esc(d.ticker)}</text>
+          </g>`;
+      }).join("");
+
+      host.querySelector("svg")?.remove();
+      host.insertAdjacentHTML("afterbegin", `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="group" aria-label="Grouped bar chart comparing each asset's nominal allocation with its share of portfolio risk. Open the table view for the numbers.">
+          ${grid}
+          <line class="chart-axis-line" x1="${pad.left}" x2="${width - pad.right}" y1="${pad.top + plotH}" y2="${pad.top + plotH}"></line>
+          ${groups}
+        </svg>`);
+
+      host.querySelectorAll(".bar-group").forEach((g) => {
+        const d = data[Number(g.dataset.i)];
+        const show = () => {
+          const cx = startX + band * Number(g.dataset.i) + band / 2;
+          tooltip.show({
+            x: cx,
+            y: pad.top + plotH / 3,
+            title: d.ticker,
+            rows: [
+              { color: "var(--series-1)", value: fmt.pct(d.weight, 1), label: "nominal allocation" },
+              { color: "var(--series-2)", value: fmt.pct(d.risk, 1), label: "share of portfolio risk" },
+            ],
+          });
+        };
+        g.addEventListener("pointerenter", show);
+        g.addEventListener("pointerleave", () => tooltip.hide());
+        g.addEventListener("focus", show);
+        g.addEventListener("blur", () => tooltip.hide());
+      });
+    });
+  }
+
+  /* ----------------------------------------------------------- dendrogram */
+  function collectMerges(node, out) {
+    if (!node || (node.left == null && node.right == null)) return;
+    const leaves = (n) => (n.ticker ? [n.ticker] : [...leaves(n.left), ...leaves(n.right)]);
+    out.push({ members: leaves(node).join(" + "), distance: node.distance });
+    collectMerges(node.left, out);
+    collectMerges(node.right, out);
+  }
+
+  function renderDendrogram() {
+    const panel = document.getElementById("dendro-chart-panel");
+    const host = panel?.querySelector('[data-view-panel="chart"]');
+    const tableHost = panel?.querySelector('[data-view-panel="table"]');
+    if (!host) return;
+
+    const hrp = optimizationData?.methods?.hrp;
+    const tree = hrp?.dendrogramTree;
+    const order = hrp?.seriatedOrder || Object.keys(activePortfolio);
+
+    host.querySelector(".chart-empty")?.remove();
+    if (!tree || order.length < 2) {
+      host.querySelector("svg")?.remove();
+      host.insertAdjacentHTML("afterbegin", `<p class="text-muted text-sm chart-empty">Dendrogram clustering needs two or more assets.</p>`);
+      tableHost.textContent = "";
+      return;
+    }
+
+    const merges = [];
+    collectMerges(tree, merges);
+    merges.sort((a, b) => a.distance - b.distance);
+    tableHost.textContent = "";
+    const orderNote = document.createElement("p");
+    orderNote.className = "text-secondary text-sm mb-3";
+    orderNote.textContent = `Seriated order: ${order.join(" → ")}`;
+    tableHost.appendChild(orderNote);
+    tableHost.appendChild(UI.chart.dataTable({
+      caption: "Cluster merges ordered by correlation distance",
+      columns: [
+        { key: "members", label: "Cluster members" },
+        { key: "distance", label: "Merge distance", align: "right", format: (v) => fmt.num(v, 3) },
+      ],
+      rows: merges,
+    }));
+
+    const tooltip = host._tip || (host._tip = UI.chart.tooltip(host));
+    UI.chart.mountResponsive(host, (width) => {
+      const height = host.clientHeight || 260;
+      const pad = { top: 16, right: 20, bottom: 34, left: 44 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+      const maxDist = Math.max(tree.distance || 1, 0.01);
+      const scale = UI.chart.niceScale(0, maxDist, 4);
+      const baseY = pad.top + plotH;
+      const Y = (d) => baseY - (d / scale.max) * plotH;
+      const step = plotW / Math.max(1, order.length - 1);
+      const leafX = {};
+      order.forEach((t, i) => { leafX[t] = order.length === 1 ? pad.left + plotW / 2 : pad.left + i * step; });
+
+      let paths = "";
+      let nodes = "";
+      let nodeIndex = 0;
+      const nodeInfo = [];
+      (function walk(node) {
+        if (node.left == null && node.right == null) return { x: leafX[node.ticker] ?? pad.left, y: baseY };
+        const l = walk(node.left);
+        const r = walk(node.right);
+        const y = Y(node.distance || 0);
+        paths += `<path d="M${l.x} ${l.y}V${y}H${r.x}V${r.y}" fill="none" stroke="var(--series-1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>`;
+        const x = (l.x + r.x) / 2;
+        const leaves = (n) => (n.ticker ? [n.ticker] : [...leaves(n.left), ...leaves(n.right)]);
+        const idx = nodeIndex++;
+        nodeInfo.push({ members: leaves(node).join(" + "), distance: node.distance });
+        nodes += `<g class="dn" data-i="${idx}" tabindex="0" role="img" aria-label="Cluster ${esc(leaves(node).join(" and "))}, merge distance ${esc(fmt.num(node.distance, 3))}">
+                    <circle cx="${x}" cy="${y}" r="14" fill="transparent"></circle>
+                    <circle class="dn-dot" cx="${x}" cy="${y}" r="4.5" fill="var(--chart-surface)" stroke="var(--series-1)" stroke-width="2"></circle>
+                  </g>`;
+        return { x, y };
+      })(tree);
+
+      const leaves = order.map((t) => `
+        <circle cx="${leafX[t]}" cy="${baseY}" r="5" fill="var(--series-1)" stroke="var(--chart-surface)" stroke-width="2"></circle>
+        <text class="chart-label tick-label" x="${leafX[t]}" y="${baseY + 20}" text-anchor="middle">${esc(t)}</text>`).join("");
+
+      const grid = scale.ticks
+        .map((t) => `<line class="chart-grid-line" x1="${pad.left}" x2="${width - pad.right}" y1="${Y(t)}" y2="${Y(t)}"></line>
+                     <text class="chart-axis-text" x="${pad.left - 6}" y="${Y(t) + 4}" text-anchor="end">${esc(fmt.num(t, 1))}</text>`)
+        .join("");
+
+      host.querySelector("svg")?.remove();
+      host.insertAdjacentHTML("afterbegin", `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" role="group" aria-label="HRP dendrogram. Assets are ordered by correlation distance; open the table view for the cluster merges.">
+          ${grid}
+          <line class="chart-axis-line" x1="${pad.left}" x2="${width - pad.right}" y1="${baseY}" y2="${baseY}"></line>
+          <text class="chart-axis-text" transform="translate(10 ${pad.top + plotH / 2}) rotate(-90)" text-anchor="middle">Correlation distance</text>
+          ${paths}${leaves}${nodes}
+        </svg>`);
+
+      host.querySelectorAll(".dn").forEach((g) => {
+        const info = nodeInfo[Number(g.dataset.i)];
+        const c = g.querySelector(".dn-dot");
+        const show = () => tooltip.show({
+          x: Number(c.getAttribute("cx")),
+          y: Number(c.getAttribute("cy")),
+          title: info.members,
+          rows: [{ dot: true, color: "var(--series-1)", value: fmt.num(info.distance, 3), label: "merge distance" }],
+        });
+        g.addEventListener("pointerenter", show);
+        g.addEventListener("pointerleave", () => tooltip.hide());
+        g.addEventListener("focus", show);
+        g.addEventListener("blur", () => tooltip.hide());
+      });
+    });
+  }
+
+  /* ------------------------------------------------------------ step 3 */
+  function crisisCard(c) {
+    const vals = [
+      { label: "Your portfolio", v: c.portfolioDrawdown, focus: true },
+      { label: "100% equity", v: c.benchmarkEquityDrawdown, focus: false },
+      { label: "Classic 60/40", v: c.benchmark6040Drawdown, focus: false },
+    ];
+    const lo = Math.min(0, ...vals.map((x) => x.v));
+    const hi = Math.max(0, ...vals.map((x) => x.v));
+    const span = hi - lo || 1;
+    const zero = ((0 - lo) / span) * 100;
+    const alpha = Number(c.outperformanceVsEquity);
+
+    const bars = vals.map((x) => {
+      const start = (Math.min(0, x.v) - lo) / span * 100;
+      const w = Math.abs(x.v) / span * 100;
+      return `<div class="cb-row">
+        <span class="cb-label">${esc(x.label)}</span>
+        <div class="cb-track" aria-hidden="true"><span class="cb-zero" style="left:${zero.toFixed(1)}%"></span><span class="cb-bar${x.focus ? " is-focus" : ""}${x.v < 0 ? " is-neg" : " is-pos"}" style="left:${start.toFixed(1)}%;width:${Math.max(0.8, w).toFixed(1)}%"></span></div>
+        <strong class="cb-val ${x.v >= 0 ? "val-positive" : "val-negative"}">${esc(fmt.pct(x.v, 1, { sign: true }))}</strong>
+      </div>`;
+    }).join("");
+
+    return `
+      <article class="crisis-card ${alpha >= 0 ? "is-good" : "is-bad"}">
+        <header class="row-between">
+          <h5 class="crisis-name">${esc(c.name)}</h5>
+          <span class="badge badge-neutral badge-sm">${esc(c.durationMonths)} mo.</span>
+        </header>
+        <div class="text-muted text-xs mb-3">${esc(c.period)}</div>
+        <div class="crisis-bars" role="group" aria-label="${esc(c.name)}: ${vals.map((x) => `${x.label} ${fmt.pct(x.v, 1, { sign: true })}`).join(", ")}">${bars}</div>
+        <div class="crisis-alpha ${alpha >= 0 ? "val-positive" : "val-negative"}"><span aria-hidden="true">${alpha >= 0 ? "▲" : "▼"}</span> ${alpha >= 0 ? "Outperformed" : "Underperformed"} all-world equity by ${esc(fmt.pct(Math.abs(alpha), 1))}</div>
+        <p class="crisis-dynamics">💡 ${esc(c.regimeDynamics)}</p>
+      </article>`;
   }
 
   function renderStressTestResults() {
     if (!stressTestData) return;
     renderToleranceAlert(stressTestData);
-
-    const cardsContainer = document.getElementById("crisis-cards-container");
-    if (!cardsContainer || !stressTestData.crises) return;
-
-    cardsContainer.innerHTML = stressTestData.crises.map(c => {
-      const isPositive = c.portfolioDrawdown >= 0;
-      const alphaSign = c.outperformanceVsEquity >= 0 ? "+" : "";
-
-      return `
-        <div class="card" style="margin: 0; background: var(--bg-secondary); border-top: 3px solid ${c.outperformanceVsEquity >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
-            <strong style="color: var(--text-primary); font-size: 0.9rem;">${c.name}</strong>
-            <span class="badge badge-sm" style="font-size: 0.65rem;">${c.durationMonths} Mo.</span>
-          </div>
-          <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 10px;">${c.period}</div>
-
-          <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
-            <span style="font-size: 0.75rem; color: var(--text-secondary);">Portfolio Return:</span>
-            <strong style="font-size: 1.1rem; color: ${isPositive ? 'var(--accent-emerald)' : 'var(--accent-rose)'};">
-              ${c.portfolioDrawdown > 0 ? '+' : ''}${c.portfolioDrawdown.toFixed(1)}%
-            </strong>
-          </div>
-
-          <div style="background: var(--bg-primary); padding: 8px; border-radius: var(--radius-sm); font-size: 0.72rem; line-height: 1.4; color: var(--text-secondary); margin-bottom: 8px;">
-            <div>100% Equity (VWCE): <strong class="val-negative">${c.benchmarkEquityDrawdown.toFixed(1)}%</strong></div>
-            <div>Classic 60/40: <strong class="val-negative">${c.benchmark6040Drawdown.toFixed(1)}%</strong></div>
-            <div style="margin-top: 4px; color: ${c.outperformanceVsEquity >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)'}; font-weight: 700;">
-              Alpha vs All-World: ${alphaSign}${c.outperformanceVsEquity.toFixed(1)}%
-            </div>
-          </div>
-
-          <div style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.3;">
-            💡 ${c.regimeDynamics}
-          </div>
-        </div>
-      `;
-    }).join("");
+    const container = document.getElementById("crisis-cards-container");
+    if (!container || !stressTestData.crises) return;
+    container.innerHTML = stressTestData.crises.map((c) => crisisCard(c)).join("");
   }
 
   function renderToleranceAlert(data) {
     const box = document.getElementById("tolerance-alert-box");
     if (!box) return;
-
-    const worstDd = data.worstHistoricalDrawdown || 0;
-    const breached = worstDd < behavioralTolerance;
+    const worst = Number(data.worstHistoricalDrawdown) || 0;
+    const breached = worst < behavioralTolerance;
 
     if (breached) {
-      const gap = Math.abs(worstDd - behavioralTolerance).toFixed(1);
+      const gap = Math.abs(worst - behavioralTolerance).toFixed(1);
       box.innerHTML = `
-        <div style="background: rgba(244, 63, 94, 0.1); border: 1px solid var(--accent-rose); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 0.8rem; color: var(--text-primary); line-height: 1.4;">
-          <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; color: var(--accent-rose); margin-bottom: 4px;">
-            ⚠️ Behavioral Drawdown Warning (Breach by ${gap}%)
-          </div>
-          <div>${data.remedyAdvice}</div>
-          <div style="margin-top: 8px;">
-            <button id="apply-remedy-btn" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; border-color: var(--accent-rose);">
-              🛡️ Auto-Inject +${Math.round(data.recommendedCashShift || 15)}% XEON Liquidity Buffer
-            </button>
-          </div>
-        </div>
-      `;
-
-      document.getElementById("apply-remedy-btn")?.addEventListener("click", () => {
-        const cashShift = Math.round(data.recommendedCashShift || 15);
-        activePortfolio["XEON"] = (activePortfolio["XEON"] || 0) + cashShift;
-        normalizeActiveWeights();
-        renderHoldingsInputs();
-        runAllAnalytics();
-      });
+        <div class="callout callout-danger">${icon("alert")}<div>
+          <div class="callout-title">Behavioural drawdown warning — breach by ${esc(gap)} points</div>
+          <div>${esc(data.remedyAdvice || "")}</div>
+          <div class="mt-2"><button type="button" id="apply-remedy-btn" class="btn btn-secondary btn-sm">${icon("shield")} Add +${esc(Math.round(data.recommendedCashShift || 15))}% XEON liquidity buffer</button></div>
+        </div></div>`;
     } else {
-      box.innerHTML = `
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-emerald); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.78rem; color: var(--accent-emerald); font-weight: 600;">
-          ✅ Stress-Test Passed: Worst drawdown of ${worstDd.toFixed(1)}% is comfortably within your ${behavioralTolerance.toFixed(1)}% behavioral threshold.
-        </div>
-      `;
+      box.innerHTML = `<div class="callout callout-success">${icon("check")}<div><div class="callout-title">Stress test passed</div>Worst drawdown of ${esc(fmt.pct(worst, 1))} sits inside your ${esc(fmt.pct(behavioralTolerance, 1))} behavioural threshold.</div></div>`;
     }
   }
 
   function renderTearSheetResults() {
     const container = document.getElementById("quantstats-tearsheet-container");
-    if (!container || !tearSheetData || !tearSheetData.metrics) return;
-
+    if (!container || !tearSheetData?.metrics) return;
     const m = tearSheetData.metrics;
+    const tile = (label, value, sub, cls = "") =>
+      `<div class="metric-box"><span class="metric-label">${esc(label)}</span><span class="metric-value ${cls}">${value}</span><span class="metric-sub">${esc(sub)}</span></div>`;
 
     container.innerHTML = `
-      <div class="grid-4" style="gap: 10px;">
-        <div class="metric-box">
-          <span class="metric-label">Expected CAGR</span>
-          <span class="metric-value">${m.cagr}%</span>
-          <span class="metric-sub">Compounded annual return</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Annual Volatility</span>
-          <span class="metric-value">${m.annualizedVolatility}%</span>
-          <span class="metric-sub">Portfolio standard deviation</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Sharpe Ratio (Rf=2.5%)</span>
-          <span class="metric-value" style="color: var(--accent-emerald);">${m.sharpeRatio}</span>
-          <span class="metric-sub">Excess return per unit total risk</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Sortino (Downside Vol)</span>
-          <span class="metric-value" style="color: var(--accent-cyan);">${m.sortinoRatio}</span>
-          <span class="metric-sub">Penalizes only negative drawdowns</span>
-        </div>
+      <div class="grid-4">
+        ${tile("Expected CAGR", esc(fmt.pct(m.cagr, 2)), "Compounded annual return")}
+        ${tile("Annual volatility", esc(fmt.pct(m.annualizedVolatility, 2)), "Portfolio standard deviation")}
+        ${tile("Sharpe ratio (Rf 2.5%)", esc(fmt.num(m.sharpeRatio, 2)), "Excess return per unit of total risk")}
+        ${tile("Sortino (downside vol)", esc(fmt.num(m.sortinoRatio, 2)), "Penalises only negative drawdowns")}
+        ${tile("Tail ratio (95th / 5th)", esc(fmt.num(m.tailRatio, 2)), "Above 1.0 = positive upside asymmetry")}
+        ${tile("Conditional DaR (95%)", esc(fmt.pct(m.cdar95, 2)), "Average depth of the 5% worst drawdowns", "val-negative")}
+        ${tile("Ulcer index", esc(fmt.num(m.ulcerIndex, 2)), "Penalises drawdown depth and length")}
+        ${tile("Safe withdrawal rate (30Y)", esc(fmt.pct(m.swr30Y, 2)), "Portfolio Charts retirement model")}
+      </div>`;
+  }
 
-        <div class="metric-box">
-          <span class="metric-label">Tail Ratio (95th / 5th)</span>
-          <span class="metric-value">${m.tailRatio}</span>
-          <span class="metric-sub">> 1.0 = positive upside asymmetry</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Conditional DaR (CDaR 95%)</span>
-          <span class="metric-value val-negative">${m.cdar95}%</span>
-          <span class="metric-sub">Avg depth of 5% worst drawdowns</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Ulcer Index (UI)</span>
-          <span class="metric-value" style="color: var(--accent-amber);">${m.ulcerIndex}</span>
-          <span class="metric-sub">Penalizes drawdown depth &amp; length</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Safe Withdrawal Rate (30Y)</span>
-          <span class="metric-value" style="color: var(--accent-emerald);">${m.swr30Y}%</span>
-          <span class="metric-sub">Portfolio Charts retirement model</span>
+  /* --------------------------------------------------------------- dialogs */
+  function ensureDialogs() {
+    if (document.getElementById("quant-code-modal")) return;
+    document.body.insertAdjacentHTML("beforeend", `
+      <div id="quant-code-modal" class="modal-overlay">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="quant-code-title" tabindex="-1">
+          <button type="button" class="modal-close-btn" aria-label="Close script generator" data-dialog-close>&times;</button>
+          <div class="modal-body">
+            <div class="modal-head"><h2 id="quant-code-title" class="modal-title">💻 Open-source Python quant script generators</h2>
+              <p class="text-muted text-sm mt-1">Ready-to-run scripts pre-filled with your current allocation.</p></div>
+            <div class="pill-group mb-3" id="code-tabs" role="group" aria-label="Script library">
+              <button type="button" class="pill-btn code-tab-btn active" data-tab="pyportfolioopt" aria-pressed="true">PyPortfolioOpt (HRP &amp; Mean-CVaR)</button>
+              <button type="button" class="pill-btn code-tab-btn" data-tab="riskfolio" aria-pressed="false">Riskfolio-Lib (tail risk &amp; parity)</button>
+              <button type="button" class="pill-btn code-tab-btn" data-tab="quantstats" aria-pressed="false">QuantStats (tear-sheet &amp; crises)</button>
+            </div>
+            <pre class="code-block" tabindex="0"><code id="quant-code-block">Loading…</code></pre>
+            <div class="row-between mt-3"><span id="code-status" class="text-muted text-xs" role="status"></span>
+              <button type="button" id="copy-code-btn" class="btn btn-primary btn-sm">${icon("copy")} Copy Python script</button></div>
+          </div>
         </div>
       </div>
-    `;
-  }
 
-  async function loadQuantCodeSnippet(libraryKey) {
-    const codeBlock = document.getElementById("quant-code-block");
-    if (!codeBlock) return;
+      <div id="platforms-modal" class="modal-overlay">
+        <div class="modal-content modal-lg" role="dialog" aria-modal="true" aria-labelledby="platforms-title" tabindex="-1">
+          <button type="button" class="modal-close-btn" aria-label="Close platforms hub" data-dialog-close>&times;</button>
+          <div class="modal-body">
+            <div class="modal-head"><h2 id="platforms-title" class="modal-title">🌐 Institutional no-code &amp; quant tools hub</h2>
+              <p class="text-muted text-sm mt-1">The premier open-source quant libraries and no-code ETF backtesters.</p></div>
+            <div id="platforms-modal-body"></div>
+          </div>
+        </div>
+      </div>`);
 
-    try {
-      const res = await fetch("/api/portfolio/code-snippets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolio: activePortfolio })
+    document.getElementById("code-tabs").addEventListener("click", (e) => {
+      const btn = e.target.closest(".code-tab-btn");
+      if (!btn) return;
+      codeTab = btn.dataset.tab;
+      document.querySelectorAll(".code-tab-btn").forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle("active", on);
+        b.setAttribute("aria-pressed", String(on));
       });
-      if (res.ok) {
-        const snippets = await res.json();
-        codeBlock.innerText = snippets[libraryKey] || snippets["pyportfolioopt"] || "# Python snippet ready";
-        return;
-      }
-    } catch (e) {}
+      showCodeTab();
+    });
 
-    // Fallback template
-    codeBlock.innerText = `# Python script generator active for ${libraryKey}`;
+    document.getElementById("copy-code-btn").addEventListener("click", async () => {
+      const code = document.getElementById("quant-code-block").textContent || "";
+      const ok = await UI.copy(code);
+      UI.toast(ok ? "Python script copied to the clipboard." : "Couldn't copy — select the code and copy manually.", { type: ok ? "success" : "error" });
+    });
   }
 
-  async function loadPlatformsContent() {
-    const body = document.getElementById("platforms-modal-body");
-    if (!body) return;
+  function showCodeTab() {
+    const block = document.getElementById("quant-code-block");
+    const status = document.getElementById("code-status");
+    if (!block) return;
+    if (codeSnippets) {
+      block.textContent = codeSnippets[codeTab] || codeSnippets.pyportfolioopt || "# No script available for this library.";
+      status.textContent = "";
+    } else {
+      block.textContent = "# Scripts are generated by the local analytics server.\n# Start it with:  uv run apex-etf\n# then reopen this dialog.";
+      status.textContent = "Server unreachable";
+    }
+  }
 
+  async function openCodeDialog(opener) {
+    UI.dialog.open("quant-code-modal", { opener });
+    document.getElementById("quant-code-block").textContent = "Generating…";
+    try {
+      codeSnippets = await post("/api/portfolio/code-snippets", { portfolio: activePortfolio });
+    } catch (e) {
+      codeSnippets = null;
+    }
+    showCodeTab();
+  }
+
+  const FALLBACK_PLATFORMS = [
+    { name: "Portfolio Visualizer", type: "Web Application", badge: "Institutional standards", url: "https://www.portfoliovisualizer.com", keyStrengths: "Built-in Risk Parity, factor regression, historical crisis periods.", bestUsedFor: "Comparing 60/40 vs All-Weather across rate cycles." },
+    { name: "Testfol.io", type: "Web Application (Free)", badge: "Advanced backtesting", url: "https://testfol.io", keyStrengths: "Exceptional backtesting engine with custom leverage, simulated cash drag.", bestUsedFor: "Testing barbell strategies over multi-decade cycles." },
+    { name: "Portfolio Charts", type: "Web Application", badge: "Drawdown survival", url: "https://portfoliocharts.com", keyStrengths: "Focuses entirely on drawdown survival, recovery times, and safe withdrawal rates.", bestUsedFor: "Evaluating robust, all-weather style portfolios." },
+    { name: "PyPortfolioOpt", type: "Python Quant Library", badge: "Practical quant", url: "https://github.com/PyPortfolio/PyPortfolioOpt", keyStrengths: "Hierarchical Risk Parity (HRP), Mean-CVaR, and Ledoit-Wolf shrinkage.", bestUsedFor: "Robust optimisation without return-forecast fragility." },
+    { name: "Riskfolio-Lib", type: "Python Quant Library", badge: "Gold-standard tail risk", url: "https://github.com/dcajasn/Riskfolio-Lib", keyStrengths: "24+ risk measures, CDaR, Equal Risk Contribution, Student-t fat tails.", bestUsedFor: "Deep downside tail-risk optimisation." },
+    { name: "QuantStats", type: "Python Quant Library", badge: "Portfolio teardown", url: "https://github.com/ranaroussi/quantstats", keyStrengths: "Comprehensive HTML tear-sheets, specific historical crisis breakdowns.", bestUsedFor: "Post-allocation downside stress-testing." },
+  ];
+
+  async function openPlatformsDialog(opener) {
+    const body = document.getElementById("platforms-modal-body");
     let platforms = [];
     try {
       const res = await fetch("/api/portfolio/platforms");
-      if (res.ok) {
-        const data = await res.json();
-        platforms = data.platforms || [];
-      }
-    } catch (e) {}
+      if (res.ok) platforms = (await res.json()).platforms || [];
+    } catch (e) { /* use the bundled list */ }
+    if (platforms.length === 0) platforms = FALLBACK_PLATFORMS;
 
-    if (platforms.length === 0) {
-      platforms = [
-        { name: "Portfolio Visualizer", type: "Web Application", badge: "Institutional Standards", url: "https://www.portfoliovisualizer.com", keyStrengths: "Built-in Risk Parity, factor regression, historical crisis periods.", bestUsedFor: "Comparing 60/40 vs All-Weather across rate cycles." },
-        { name: "Testfol.io", type: "Web Application (Free)", badge: "Advanced Backtesting", url: "https://testfol.io", keyStrengths: "Exceptional backtesting engine with custom leverage, simulated cash drag.", bestUsedFor: "Testing barbell strategies over multi-decade cycles." },
-        { name: "Portfolio Charts", type: "Web Application", badge: "Drawdown Survival", url: "https://portfoliocharts.com", keyStrengths: "Focuses entirely on drawdown survival, recovery times, and safe withdrawal rates.", bestUsedFor: "Evaluating robust, all-weather style portfolios." },
-        { name: "PyPortfolioOpt", type: "Python Quant Library", badge: "Practical Quant", url: "https://github.com/PyPortfolio/PyPortfolioOpt", keyStrengths: "Hierarchical Risk Parity (HRP), Mean-CVaR, and Ledoit-Wolf shrinkage.", bestUsedFor: "Robust optimization without return forecast fragility." },
-        { name: "Riskfolio-Lib", type: "Python Quant Library", badge: "Gold Standard Tail-Risk", url: "https://github.com/dcajasn/Riskfolio-Lib", keyStrengths: "24+ risk measures, CDaR, Equal Risk Contribution, Student-t fat tails.", bestUsedFor: "Deep downside tail risk optimization." },
-        { name: "QuantStats", type: "Python Quant Library", badge: "Portfolio Teardown", url: "https://github.com/ranaroussi/quantstats", keyStrengths: "Comprehensive HTML tear-sheets, specific historical crisis breakdowns.", bestUsedFor: "Post-allocation downside stress-testing." }
-      ];
-    }
-
-    body.innerHTML = `
-      <div style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">
-        Direct access and workflow guidance for the premier open-source quant libraries and no-code ETF backtesters:
-      </div>
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
-        ${platforms.map(p => `
-          <div class="card" style="margin: 0; background: var(--bg-secondary);">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
-              <strong style="color: var(--text-primary); font-size: 0.95rem;">${p.name}</strong>
-              <span class="badge badge-sm" style="font-size: 0.65rem;">${p.badge}</span>
-            </div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">${p.type}</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px;">
-              <strong>Key Strength:</strong> ${p.keyStrengths}
-            </div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 12px;">
-              <strong>Best Used For:</strong> ${p.bestUsedFor}
-            </div>
-            <a href="${p.url}" target="_blank" class="btn btn-secondary btn-sm" style="display: block; text-align: center; font-size: 0.75rem;">
-              🔗 Open ${p.name}
-            </a>
-          </div>
-        `).join("")}
-      </div>
-    `;
+    body.innerHTML = `<div class="platform-grid">${platforms.map((p) => `
+      <article class="panel platform-card">
+        <div class="row-between"><strong>${esc(p.name)}</strong><span class="badge badge-neutral badge-sm">${esc(p.badge)}</span></div>
+        <div class="text-muted text-xs mb-2">${esc(p.type)}</div>
+        <p class="text-secondary text-sm mb-2"><strong>Key strength:</strong> ${esc(p.keyStrengths)}</p>
+        <p class="text-secondary text-sm mb-3"><strong>Best used for:</strong> ${esc(p.bestUsedFor)}</p>
+        ${UI.link(p.url, `${icon("external")} Open ${esc(p.name)}`, { cls: "btn btn-secondary btn-sm btn-block", html: true })}
+      </article>`).join("")}</div>`;
+    UI.dialog.open("platforms-modal", { opener });
   }
 
-  return {
-    init,
-    renderInterface
-  };
+  return { init, renderInterface };
 })();

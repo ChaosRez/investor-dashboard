@@ -2,119 +2,131 @@
  * Issuer Document Verification Directory
  * Final Verification Hub: Direct links to official KIDs, Factsheets, and Annual Reports.
  * Ensures retail investors verify statutory PRIIPs documents before capital deployment.
+ *
+ * Data honesty: a missing SRI, replication method or lending policy is shown as "—",
+ * never replaced by a plausible default.
  */
 
 window.VerificationDocsModule = (function () {
+  const { esc, icon } = UI;
+
   let allEtfs = [];
+  let bound = false;
+
+  /** PRIIPs summary risk indicator: 1 (lowest) … 7 (highest). */
+  function sriInfo(sri) {
+    const n = Number(sri);
+    if (!Number.isFinite(n)) return { tone: "neutral", text: "Not published" };
+    if (n <= 2) return { tone: "acc", text: "Low (cash & bonds)" };
+    if (n === 3) return { tone: "blue", text: "Low to moderate" };
+    if (n === 4) return { tone: "blue", text: "Moderate (broad equity)" };
+    if (n === 5) return { tone: "red", text: "Elevated" };
+    return { tone: "red", text: "High (concentrated / sector)" };
+  }
 
   function init(etfs) {
     allEtfs = etfs || [];
     renderDirectory();
+    bindOnce();
+  }
+
+  function bindOnce() {
+    if (bound) return;
+    bound = true;
+    document.getElementById("verification-docs-container").addEventListener("click", async (e) => {
+      const btn = e.target.closest(".copy-isin-btn");
+      if (!btn) return;
+      const ok = await UI.copy(btn.dataset.isin);
+      UI.toast(ok ? `Copied ${btn.dataset.isin}` : "Couldn't copy — select the ISIN and copy it manually.", { type: ok ? "success" : "error", timeout: 2200 });
+      if (ok) {
+        btn.innerHTML = icon("check");
+        setTimeout(() => { btn.innerHTML = icon("copy"); }, 1500);
+      }
+    });
+  }
+
+  function docButton(url, label, cls) {
+    return url
+      ? UI.link(url, `${icon("file-text")} ${label}`, { cls: `btn btn-sm ${cls}`, html: true })
+      : `<span class="btn btn-sm btn-secondary" aria-disabled="true">${label} unavailable</span>`;
   }
 
   function renderDirectory() {
     const container = document.getElementById("verification-docs-container");
     if (!container) return;
 
-    const rowsHtml = allEtfs.map(etf => {
-      const docs = etf.officialDocs || {};
-      const sri = etf.sriRisk || 4;
-      const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 20) || "";
+    const rowsHtml = allEtfs
+      .map((etf) => {
+        const docs = etf.officialDocs || {};
+        const sri = sriInfo(etf.sriRisk);
+        return `
+          <tr>
+            <th scope="row" class="cell-etf">
+              <div class="etf-id">
+                <span class="ticker etf-ticker">${esc(etf.ticker)}</span>
+                ${window.ProviderLogos?.getLogoSvg(etf.issuer, 20, { label: false }) || ""}
+                <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">${esc(etf.distributionPolicy || (etf.isAccumulating ? "Accumulating" : "Distributing"))}</span>
+              </div>
+              <div class="etf-name">${esc(etf.name)}</div>
+              <div class="etf-meta">Domicile ${esc(etf.domicile)}</div>
+            </th>
 
-      let sriColor = "badge-blue";
-      if (sri <= 2) sriColor = "badge-acc";
-      else if (sri >= 5) sriColor = "badge-red";
+            <td data-label="ISIN / WKN"><div class="cell-value">
+              <div class="isin-line"><code>${esc(etf.isin)}</code>
+                <button type="button" class="btn btn-secondary btn-sm btn-icon copy-isin-btn" data-isin="${esc(etf.isin)}" aria-label="Copy ISIN ${esc(etf.isin)}" data-tip="Copy ISIN">${icon("copy")}</button></div>
+              <div class="text-muted text-xs">WKN ${esc(etf.wkn || "—")}</div>
+            </div></td>
 
-      return `
-        <tr>
-          <td>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <strong style="font-size: 1.05rem; color: var(--accent-cyan);">${etf.ticker}</strong>
-              ${providerLogo}
-              <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">${etf.distributionPolicy}</span>
-            </div>
-            <div style="font-size: 0.82rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">${etf.name}</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">
-              Domicile: <strong>${etf.domicile}</strong>
-            </div>
-          </td>
-          <td>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <code style="background: var(--bg-secondary); padding: 2px 6px; border-radius: 4px; font-weight: 700; border: 1px solid var(--border-color);">${etf.isin}</code>
-              <button class="btn btn-secondary btn-sm copy-isin-btn" data-isin="${etf.isin}" title="Copy ISIN to clipboard" style="padding: 2px 6px; font-size: 0.7rem;">📋</button>
-            </div>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">WKN: ${etf.wkn}</div>
-          </td>
-          <td>
-            <span class="badge ${sriColor}">Risk ${sri}/7</span>
-            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
-              ${sri <= 2 ? "Conservative (Bonds)" : (sri === 4 ? "Moderate (Broad Equity)" : "Aggressive (Sector/Tech)")}
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.3;">
-              ${etf.replication}
-              <div style="font-size: 0.72rem; color: var(--text-muted);">${etf.securitiesLendingRevenueShare || "Standard Lending"}</div>
-            </div>
-          </td>
-          <td style="text-align: right; white-space: nowrap;">
-            <a href="${docs.kidUrl}" target="_blank" class="btn btn-primary btn-sm" style="margin-right: 6px;">
-              📄 Official KID (PDF)
-            </a>
-            <a href="${docs.factsheetUrl}" target="_blank" class="btn btn-secondary btn-sm">
-              📊 Factsheet (PDF)
-            </a>
-          </td>
-        </tr>
-      `;
-    }).join("");
+            <td data-label="PRIIPs SRI"><div class="cell-value">
+              ${Number.isFinite(Number(etf.sriRisk)) ? `<span class="badge badge-${sri.tone}">Risk ${esc(etf.sriRisk)}/7</span>` : `<span class="text-muted">—</span>`}
+              <div class="text-muted text-xs">${esc(sri.text)}</div>
+            </div></td>
+
+            <td data-label="Replication"><div class="cell-value cell-wrap">
+              <div class="text-sm">${esc(etf.replication || "—")}</div>
+              ${etf.securitiesLendingRevenueShare ? `<div class="text-muted text-xs">${esc(etf.securitiesLendingRevenueShare)}</div>` : ""}
+            </div></td>
+
+            <td class="cell-actions">
+              ${docButton(docs.kidUrl, "Official KID", "btn-primary")}
+              ${docButton(docs.factsheetUrl, "Factsheet", "btn-secondary")}
+            </td>
+          </tr>`;
+      })
+      .join("");
 
     container.innerHTML = `
       <div class="card">
         <div class="card-header">
           <div>
-            <h3 class="card-title">📑 Official Issuer Documents & Final Verification Hub</h3>
-            <span class="card-subtitle">Direct links to official PRIIPs Key Information Documents (KIDs) and monthly Factsheets</span>
+            <h2 class="card-title">${icon("file-text")} Official issuer documents &amp; final verification hub</h2>
+            <span class="card-subtitle">Direct links to official PRIIPs Key Information Documents (KIDs) and monthly factsheets</span>
           </div>
-          <span class="badge badge-acc">Statutory Regulatory Data</span>
+          <span class="badge badge-acc">Statutory regulatory data</span>
         </div>
 
-        <div style="background: var(--bg-secondary); padding: 14px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 20px; font-size: 0.85rem; line-height: 1.5;">
-          ℹ️ <strong>Retail Verification Mandate:</strong> Third-party screeners may experience data latency. Before making an investment, retail investors should always consult the official <strong>Key Information Document (KID)</strong> provided directly by Vanguard, BlackRock, or Amundi to verify the PRIIPs summary risk indicator (SRI), recommended holding period, ongoing charges, and synthetic risk category.
+        <div class="callout callout-info mb-4">
+          ${icon("info")}
+          <div><strong>Retail verification mandate:</strong> third-party screeners can lag. Before investing, always consult the official <strong>Key Information Document (KID)</strong> from Vanguard, BlackRock or Amundi to verify the PRIIPs summary risk indicator (SRI), recommended holding period, ongoing charges and synthetic risk category.</div>
         </div>
 
-        <div class="table-responsive">
-          <table class="data-table">
+        <div class="etf-table-wrap">
+          <table class="etf-table docs-table">
+            <caption class="sr-only">Official documents and identifiers for every tracked ETF</caption>
             <thead>
               <tr>
-                <th>ETF & Issuer</th>
-                <th>Identifiers (ISIN / WKN)</th>
-                <th>PRIIPs SRI Risk</th>
-                <th>Replication & Lending</th>
-                <th style="text-align: right;">Official Documents</th>
+                <th scope="col">ETF &amp; issuer</th>
+                <th scope="col">Identifiers (ISIN / WKN)</th>
+                <th scope="col">PRIIPs SRI risk</th>
+                <th scope="col">Replication &amp; lending</th>
+                <th scope="col"><span class="sr-only">Official documents</span></th>
               </tr>
             </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
+            <tbody>${rowsHtml}</tbody>
           </table>
         </div>
-      </div>
-    `;
-
-    // Bind clipboard copy buttons
-    container.querySelectorAll(".copy-isin-btn").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        const isin = e.currentTarget.dataset.isin;
-        navigator.clipboard.writeText(isin).then(() => {
-          btn.innerHTML = "✅";
-          setTimeout(() => { btn.innerHTML = "📋"; }, 1500);
-        });
-      });
-    });
+      </div>`;
   }
 
-  return {
-    init
-  };
+  return { init };
 })();

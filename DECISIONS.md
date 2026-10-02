@@ -171,6 +171,12 @@ When modifying or extending this codebase, follow these rules:
    - When altering warning logic, ensure Bogleheads principles (broad diversification, low turnover, tax efficiency) remain the guiding evaluation standard.
 5. **Always Verify PRIIPs KIDs:**
    - Any new ETF added must include official issuer document URLs (`kidUrl`, `factsheetUrl`, `issuerPage`).
+6. **Escape Everything That Is Not Yours (Frontend):**
+   - News titles, summaries and sources come from third-party RSS feeds. Pass every interpolated string through `UI.esc()` and every link through `UI.safeUrl()` / `UI.link()` before it reaches `innerHTML`. Never interpolate raw data into markup.
+7. **Never Fabricate Defaults for Missing Data (Frontend):**
+   - A missing score, SRI, replication method or lending policy renders as `—`, not a plausible-looking default (this applies the Zero Mock Data mandate to the UI).
+8. **Use the Design Tokens and the UI Toolkit:**
+   - Colours come from the custom properties in `styles.css` (never hard-coded hex in templates); dialogs, tooltips, toasts and chart scaffolding come from `ui.js`. When you ship frontend changes, bump the `?v=` asset version in `index.html`.
 
 ---
 
@@ -241,4 +247,37 @@ When modifying or extending this codebase, follow these rules:
   1. **Zero-Dependency Python Standard Library Core:** All mathematical solvers (HRP, ERC, Mean-CVaR, Ledoit-Wolf, stress-tests) are implemented strictly using Python's standard library `math` and `random` modules, ensuring zero installation friction (`uv run apex-etf`).
   2. **Open-Source Python Quant Script Generators:** The engine exports ready-to-run, fully formatted Python code for **PyPortfolioOpt** (`HRPOpt`), **Riskfolio-Lib** (`riskfolio.Portfolio`), and **QuantStats** (`qs.reports.full`).
   3. **Curated No-Code Tools Integration:** Direct guidance, parameter recommendations, and use-case matching for **Portfolio Visualizer**, **Testfol.io**, and **Portfolio Charts**.
+
+---
+
+## 🖥️ 10. Frontend Architecture & UX System
+
+### Decision 10.1: Design Tokens, Cascade Layers and Contrast-Validated Themes
+* **Context:** The original stylesheet hard-coded dark-tuned colours (muted text measured ~3.8:1, light-mode badges ~1.5:1, white-on-emerald/amber buttons ~2.2–2.5:1) and templates carried ~500 inline styles, so theming and contrast could not be fixed centrally.
+* **Decision:**
+  1. `styles.css` is organised as `@layer reset, tokens, base, layout, components, modules, utilities` and every colour is a theme-aware custom property (`:root[data-theme="dark" | "light"]`).
+  2. Accent "ink" tokens (`--accent-*`) are for text/graphics on surfaces; "solid" tokens (`--solid-*`) are fills that always carry white text. Both are computed to meet WCAG AA per theme.
+  3. Legacy token names stay defined because some templates still reference them.
+* **Verification:** an in-browser auditor composites each text node over its real stacked background; all nine tabs report **0 failures in both themes**. Re-run it when changing tokens.
+
+### Decision 10.2: Navigation = Roadmap
+* **Context:** The 7-stage roadmap panel (~370px, with an orphaned seventh card) sat above *every* tab and pushed real content below the fold; on phones it exceeded a full screen. The tab strip also clipped at 1440px with a hidden scrollbar.
+* **Decision:** The sticky ARIA tab bar carries the stage numbers (colour-coded essential / planning / optional / maintenance). A context bar above each staged tab shows the stage's status badge, description and previous/next links; the long-form guide lives in the "Where to start?" dialog. Tab labels are short, while `aria-label` keeps the full names.
+
+### Decision 10.3: Shared UI Toolkit (`ui.js`) Instead of a Framework
+* **Decision:** Keep vanilla classic scripts (ADR 1.2/1.3 still hold) but centralise the cross-cutting pieces: escaping/URL safety, locale-aware formatting, a dialog manager (focus trap, `inert` page, Esc, focus restore), one viewport-clamped tooltip controller for `[data-tip]`, `aria-live` toasts, OKLab colour ramps and chart helpers.
+* **Rationale:** a blocking `alert()`, an ad-hoc toast, buttons that swap their own label for feedback, CSS-only tooltips that scroll containers can clip and keyboards cannot reach, and the Parity tab's modals (which used classes that had no CSS and rendered permanently inline) were all symptoms of missing shared infrastructure.
+
+### Decision 10.4: Render Instantly, Hydrate Later, Compute Lazily
+* **Decision:** `app.js` renders every view from the bundled `data-store.js`, then fetches the REST API in the background and re-renders only if the payload differs. Heavy API calls (overlap audit, Curvo backtest, risk-parity analytics) run the first time their tab is shown, and in-flight refreshes keep the previous render dimmed instead of flashing a placeholder. View state (filters, scenario inputs, allocations) survives a data refresh.
+* **Honest degradation:** risk-parity analytics have no client-side port (ADR 1.1 parity does not extend to them). When the server is unreachable the section says so and offers Retry, rather than showing "Calculating…" forever.
+* **Data freshness:** the header judges freshness from the newest **quote** timestamp (not the sync time, which can be newer than the quotes it stored) and states the age plainly.
+
+### Decision 10.5: Chart Rules
+* Charts follow the data-viz method: single-hue sequential ramps for magnitude (the correlation heatmap — darkness/brightness = redundancy, self-correlation dimmed), a fixed validated categorical order for series, solid hairline grids, 2px lines, surface rings on markers, crosshair + single tooltip for time series, ≥24px hit targets for scatter points, and a **Table** twin for every chart.
+* **Corrected on the way:** the "risk decomposition" chart now plots the *current* portfolio's risk contribution `wᵢ(Σw)ᵢ / wᵀΣw` from the API's covariance matrix (a 60/40 VWCE/AGGU portfolio shows 91.4% of risk in equities); it previously plotted the ERC solution's contributions, which are equal by construction. The dendrogram places merges at their true correlation distance, and the Acc-vs-Dist calculator reports Acc's advantage as `Acc/Dist − 1`.
+
+### Decision 10.6: Asset Caching
+* **Context:** `SimpleHTTPRequestHandler` sent no cache headers, so after an edit browsers kept using heuristically cached CSS/JS against new HTML (an unstyled page).
+* **Decision:** the server sends `Cache-Control: no-cache` for non-API responses (cheap `304`s via `Last-Modified`), and `index.html` versions its stylesheet and script URLs with `?v=`. Bump the version when shipping frontend changes.
 

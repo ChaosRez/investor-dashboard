@@ -3,238 +3,231 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#0f1729" />
+  <meta name="description" content="Personal ETF investment dashboard for European retail investors: Accumulating UCITS screener, overlap auditor, DCA backtests, risk parity and macro news." />
   <title>Personal Investment Dashboard for ETFs | Retail Investor Intelligence</title>
-  <link rel="stylesheet" href="css/styles.css" />
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+
+  <!-- Apply the saved (or system) theme before first paint to avoid a dark/light flash -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("etf_dashboard_theme");
+        if (t !== "light" && t !== "dark") {
+          t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/styles.css?v=20261002" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%232563eb'/%3E%3Cstop offset='1' stop-color='%230e7490'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='32' height='32' rx='8' fill='url(%23g)'/%3E%3Cpath d='M8 23 L16 8 L24 23 M12 18.5 H20' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 </head>
 <body>
 
-  <!-- Top Application Header -->
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="logo-group">
-        <div class="logo-badge">ApexETF</div>
-        <div>
-          <h1 class="app-title">Personal ETF Investment Dashboard</h1>
-          <div class="app-subtitle">
-            Retail Investor Decision Engine • Prioritizing Accumulating (Acc) UCITS ETFs &amp; Total Cost of Ownership
-          </div>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- Icon sprite (referenced via <use href="#i-NAME">) -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <symbol id="i-bar-chart" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></symbol>
+    <symbol id="i-trending-up" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></symbol>
+    <symbol id="i-rss" viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></symbol>
+    <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></symbol>
+    <symbol id="i-graduation" viewBox="0 0 24 24"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></symbol>
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m5 0V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+    <symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></symbol>
+    <symbol id="i-chevron-left" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+    <symbol id="i-chevron-down" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+    <symbol id="i-arrow-left" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></symbol>
+    <symbol id="i-sort" viewBox="0 0 24 24"><path d="M7 15l5 5 5-5"/><path d="M7 9l5-5 5 5"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></symbol>
+    <symbol id="i-arrow-down" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></symbol>
+  </svg>
+
+  <!-- ====================== App bar ====================== -->
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <a class="brand" href="#screener" aria-label="ApexETF — back to the ETF screener">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19 12 5l8 14"/><path d="M8 14.5h8"/></svg>
+        </span>
+        <div class="brand-text">
+          <h1 class="brand-name">ApexETF <span class="sr-only">— Personal ETF Investment Dashboard</span></h1>
+          <span class="brand-sub">Retail investor decision engine • Accumulating (Acc) UCITS ETFs &amp; Total Cost of Ownership</span>
         </div>
+      </a>
+
+      <div class="app-stats" role="group" aria-label="Dashboard status">
+        <span class="stat-chip" id="data-freshness" data-tip="Quote timestamps are read from the dataset. Use Live Sync (needs the local server) to refresh.">
+          <span class="status-dot" id="freshness-dot" data-state="unknown"></span>
+          <span id="freshness-text">Loading data…</span>
+        </span>
+        <span class="stat-chip is-secondary">
+          <span class="stat-label">ETFs</span>
+          <strong id="stat-etf-count">—</strong>
+        </span>
+        <span class="stat-chip is-secondary">
+          <span class="stat-label">Tracked AUM</span>
+          <strong id="stat-total-aum">—</strong>
+          <span class="info-tip" data-tip="Total Assets Under Management across all tracked ETFs in this dashboard. Source: justETF statutory data.">?</span>
+        </span>
       </div>
 
-      <!-- Provenance Links to Real Data Sources -->
-      <div class="sources-provenance">
-        <a href="https://finance.yahoo.com" target="_blank" class="provenance-tag" style="border-color: rgba(16, 185, 129, 0.4); color: var(--accent-emerald);">
-          <span class="live-dot-pulse" style="width: 6px; height: 6px;"></span>Live Yahoo Finance
-        </a>
-        <a href="https://www.justetf.com" target="_blank" class="provenance-tag">justETF</a>
-        <a href="https://extraetf.com" target="_blank" class="provenance-tag">extraETF</a>
-        <a href="https://www.ecb.europa.eu" target="_blank" class="provenance-tag" style="border-color: rgba(59, 130, 246, 0.4); color: var(--accent-blue);">ECB Live Wire</a>
-        <a href="https://curvo.eu/backtest/en" target="_blank" class="provenance-tag">Curvo Backtest</a>
-        <a href="https://www.portfoliovisualizer.com" target="_blank" class="provenance-tag">Portfolio Visualizer</a>
-        <a href="https://www.morningstar.com" target="_blank" class="provenance-tag">Morningstar</a>
-      </div>
-
-      <div class="header-actions">
-        <button id="sync-live-data-btn" class="btn btn-secondary btn-sm" style="display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 0.78rem;">
-          <span class="live-dot-pulse"></span>
-          <span id="sync-btn-text">🔄 Live Sync</span>
-        </button>
-        <button id="open-onboarding-btn" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #10b981, #06b6d4); border: none; white-space: nowrap;">
-          🚀 Where to Start? (Guide)
-        </button>
-        <div style="text-align: right; margin-right: 8px;">
-          <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Tracked Verified AUM
-            <span class="info-tip" data-tip="Total Assets Under Management across all tracked ETFs in this dashboard. Source: justETF statutory data.">?</span>
+      <div class="app-actions">
+        <details class="menu" id="sources-menu">
+          <summary class="btn btn-secondary btn-sm" aria-label="Data sources">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-database"></use></svg>
+            <span class="btn-label-wide">Sources</span>
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chevron-down"></use></svg>
+          </summary>
+          <div class="menu-panel">
+            <div class="menu-label">Every figure is grounded in</div>
+            <a class="menu-item" href="https://finance.yahoo.com" target="_blank" rel="noopener noreferrer">Yahoo Finance <small>live quotes</small></a>
+            <a class="menu-item" href="https://www.justetf.com" target="_blank" rel="noopener noreferrer">justETF <small>fund data &amp; AUM</small></a>
+            <a class="menu-item" href="https://extraetf.com" target="_blank" rel="noopener noreferrer">extraETF <small>tracking diff &amp; Sparplan</small></a>
+            <a class="menu-item" href="https://www.ecb.europa.eu" target="_blank" rel="noopener noreferrer">ECB Live Wire <small>policy feed</small></a>
+            <a class="menu-item" href="https://curvo.eu/backtest/en" target="_blank" rel="noopener noreferrer">Curvo Backtest <small>history</small></a>
+            <a class="menu-item" href="https://www.portfoliovisualizer.com" target="_blank" rel="noopener noreferrer">Portfolio Visualizer <small>quant risk</small></a>
+            <a class="menu-item" href="https://www.morningstar.com" target="_blank" rel="noopener noreferrer">Morningstar <small>style box</small></a>
           </div>
-          <div id="stat-total-aum" style="font-weight: 800; font-size: 0.95rem; color: var(--accent-emerald);">323B €</div>
-        </div>
-        <button id="theme-toggle" class="theme-toggle-btn">☀️ Light Mode</button>
+        </details>
+
+        <button type="button" id="open-onboarding-btn" class="btn btn-primary btn-sm">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-compass"></use></svg>
+          <span><span class="btn-label-wide">Where to start? </span><span class="btn-label-short">Guide</span></span>
+        </button>
+
+        <button type="button" id="sync-live-data-btn" class="btn btn-secondary btn-sm" aria-describedby="sync-help">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-refresh"></use></svg>
+          <span id="sync-btn-text">Live Sync</span>
+        </button>
+        <span id="sync-help" class="sr-only">Fetches fresh prices, fund sizes and news from the local server. Can take up to a minute.</span>
+
+        <button type="button" id="theme-toggle" class="btn btn-secondary btn-sm btn-icon" aria-label="Switch to light mode">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Navigation Tab Bar -->
-  <nav class="nav-bar">
-    <div class="nav-inner">
-      <button class="nav-tab active" data-tab="screener">
-        📊 ETF Screener &amp; Multi-Factor Score
-      </button>
-      <button class="nav-tab" data-tab="comparison">
-        ⚖️ ETF Comparison Matrix <span class="tab-badge" id="compare-count-badge">5</span>
-      </button>
-      <button class="nav-tab" data-tab="overlap">
-        🔗 Correlation &amp; Overlap Auditor
-      </button>
-      <button class="nav-tab" data-tab="curvo">
-        📈 Curvo Historical Backtest &amp; DCA
-      </button>
-      <button class="nav-tab" data-tab="parity">
-        🛡️ Robust Parity &amp; Stress-Test
-      </button>
-      <button class="nav-tab" data-tab="pv">
-        🧮 Portfolio Visualizer Quant Risk
-      </button>
-      <button class="nav-tab" data-tab="news">
-        📰 Market News &amp; Signal Radar <span class="tab-badge">6 Live</span>
-      </button>
-      <button class="nav-tab" data-tab="verification">
-        📑 Official Factsheets &amp; KIDs
-      </button>
-      <button class="nav-tab" data-tab="academy">
-        🎓 Bogleheads &amp; Tax Academy
-      </button>
-    </div>
-  </nav>
-
-  <!-- Main Content Body -->
-  <main class="main-container">
-
-    <!-- Portfolio Lifecycle Roadmap & Onboarding Navigator -->
-    <section class="stage-navigator">
-      <div class="stage-nav-header">
-        <div class="stage-nav-title">
-          <span>🧭 Retail Investor Portfolio Roadmap</span>
-          <span style="font-size: 0.76rem; font-weight: normal; color: var(--text-muted);">
-            • Click any stage to jump directly to the relevant tool and see what is essential vs optional:
-          </span>
-        </div>
-        <button id="guide-tour-link" class="btn btn-secondary btn-sm" style="font-size: 0.74rem;">
-          📖 Open Stage-by-Stage Onboarding Guide
+  <!-- ====================== Tab bar (also the 7-stage roadmap) ====================== -->
+  <div class="tab-bar">
+    <div class="tab-bar-scroller" id="tab-scroller">
+      <div class="tab-bar-inner" role="tablist" aria-label="Dashboard sections" id="tablist">
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-screener" data-tab="screener" data-stage="1" data-status="start" aria-controls="tab-screener" aria-selected="true" aria-label="ETF Screener &amp; Multi-Factor Score, stage 1">
+          <span class="nav-step" data-status="start" aria-hidden="true">1</span><span class="nav-label">Screener</span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-comparison" data-tab="comparison" aria-controls="tab-comparison" aria-selected="false" tabindex="-1" aria-label="ETF Comparison Matrix">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-scale"></use></svg><span class="nav-label">Comparison</span> <span class="tab-badge" id="compare-count-badge" aria-label="funds selected">5</span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-overlap" data-tab="overlap" data-stage="2" data-status="essential" aria-controls="tab-overlap" aria-selected="false" tabindex="-1" aria-label="Correlation &amp; Overlap Auditor, stage 2">
+          <span class="nav-step" data-status="essential" aria-hidden="true">2</span><span class="nav-label">Overlap</span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-curvo" data-tab="curvo" data-stage="3" data-status="essential" aria-controls="tab-curvo" aria-selected="false" tabindex="-1" aria-label="Curvo Historical Backtest &amp; DCA, stage 3">
+          <span class="nav-step" data-status="essential" aria-hidden="true">3</span><span class="nav-label">Backtest &amp; DCA</span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-parity" data-tab="parity" data-stage="4" data-status="essential" aria-controls="tab-parity" aria-selected="false" tabindex="-1" aria-label="Robust Parity &amp; Stress-Test, stage 4">
+          <span class="nav-step" data-status="essential" aria-hidden="true">4</span><span class="nav-label">Parity &amp; Stress-Test</span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-pv" data-tab="pv" data-stage="5" data-status="optional" aria-controls="tab-pv" aria-selected="false" tabindex="-1" aria-label="Portfolio Visualizer Quant Risk, stage 5, optional">
+          <span class="nav-step" data-status="optional" aria-hidden="true">5</span><span class="nav-label">Quant Risk</span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-news" data-tab="news" data-stage="6" data-status="maintain" aria-controls="tab-news" aria-selected="false" tabindex="-1" aria-label="Market News &amp; Signal Radar, stage 6">
+          <span class="nav-step" data-status="maintain" aria-hidden="true">6</span><span class="nav-label">Market News</span> <span class="tab-badge" id="news-count-badge" hidden></span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-verification" data-tab="verification" data-stage="7" data-status="start" aria-controls="tab-verification" aria-selected="false" tabindex="-1" aria-label="Official Factsheets &amp; KIDs, stage 7">
+          <span class="nav-step" data-status="start" aria-hidden="true">7</span><span class="nav-label">Factsheets &amp; KIDs</span>
+        </button>
+        <button type="button" class="nav-tab" role="tab" id="tab-btn-academy" data-tab="academy" aria-controls="tab-academy" aria-selected="false" tabindex="-1" aria-label="Bogleheads &amp; Tax Academy">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-graduation"></use></svg><span class="nav-label">Academy</span>
         </button>
       </div>
+    </div>
+  </div>
 
-      <div class="stage-steps-grid">
-        <!-- Stage 1 -->
-        <div class="stage-step-card" data-stage="screener">
-          <div class="stage-step-top">
-            <span class="stage-number">Stage 1</span>
-            <span class="stage-status-badge badge-start-here">Start Here (Essential)</span>
-          </div>
-          <div class="stage-title">Foundation &amp; Core Selection</div>
-          <div class="stage-desc">
-            Pick 1 or 2 low-cost, broad-market Accumulating (Acc) ETFs (e.g. VWCE or IWDA+EIMI). Check TER &lt; 0.25%, AUM &gt; €1B, and Ireland domicile.
-          </div>
-        </div>
+  <!-- ====================== Main ====================== -->
+  <main id="main" class="main-container" tabindex="-1">
 
-        <!-- Stage 2 -->
-        <div class="stage-step-card" data-stage="overlap">
-          <div class="stage-step-top">
-            <span class="stage-number">Stage 2</span>
-            <span class="stage-status-badge badge-essential">Essential (If &gt;1 Fund)</span>
-          </div>
-          <div class="stage-title">Overlap &amp; Redundancy Audit</div>
-          <div class="stage-desc">
-            Verify you aren't unintentionally double-dipping into the same tech giants (Apple, NVIDIA, Microsoft). Avoid holding VWCE + IWDA together.
-          </div>
-        </div>
+    <noscript>
+      <div class="callout callout-warning mb-4">This dashboard needs JavaScript to render. Enable it, or run <code>uv run apex-etf</code> and reload.</div>
+    </noscript>
 
-        <!-- Stage 3 -->
-        <div class="stage-step-card" data-stage="curvo">
-          <div class="stage-step-top">
-            <span class="stage-number">Stage 3</span>
-            <span class="stage-status-badge badge-essential">Planning Phase</span>
-          </div>
-          <div class="stage-title">DCA &amp; Compounding Plan</div>
-          <div class="stage-desc">
-            Simulate your monthly Sparplan contributions using Curvo historical data. Project real inflation-adjusted purchasing power over 10–30 years.
-          </div>
-        </div>
-
-        <!-- Stage 4 -->
-        <div class="stage-step-card" data-stage="parity">
-          <div class="stage-step-top">
-            <span class="stage-number">Stage 4</span>
-            <span class="stage-status-badge badge-essential">Regime Resilience</span>
-          </div>
-          <div class="stage-title">Robust Parity &amp; Stress-Test</div>
-          <div class="stage-desc">
-            Size positions with HRP or Equal Risk Contribution (Risk Parity). Stress-test downside across 2000, 2008 &amp; 2022 crises against behavioral drawdown limits.
-          </div>
-        </div>
-
-        <!-- Stage 5 -->
-        <div class="stage-step-card" data-stage="pv">
-          <div class="stage-step-top">
-            <span class="stage-number">Stage 5</span>
-            <span class="stage-status-badge badge-optional">Optional / Advanced</span>
-          </div>
-          <div class="stage-title">Risk Tuning &amp; Factor Tilts</div>
-          <div class="stage-desc">
-            Optional: Add a 10–20% bond shield (AGGU) or small-cap tilt (IUSN) if you want to smooth drawdowns along the Markowitz Efficient Frontier.
-          </div>
-        </div>
-
-        <!-- Stage 6 -->
-        <div class="stage-step-card" data-stage="news">
-          <div class="stage-step-top">
-            <span class="stage-number">Stage 6</span>
-            <span class="stage-status-badge badge-maintain">Maintenance Phase</span>
-          </div>
-          <div class="stage-title">News Radar &amp; Discipline</div>
-          <div class="stage-desc">
-            Monitor macro interest rate &amp; earnings signals. Follow Boglehead action rules: never panic-trade on headlines; maintain automated monthly DCA.
-          </div>
-        </div>
-
-        <!-- Stage 7 -->
-        <div class="stage-step-card" data-stage="verification">
-          <div class="stage-step-top">
-            <span class="stage-number">Stage 7</span>
-            <span class="stage-status-badge badge-start-here">Mandatory Check</span>
-          </div>
-          <div class="stage-title">Statutory Verification</div>
-          <div class="stage-desc">
-            Before buying, verify the official PRIIPs KID for SRI risk rating and ongoing charges. Download factsheets from the issuer.
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- Roadmap context for the active stage (rendered by app.js) -->
+    <div id="stage-context" class="stage-context" role="region" aria-label="Roadmap stage" hidden></div>
 
     <!-- TAB 1: ETF Screener & Multi-Factor Score -->
-    <section id="tab-screener" class="tab-panel active">
+    <section id="tab-screener" class="tab-panel active" role="tabpanel" aria-labelledby="tab-btn-screener" tabindex="-1">
       <div id="screener-filters"></div>
       <div id="screener-table-container"></div>
     </section>
 
     <!-- TAB: Side-by-Side ETF Comparison Matrix -->
-    <section id="tab-comparison" class="tab-panel">
+    <section id="tab-comparison" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-comparison" tabindex="-1">
       <div id="comparison-matrix-container"></div>
     </section>
 
     <!-- TAB 2: Correlation & Overlap Auditor -->
-    <section id="tab-overlap" class="tab-panel">
+    <section id="tab-overlap" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-overlap" tabindex="-1">
       <div id="correlation-matrix-container"></div>
       <div id="portfolio-overlap-inputs"></div>
       <div id="overlap-audit-results"></div>
     </section>
 
     <!-- TAB 3: Curvo Historical Backtest & DCA -->
-    <section id="tab-curvo" class="tab-panel">
+    <section id="tab-curvo" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-curvo" tabindex="-1">
       <div id="curvo-backtest-container"></div>
     </section>
 
     <!-- TAB: Robust Parity & Stress-Test -->
-    <section id="tab-parity" class="tab-panel">
+    <section id="tab-parity" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-parity" tabindex="-1">
       <div id="regime-risk-parity-container"></div>
     </section>
 
     <!-- TAB 4: Portfolio Visualizer Quant Risk -->
-    <section id="tab-pv" class="tab-panel">
+    <section id="tab-pv" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-pv" tabindex="-1">
       <div id="portfolio-visualizer-container"></div>
     </section>
 
     <!-- TAB 5: Market News & Signal Radar -->
-    <section id="tab-news" class="tab-panel">
-      <div class="card" style="margin-bottom: 20px;">
+    <section id="tab-news" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-news" tabindex="-1">
+      <div class="card">
         <div class="card-header">
           <div>
-            <h3 class="card-title">📡 Market Intelligence &amp; ETF Signal Radar</h3>
+            <h2 class="card-title">📡 Market Intelligence &amp; ETF Signal Radar</h2>
             <span class="card-subtitle">Macroeconomic trends, earnings capex, and central bank catalysts mapped directly to impacted ETFs</span>
           </div>
           <span class="badge badge-acc">Disciplined Boglehead Guidance</span>
         </div>
-        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+        <p class="text-secondary text-sm">
           Every market headline carries an underlying signal. Rather than inciting emotional retail trades, this radar evaluates signal bias (Bullish/Watch/Bearish), systemic impact level, transmission mechanisms into specific ETFs, and provides disciplined long-term Bogleheads guidance.
         </p>
       </div>
@@ -244,201 +237,187 @@
     </section>
 
     <!-- TAB 6: Official Factsheets & KIDs -->
-    <section id="tab-verification" class="tab-panel">
+    <section id="tab-verification" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-verification" tabindex="-1">
       <div id="verification-docs-container"></div>
     </section>
 
     <!-- TAB 7: Bogleheads & Tax Academy -->
-    <section id="tab-academy" class="tab-panel">
+    <section id="tab-academy" class="tab-panel" role="tabpanel" aria-labelledby="tab-btn-academy" tabindex="-1">
       <div id="education-academy-container"></div>
     </section>
 
   </main>
 
-  <!-- Drilldown Detail Modal -->
-  <div id="detail-modal" class="modal-overlay">
-    <div class="modal-content">
-      <button id="modal-close" class="modal-close-btn">&times;</button>
-      <div id="modal-body"></div>
-    </div>
-  </div>
-
-  <!-- New User Onboarding & Stage Roadmap Modal -->
-  <div id="onboarding-modal" class="modal-overlay">
-    <div class="modal-content" style="max-width: 860px;">
-      <button id="onboarding-close" class="modal-close-btn">&times;</button>
-      <div style="margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-          <span style="font-size: 1.4rem;">🧭</span>
-          <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--accent-blue);">
-            New Investor Onboarding Guide: Where to Start &amp; Portfolio Stages
-          </h2>
-        </div>
-        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
-          Building an ETF portfolio does not require predicting markets. Follow this stage-by-stage retail checklist to understand what is <strong>mandatory</strong>, what is <strong>optional</strong>, and how to maintain your portfolio with zero stress.
-        </p>
-      </div>
-
-      <!-- Stage 1 -->
-      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-emerald);">
-        <div class="onboarding-step-header">
-          <div>
-            <strong style="color: var(--accent-emerald); font-size: 0.95rem;">🏁 Stage 1: Core Foundation (START HERE — Mandatory)</strong>
-            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Establish your core wealth building engine</div>
-          </div>
-          <span class="stage-status-badge badge-start-here">Essential for Beginners</span>
-        </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          Start in the <strong>ETF Screener</strong>. Most retail investors need only <strong>ONE single global fund</strong> ("VWCE and Chill" or Invesco FWRA), or a two-fund split (88% IWDA + 12% EIMI). Ensure:
-        </p>
-        <ul style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 20px; line-height: 1.5; margin-bottom: 10px;">
-          <li><strong>Accumulating (Acc):</strong> Never buy Distributing unless you rely on live dividend income. Acc avoids annual tax leakage!</li>
-          <li><strong>Fund Size (AUM) &gt; €1B:</strong> Protects against fund closure and ensures institutional bid-ask spreads.</li>
-          <li><strong>Ireland Domicile (IE):</strong> Shields you from 40% US Estate Tax and cuts US dividend withholding from 30% to 15%.</li>
-        </ul>
-        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="screener">
-          👉 Go to ETF Screener
-        </button>
-      </div>
-
-      <!-- Stage 2 -->
-      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-blue);">
-        <div class="onboarding-step-header">
-          <div>
-            <strong style="color: var(--accent-blue); font-size: 0.95rem;">🔍 Stage 2: Overlap &amp; Redundancy Audit (Mandatory if holding &gt;1 fund)</strong>
-            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Avoid unintended tech mega-cap concentration</div>
-          </div>
-          <span class="stage-status-badge badge-essential">Essential for Multi-Fund Portfolios</span>
-        </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          Beginners often buy an S&amp;P 500 ETF, an MSCI World ETF, and a Tech ETF, mistakenly believing they have diversified. In reality, they are holding <strong>30%+ in just Apple, Microsoft, and NVIDIA</strong> across three wrappers. Use the <strong>Overlap Auditor</strong> to detect single-stock clustering before committing capital.
-        </p>
-        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="overlap">
-          👉 Audit Portfolio Overlap
-        </button>
-      </div>
-
-      <!-- Stage 3 -->
-      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-cyan);">
-        <div class="onboarding-step-header">
-          <div>
-            <strong style="color: var(--accent-cyan); font-size: 0.95rem;">📈 Stage 3: Wealth Accumulation &amp; DCA Plan (Planning Phase)</strong>
-            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Structure monthly automated contributions</div>
-          </div>
-          <span class="stage-status-badge badge-start-here">Planning Phase</span>
-        </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          Set up a monthly automated savings plan (Sparplan) at your broker (e.g. Trade Republic, Scalable, ING). Use the <strong>Curvo DCA Engine</strong> to simulate your 10–30 year timeline and see real inflation-adjusted purchasing power.
-        </p>
-        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="curvo">
-          👉 Open Curvo DCA Simulator
-        </button>
-      </div>
-
-      <!-- Stage 4 -->
-      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-emerald);">
-        <div class="onboarding-step-header">
-          <div>
-            <strong style="color: var(--accent-emerald); font-size: 0.95rem;">🛡️ Stage 4: Robust Parity, Regime Resilience &amp; Downside Stress-Testing</strong>
-            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Size positions by volatility contribution &amp; stress-test downside across historical crises</div>
-          </div>
-          <span class="stage-status-badge badge-essential">Regime Resilience</span>
-        </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          When evaluating ETFs in unpredictable macro environments, basic mean-variance optimization fails due to fragile return forecasts. In a traditional 60/40 allocation, equities account for <strong>over 91.5% of total volatility risk</strong>, and bonds plunged -16.8% in the 2022 rate-hiking cycle. Follow the <strong>3-Step Decision Workflow</strong> in the <strong>Regime &amp; Risk Parity Studio</strong>:
-        </p>
-        <ul style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 20px; line-height: 1.5; margin-bottom: 10px;">
-          <li><strong>Step 1 — Pick Structural Building Blocks:</strong> Don't let an unconstrained optimizer pick your assets. Manually select assets representing distinct economic regimes (Broad Equity, Tilts, Bonds, Cash €STR XEON, Real Gold SGLD). Choose from presets like <em>All-Weather</em>, <em>Permanent</em>, <em>Golden Butterfly</em>, or <em>T-Bill Barbell</em>.</li>
-          <li><strong>Step 2 — Size with HRP or Risk Parity:</strong> Size weights by true volatility contribution rather than subjective return guesses using <strong>Hierarchical Risk Parity (HRP)</strong> or <strong>Equal Risk Contribution (ERC)</strong>. Inspect the real-time Risk Decomposition Chart and clustering dendrograms.</li>
-          <li><strong>Step 3 — Downside Crisis Stress-Testing:</strong> Run allocations through QuantStats teardowns examining the <strong>2000–2002 Dot-Com</strong> (-44.2%), <strong>2008 Lehman GFC</strong> (-53.8%), and <strong>2022 Stagflation</strong> (-18.2% equity, -16.8% bond) shocks. Set your behavioral drawdown tolerance limit: if peak loss exceeds your threshold, the engine automatically calculates the required shift into ultra-short liquidity (€STR).</li>
-          <li><strong>Export Quant Scripts &amp; Tools:</strong> 1-Click copy production Python code for <code>PyPortfolioOpt</code>, <code>Riskfolio-Lib</code>, and <code>QuantStats</code>, or model directly in <em>Portfolio Visualizer</em>, <em>Testfol.io</em>, and <em>Portfolio Charts</em>.</li>
-        </ul>
-        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="parity">
-          👉 Open Regime Resilience &amp; Risk Parity Studio
-        </button>
-      </div>
-
-      <!-- Stage 5 -->
-      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-purple);">
-        <div class="onboarding-step-header">
-          <div>
-            <strong style="color: var(--accent-purple); font-size: 0.95rem;">🧮 Stage 5: Risk Tuning &amp; Factor Tilts (OPTIONAL — Advanced Investors)</strong>
-            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Dampen volatility or add academic factor tilts</div>
-          </div>
-          <span class="stage-status-badge badge-optional">Optional Step</span>
-        </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          <em>This stage is completely optional.</em> If your stomach churns during market downturns, add <strong>10%–20% Global Aggregate Bonds (AGGU EUR Hedged)</strong>. Its near-zero correlation (0.12) cushions drawdowns along the Markowitz Efficient Frontier. If you seek factor premiums, consider a modest 10% tilt toward Small-Cap Value (IUSN / ZPRV).
-        </p>
-        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="pv">
-          👉 View Portfolio Visualizer Quant Risk
-        </button>
-      </div>
-
-      <!-- Stage 6 -->
-      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-amber);">
-        <div class="onboarding-step-header">
-          <div>
-            <strong style="color: var(--accent-amber); font-size: 0.95rem;">📡 Stage 6: News Radar &amp; Maintenance (Ongoing Phase)</strong>
-            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Stay informed without reacting emotionally</div>
-          </div>
-          <span class="stage-status-badge badge-maintain">Maintenance Phase</span>
-        </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          Use the <strong>Market News Radar</strong> to review macro and central bank rate signals. Remember the #1 Bogleheads rule: <strong>Never sell out of panic or pause your DCA</strong>. Rebalance only once a year if your equity/bond split drifts by more than 5%.
-        </p>
-        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="news">
-          👉 Open News Signal Radar
-        </button>
-      </div>
-
-      <!-- Stage 7 -->
-      <div class="onboarding-step-box" style="border-left: 4px solid var(--accent-rose);">
-        <div class="onboarding-step-header">
-          <div>
-            <strong style="color: var(--accent-rose); font-size: 0.95rem;">📑 Stage 7: Statutory Check Before Buying (Mandatory Compliance)</strong>
-            <div style="font-size: 0.74rem; color: var(--text-muted);">Goal: Verify official legal documentation</div>
-          </div>
-          <span class="stage-status-badge badge-start-here">Mandatory Before Purchasing</span>
-        </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          Before transferring money to your broker, open the <strong>Official Documents &amp; KIDs Hub</strong> and download the statutory Key Information Document (KID) to confirm synthetic risk level (SRI 1–7) and ongoing transaction charges.
-        </p>
-        <button class="btn btn-secondary btn-sm jump-stage-btn" data-target="verification">
-          👉 Open Official KIDs Hub
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- App Footer -->
+  <!-- ====================== Footer ====================== -->
   <footer class="app-footer">
-    <div>
-      <strong>ApexETF Personal Investment Dashboard</strong> • Grounded exclusively in verified real data from
-      <a href="https://www.justetf.com" target="_blank">justETF</a>,
-      <a href="https://extraetf.com" target="_blank">extraETF</a>,
-      <a href="https://curvo.eu/backtest/en" target="_blank">Curvo</a>,
-      <a href="https://www.portfoliovisualizer.com" target="_blank">Portfolio Visualizer</a>,
-      <a href="https://www.morningstar.com" target="_blank">Morningstar</a>,
-      <a href="https://www.trackinsight.com" target="_blank">Trackinsight</a>, and official issuer KIDs.
-    </div>
-    <div style="margin-top: 6px; font-size: 0.72rem; color: var(--text-muted);">
-      Disclaimer: For informational and educational purposes only. Always consult statutory Key Information Documents (PRIIPs KIDs) before making investment decisions.
+    <div class="app-footer-inner">
+      <div>
+        <strong>ApexETF Personal Investment Dashboard</strong> • Grounded exclusively in verified real data from
+        <a href="https://www.justetf.com" target="_blank" rel="noopener noreferrer">justETF</a>,
+        <a href="https://extraetf.com" target="_blank" rel="noopener noreferrer">extraETF</a>,
+        <a href="https://curvo.eu/backtest/en" target="_blank" rel="noopener noreferrer">Curvo</a>,
+        <a href="https://www.portfoliovisualizer.com" target="_blank" rel="noopener noreferrer">Portfolio Visualizer</a>,
+        <a href="https://www.morningstar.com" target="_blank" rel="noopener noreferrer">Morningstar</a>,
+        <a href="https://www.trackinsight.com" target="_blank" rel="noopener noreferrer">Trackinsight</a>, and official issuer KIDs.
+      </div>
+      <div>
+        Disclaimer: For informational and educational purposes only. Always consult statutory Key Information Documents (PRIIPs KIDs) before making investment decisions.
+      </div>
     </div>
   </footer>
 
-  <!-- Scripts -->
+  <!-- ====================== Dialogs ====================== -->
+
+  <!-- ETF drilldown -->
+  <div id="detail-modal" class="modal-overlay">
+    <div class="modal-content modal-lg" role="dialog" aria-modal="true" aria-label="ETF details" aria-labelledby="detail-modal-title" tabindex="-1">
+      <button type="button" id="modal-close" class="modal-close-btn" aria-label="Close ETF details" data-dialog-close>&times;</button>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- New-investor onboarding guide -->
+  <div id="onboarding-modal" class="modal-overlay">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" tabindex="-1">
+      <button type="button" id="onboarding-close" class="modal-close-btn" aria-label="Close guide" data-dialog-close>&times;</button>
+      <div class="modal-body">
+        <div class="modal-head">
+          <h2 id="onboarding-title" class="modal-title">🧭 New Investor Onboarding Guide: Where to Start &amp; Portfolio Stages</h2>
+          <p class="text-secondary text-sm mt-2">
+            Building an ETF portfolio does not require predicting markets. Follow this stage-by-stage retail checklist to understand what is <strong>mandatory</strong>, what is <strong>optional</strong>, and how to maintain your portfolio with zero stress.
+          </p>
+        </div>
+
+        <ol class="guide-stepper" id="guide-stepper" aria-label="Jump to a stage"></ol>
+
+        <!-- Stage 1 -->
+        <section class="guide-step" id="guide-step-1" style="--tone: var(--accent-emerald)" aria-labelledby="guide-step-1-title">
+          <header class="guide-step-head">
+            <span class="guide-step-num" aria-hidden="true">1</span>
+            <div class="guide-step-heading">
+              <h3 id="guide-step-1-title" class="guide-step-title">Core Foundation <span class="guide-step-flag">(START HERE — Mandatory)</span></h3>
+              <p class="guide-step-goal">Goal: Establish your core wealth building engine</p>
+            </div>
+            <span class="stage-status-badge badge-start-here">Essential for Beginners</span>
+          </header>
+          <p>Start in the <strong>ETF Screener</strong>. Most retail investors need only <strong>ONE single global fund</strong> ("VWCE and Chill" or Invesco FWRA), or a two-fund split (88% IWDA + 12% EIMI). Ensure:</p>
+          <ul>
+            <li><strong>Accumulating (Acc):</strong> Never buy Distributing unless you rely on live dividend income. Acc avoids annual tax leakage!</li>
+            <li><strong>Fund Size (AUM) &gt; €1B:</strong> Protects against fund closure and ensures institutional bid-ask spreads.</li>
+            <li><strong>Ireland Domicile (IE):</strong> Shields you from 40% US Estate Tax and cuts US dividend withholding from 30% to 15%.</li>
+          </ul>
+          <button type="button" class="btn btn-secondary btn-sm jump-stage-btn" data-target="screener">Go to ETF Screener <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></button>
+        </section>
+
+        <!-- Stage 2 -->
+        <section class="guide-step" id="guide-step-2" style="--tone: var(--accent-blue)" aria-labelledby="guide-step-2-title">
+          <header class="guide-step-head">
+            <span class="guide-step-num" aria-hidden="true">2</span>
+            <div class="guide-step-heading">
+              <h3 id="guide-step-2-title" class="guide-step-title">Overlap &amp; Redundancy Audit <span class="guide-step-flag">(Mandatory if holding &gt;1 fund)</span></h3>
+              <p class="guide-step-goal">Goal: Avoid unintended tech mega-cap concentration</p>
+            </div>
+            <span class="stage-status-badge badge-essential">Essential for Multi-Fund Portfolios</span>
+          </header>
+          <p>Beginners often buy an S&amp;P 500 ETF, an MSCI World ETF, and a Tech ETF, mistakenly believing they have diversified. In reality, they are holding <strong>30%+ in just Apple, Microsoft, and NVIDIA</strong> across three wrappers. Use the <strong>Overlap Auditor</strong> to detect single-stock clustering before committing capital.</p>
+          <button type="button" class="btn btn-secondary btn-sm jump-stage-btn" data-target="overlap">Audit Portfolio Overlap <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></button>
+        </section>
+
+        <!-- Stage 3 -->
+        <section class="guide-step" id="guide-step-3" style="--tone: var(--accent-cyan)" aria-labelledby="guide-step-3-title">
+          <header class="guide-step-head">
+            <span class="guide-step-num" aria-hidden="true">3</span>
+            <div class="guide-step-heading">
+              <h3 id="guide-step-3-title" class="guide-step-title">Wealth Accumulation &amp; DCA Plan <span class="guide-step-flag">(Planning Phase)</span></h3>
+              <p class="guide-step-goal">Goal: Structure monthly automated contributions</p>
+            </div>
+            <span class="stage-status-badge badge-start-here">Planning Phase</span>
+          </header>
+          <p>Set up a monthly automated savings plan (Sparplan) at your broker (e.g. Trade Republic, Scalable, ING). Use the <strong>Curvo DCA Engine</strong> to simulate your 10–30 year timeline and see real inflation-adjusted purchasing power.</p>
+          <button type="button" class="btn btn-secondary btn-sm jump-stage-btn" data-target="curvo">Open Curvo DCA Simulator <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></button>
+        </section>
+
+        <!-- Stage 4 -->
+        <section class="guide-step" id="guide-step-4" style="--tone: var(--accent-emerald)" aria-labelledby="guide-step-4-title">
+          <header class="guide-step-head">
+            <span class="guide-step-num" aria-hidden="true">4</span>
+            <div class="guide-step-heading">
+              <h3 id="guide-step-4-title" class="guide-step-title">Robust Parity, Regime Resilience &amp; Downside Stress-Testing</h3>
+              <p class="guide-step-goal">Goal: Size positions by volatility contribution &amp; stress-test downside across historical crises</p>
+            </div>
+            <span class="stage-status-badge badge-essential">Regime Resilience</span>
+          </header>
+          <p>When evaluating ETFs in unpredictable macro environments, basic mean-variance optimization fails due to fragile return forecasts. In a traditional 60/40 allocation, equities account for <strong>over 91.5% of total volatility risk</strong>, and bonds plunged -16.8% in the 2022 rate-hiking cycle. Follow the <strong>3-Step Decision Workflow</strong> in the <strong>Regime &amp; Risk Parity Studio</strong>:</p>
+          <ul>
+            <li><strong>Step 1 — Pick Structural Building Blocks:</strong> Don't let an unconstrained optimizer pick your assets. Manually select assets representing distinct economic regimes (Broad Equity, Tilts, Bonds, Cash €STR XEON, Real Gold SGLD). Choose from presets like <em>All-Weather</em>, <em>Permanent</em>, <em>Golden Butterfly</em>, or <em>T-Bill Barbell</em>.</li>
+            <li><strong>Step 2 — Size with HRP or Risk Parity:</strong> Size weights by true volatility contribution rather than subjective return guesses using <strong>Hierarchical Risk Parity (HRP)</strong> or <strong>Equal Risk Contribution (ERC)</strong>. Inspect the real-time Risk Decomposition Chart and clustering dendrograms.</li>
+            <li><strong>Step 3 — Downside Crisis Stress-Testing:</strong> Run allocations through QuantStats teardowns examining the <strong>2000–2002 Dot-Com</strong> (-44.2%), <strong>2008 Lehman GFC</strong> (-53.8%), and <strong>2022 Stagflation</strong> (-18.2% equity, -16.8% bond) shocks. Set your behavioral drawdown tolerance limit: if peak loss exceeds your threshold, the engine automatically calculates the required shift into ultra-short liquidity (€STR).</li>
+            <li><strong>Export Quant Scripts &amp; Tools:</strong> 1-Click copy production Python code for <code>PyPortfolioOpt</code>, <code>Riskfolio-Lib</code>, and <code>QuantStats</code>, or model directly in <em>Portfolio Visualizer</em>, <em>Testfol.io</em>, and <em>Portfolio Charts</em>.</li>
+          </ul>
+          <button type="button" class="btn btn-secondary btn-sm jump-stage-btn" data-target="parity">Open Regime Resilience &amp; Risk Parity Studio <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></button>
+        </section>
+
+        <!-- Stage 5 -->
+        <section class="guide-step" id="guide-step-5" style="--tone: var(--accent-purple)" aria-labelledby="guide-step-5-title">
+          <header class="guide-step-head">
+            <span class="guide-step-num" aria-hidden="true">5</span>
+            <div class="guide-step-heading">
+              <h3 id="guide-step-5-title" class="guide-step-title">Risk Tuning &amp; Factor Tilts <span class="guide-step-flag">(OPTIONAL — Advanced Investors)</span></h3>
+              <p class="guide-step-goal">Goal: Dampen volatility or add academic factor tilts</p>
+            </div>
+            <span class="stage-status-badge badge-optional">Optional Step</span>
+          </header>
+          <p><em>This stage is completely optional.</em> If your stomach churns during market downturns, add <strong>10%–20% Global Aggregate Bonds (AGGU EUR Hedged)</strong>. Its near-zero correlation (0.12) cushions drawdowns along the Markowitz Efficient Frontier. If you seek factor premiums, consider a modest 10% tilt toward Small-Cap Value (IUSN / ZPRV).</p>
+          <button type="button" class="btn btn-secondary btn-sm jump-stage-btn" data-target="pv">View Portfolio Visualizer Quant Risk <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></button>
+        </section>
+
+        <!-- Stage 6 -->
+        <section class="guide-step" id="guide-step-6" style="--tone: var(--accent-amber)" aria-labelledby="guide-step-6-title">
+          <header class="guide-step-head">
+            <span class="guide-step-num" aria-hidden="true">6</span>
+            <div class="guide-step-heading">
+              <h3 id="guide-step-6-title" class="guide-step-title">News Radar &amp; Maintenance <span class="guide-step-flag">(Ongoing Phase)</span></h3>
+              <p class="guide-step-goal">Goal: Stay informed without reacting emotionally</p>
+            </div>
+            <span class="stage-status-badge badge-maintain">Maintenance Phase</span>
+          </header>
+          <p>Use the <strong>Market News Radar</strong> to review macro and central bank rate signals. Remember the #1 Bogleheads rule: <strong>Never sell out of panic or pause your DCA</strong>. Rebalance only once a year if your equity/bond split drifts by more than 5%.</p>
+          <button type="button" class="btn btn-secondary btn-sm jump-stage-btn" data-target="news">Open News Signal Radar <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></button>
+        </section>
+
+        <!-- Stage 7 -->
+        <section class="guide-step" id="guide-step-7" style="--tone: var(--accent-rose)" aria-labelledby="guide-step-7-title">
+          <header class="guide-step-head">
+            <span class="guide-step-num" aria-hidden="true">7</span>
+            <div class="guide-step-heading">
+              <h3 id="guide-step-7-title" class="guide-step-title">Statutory Check Before Buying <span class="guide-step-flag">(Mandatory Compliance)</span></h3>
+              <p class="guide-step-goal">Goal: Verify official legal documentation</p>
+            </div>
+            <span class="stage-status-badge badge-start-here">Mandatory Before Purchasing</span>
+          </header>
+          <p>Before transferring money to your broker, open the <strong>Official Documents &amp; KIDs Hub</strong> and download the statutory Key Information Document (KID) to confirm synthetic risk level (SRI 1–7) and ongoing transaction charges.</p>
+          <button type="button" class="btn btn-secondary btn-sm jump-stage-btn" data-target="verification">Open Official KIDs Hub <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toast-region" class="toast-region" aria-live="polite"></div>
+
+  <!-- Scripts (classic, ordered: data → toolkit → views → controller) -->
   <script src="js/data-store.js"></script>
-  <script src="js/provider-logos.js"></script>
-  <script src="js/screener.js"></script>
-  <script src="js/comparison-matrix.js"></script>
-  <script src="js/overlap-correlation.js"></script>
-  <script src="js/curvo-engine.js"></script>
-  <script src="js/pv-engine.js"></script>
-  <script src="js/regime-risk-parity.js"></script>
-  <script src="js/news-signals.js"></script>
-  <script src="js/verification-docs.js"></script>
-  <script src="js/bogleheads-academy.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/ui.js?v=20261002"></script>
+  <script src="js/provider-logos.js?v=20261002"></script>
+  <script src="js/screener.js?v=20261002"></script>
+  <script src="js/comparison-matrix.js?v=20261002"></script>
+  <script src="js/overlap-correlation.js?v=20261002"></script>
+  <script src="js/curvo-engine.js?v=20261002"></script>
+  <script src="js/pv-engine.js?v=20261002"></script>
+  <script src="js/regime-risk-parity.js?v=20261002"></script>
+  <script src="js/news-signals.js?v=20261002"></script>
+  <script src="js/verification-docs.js?v=20261002"></script>
+  <script src="js/bogleheads-academy.js?v=20261002"></script>
+  <script src="js/app.js?v=20261002"></script>
 </body>
 </html>

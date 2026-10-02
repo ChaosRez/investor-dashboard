@@ -187,22 +187,32 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
 │   ├── build_supporting_data.py
 │   └── build_js_store.py
 └── public/                       # Frontend client (zero framework, vanilla modern JS/CSS)
-    ├── index.html                # Single Page Application HTML5 UI
-    ├── css/styles.css            # Responsive Dark/Light CSS design system
+    ├── index.html                # App shell: app bar, ARIA tab bar (doubles as the 7-stage roadmap), dialogs, SVG icon sprite
+    ├── css/styles.css            # Design system: tokens, cascade layers, dark/light themes, components, views
     ├── data/                     # Verified JSON datasets (etfs.json, news.json, correlations.json)
-    └── js/                       # Modular frontend controllers
-        ├── app.js
-        ├── data-store.js
-        ├── screener.js
-        ├── comparison.js
-        ├── overlap-correlation.js
-        ├── curvo-engine.js
-        ├── regime-risk-parity.js # 3-step decision workflow, SVG risk charts & dendrograms
+    └── js/                       # Classic scripts (no bundler) so file:// keeps working
+        ├── ui.js                 # Shared toolkit: HTML escaping, formatting, dialogs, tooltips, toasts, chart helpers
+        ├── app.js                # Controller: theme, tab routing, roadmap context bar, Live Sync, data hydration
+        ├── data-store.js         # (generated) offline mirror of the datasets — run scripts/build_js_store.py after data edits
+        ├── provider-logos.js
+        ├── screener.js           # Sortable table (cards on mobile) + ETF drill-down dialog
+        ├── comparison-matrix.js
+        ├── overlap-correlation.js # Sequential-ramp correlation heatmap, portfolio builder, overlap audit
+        ├── curvo-engine.js       # DCA / inflation projection chart (crosshair, keyboard, table view)
+        ├── regime-risk-parity.js # 3-step decision workflow, risk-decomposition chart & dendrogram
         ├── pv-engine.js
         ├── news-signals.js
         ├── verification-docs.js
         └── bogleheads-academy.js
 ```
+
+### 🖥️ Frontend Notes
+
+* **Themes:** saved choice → operating-system preference → dark. Applied before first paint (no flash). All text/background pairs meet WCAG AA in both themes.
+* **Navigation:** the numbered tabs *are* the roadmap (stages 1–7). A context bar above each staged tab explains what is essential vs optional and links to the previous/next stage. Press `/` to jump to the screener search; use `←` `→` `Home` `End` on the tab bar.
+* **Accessibility:** WAI-ARIA tabs, focus-trapped dialogs with `inert` background, keyboard-focusable tooltips, labelled form controls, every chart has a **Table** view, and the correlation heatmap is a keyboard grid.
+* **Offline behaviour:** the dashboard renders instantly from the bundled `data-store.js`, then refreshes from the REST API in the background. Overlap audit and Curvo backtests fall back to client-side math. Risk-parity analytics, Live Sync and script generation need the local server and say so when it is unreachable.
+* **Caching:** the dev server sends `Cache-Control: no-cache` for static files and `index.html` versions its asset URLs (`?v=YYYYMMDD`). Bump that version string when you ship frontend changes.
 
 ---
 

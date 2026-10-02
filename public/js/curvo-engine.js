@@ -3,160 +3,179 @@
  * Real historical metrics (CAGR, Sharpe, StDev, Max Drawdowns, Recovery times)
  * Interactive Dollar-Cost-Averaging (DCA) and inflation-adjusted growth simulator
  * Supports both API mode and clientside calculation mode.
+ *
+ * Chart: responsive SVG line chart — solid hairline grid, 2px lines, end dots with a
+ * surface ring, crosshair + one tooltip listing every series, keyboard arrows, and a
+ * Chart/Table toggle (the table is the accessible twin).
  */
 
 window.CurvoModule = (function () {
+  const { esc, icon, fmt } = UI;
+
   let allEtfs = [];
   let etfsByTicker = {};
+  let runId = 0;
 
   const presetPortfolios = {
     "vwce-chill": {
       name: "Single-Fund 'VWCE and Chill'",
       description: "100% Vanguard FTSE All-World (USD) Acc. The gold-standard Bogleheads simplicity model.",
-      holdings: { VWCE: 100 }
+      holdings: { VWCE: 100 },
     },
     "iwda-eimi": {
       name: "Classic Core 88/12 (Developed + Emerging)",
       description: "88% iShares Core MSCI World + 12% iShares Core MSCI EM IMI. Complete global stock ownership with custom rebalancing.",
-      holdings: { IWDA: 88, EIMI: 12 }
+      holdings: { IWDA: 88, EIMI: 12 },
     },
     "bogleheads-80-20": {
       name: "Bogleheads 80/20 (Global Equity + Bond Shield)",
       description: "80% VWCE + 20% AGGU (EUR Hedged). Non-correlated fixed income cuts drawdown while preserving long-term equity compounding.",
-      holdings: { VWCE: 80, AGGU: 20 }
+      holdings: { VWCE: 80, AGGU: 20 },
     },
     "world-small-cap": {
       name: "Global All-Cap (Large + Mid + Small)",
       description: "80% VWCE + 20% IUSN (MSCI World Small Cap). Captures the academic Fama-French small-cap size premium.",
-      holdings: { VWCE: 80, IUSN: 20 }
+      holdings: { VWCE: 80, IUSN: 20 },
     },
     "us-tech-tilt": {
       name: "US Core + Tech Momentum Tilt",
       description: "70% SXR8 (S&P 500) + 30% QDVE (S&P 500 Tech). High historical return with elevated cyclical volatility.",
-      holdings: { SXR8: 70, QDVE: 30 }
-    }
+      holdings: { SXR8: 70, QDVE: 30 },
+    },
   };
 
-  let activeHoldings = { VWCE: 100 };
+  const SERIES = [
+    { key: "totalDeposits", label: "Total deposits", short: "Deposits", color: "var(--series-muted)" },
+    { key: "portfolioReal", label: "Real (inflation-adjusted)", short: "Real", color: "var(--series-2)" },
+    { key: "portfolioNominal", label: "Nominal portfolio", short: "Nominal", color: "var(--series-1)" },
+  ];
 
+  // State survives re-render so a data refresh never resets the user's scenario
+  let activePreset = "vwce-chill";
+  let activeHoldings = { ...presetPortfolios["vwce-chill"].holdings };
+  const params = { initialAmount: 10000, monthlyDca: 500, years: 20, inflationRate: 2.2 };
+
+  const clamp = (v, lo, hi, fallback) => {
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? Math.min(hi, Math.max(lo, n)) : fallback;
+  };
+
+  /* ------------------------------------------------------------- lifecycle */
   function init(etfs) {
     allEtfs = etfs || [];
     etfsByTicker = {};
-    allEtfs.forEach(e => { etfsByTicker[e.ticker.toUpperCase()] = e; });
+    allEtfs.forEach((e) => { etfsByTicker[e.ticker.toUpperCase()] = e; });
     renderInterface();
-    runSimulation();
+    UI.whenTabActive("curvo", () => runSimulation(), "sim"); // no API call until the tab is shown
   }
 
   function renderInterface() {
     const container = document.getElementById("curvo-backtest-container");
     if (!container) return;
 
-    const presetButtonsHtml = Object.entries(presetPortfolios).map(([key, p], i) => `
-      <button class="btn btn-secondary btn-sm preset-btn ${i === 0 ? "active" : ""}" data-preset="${key}" style="text-align: left; padding: 10px 14px; border-radius: var(--radius-md);">
-        <strong style="display: block; font-size: 0.88rem; color: var(--text-primary);">${p.name}</strong>
-        <span style="font-size: 0.74rem; color: var(--text-muted);">${p.description}</span>
-      </button>
-    `).join("");
+    const presetsHtml = Object.entries(presetPortfolios)
+      .map(([key, p]) => `
+        <button type="button" class="preset-card preset-btn${key === activePreset ? " active" : ""}" data-preset="${key}" aria-pressed="${key === activePreset}">
+          <span class="preset-card-title">${esc(p.name)}</span>
+          <span class="preset-card-desc">${esc(p.description)}</span>
+        </button>`)
+      .join("");
 
     container.innerHTML = `
       <div class="card">
         <div class="card-header">
           <div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <h3 class="card-title" style="margin-bottom: 0;">🏆 Curvo Historical Backtest &amp; DCA Growth Engine</h3>
-              <span class="stage-status-badge badge-essential">Stage 3 (Planning Phase)</span>
+            <div class="cluster">
+              <h2 class="card-title">${icon("trending-up")} Curvo historical backtest &amp; DCA growth engine</h2>
+              <span class="stage-status-badge badge-essential">Stage 3 · Planning phase</span>
             </div>
-            <span class="card-subtitle">Real historical performance metrics from Curvo.eu (2000–2026 data series)</span>
+            <span class="card-subtitle">Historical performance metrics from Curvo.eu (2000–2026 data series)</span>
           </div>
-          <span class="badge badge-acc">UCITS Real Data</span>
+          <span class="badge badge-acc">UCITS real data</span>
         </div>
 
-        <div style="margin-bottom: 16px;">
-          <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; display: block;">
-            Select a Classic Bogleheads Portfolio Blueprint:
-          </label>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
-            ${presetButtonsHtml}
-          </div>
-        </div>
+        <h3 class="section-label">Choose a portfolio blueprint</h3>
+        <div class="preset-grid mb-4" role="group" aria-label="Portfolio blueprints">${presetsHtml}</div>
 
-        <div class="grid-4" style="background: var(--bg-secondary); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 16px;">
-          <div>
-            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Initial Capital (€)</label>
-            <input type="number" id="curvo-initial" class="filter-input" style="width: 100%; margin-top: 4px;" value="10000" min="0" step="500" />
+        <form id="curvo-form" class="panel form-grid" novalidate>
+          <div class="field">
+            <label class="field-label" for="curvo-initial">Initial capital (€)</label>
+            <input type="number" id="curvo-initial" class="filter-input" value="${esc(params.initialAmount)}" min="0" step="500" inputmode="decimal" />
           </div>
-          <div>
-            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Monthly Sparplan DCA (€)</label>
-            <input type="number" id="curvo-dca" class="filter-input" style="width: 100%; margin-top: 4px;" value="500" min="0" step="50" />
+          <div class="field">
+            <label class="field-label" for="curvo-dca">Monthly Sparplan DCA (€)</label>
+            <input type="number" id="curvo-dca" class="filter-input" value="${esc(params.monthlyDca)}" min="0" step="50" inputmode="decimal" />
           </div>
-          <div>
-            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Time Horizon (Years)</label>
-            <input type="number" id="curvo-years" class="filter-input" style="width: 100%; margin-top: 4px;" value="20" min="1" max="40" />
+          <div class="field">
+            <label class="field-label" for="curvo-years">Time horizon (years)</label>
+            <input type="number" id="curvo-years" class="filter-input" value="${esc(params.years)}" min="1" max="40" step="1" inputmode="numeric" />
           </div>
-          <div>
-            <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Est. Annual Inflation (%)</label>
-            <input type="number" id="curvo-inflation" class="filter-input" style="width: 100%; margin-top: 4px;" value="2.2" min="0" max="15" step="0.1" />
+          <div class="field">
+            <label class="field-label" for="curvo-inflation">Est. annual inflation (%)</label>
+            <input type="number" id="curvo-inflation" class="filter-input" value="${esc(params.inflationRate)}" min="0" max="15" step="0.1" inputmode="decimal" />
           </div>
-        </div>
+        </form>
 
-        <div style="text-align: right;">
-          <button id="curvo-run-btn" class="btn btn-primary">
-            🚀 Recalculate Curvo Backtest
-          </button>
+        <div class="row-between mt-3">
+          <span class="text-muted text-xs">Results update as you type. Allocation: <strong id="curvo-allocation">${esc(allocationLabel())}</strong></span>
+          <button type="button" id="curvo-run-btn" class="btn btn-primary">${icon("zap")} Recalculate</button>
         </div>
       </div>
 
-      <div id="curvo-results-container"></div>
-    `;
+      <div id="curvo-results-container"></div>`;
 
-    container.querySelectorAll(".preset-btn").forEach(btn => {
+    container.querySelectorAll(".preset-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        container.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        const presetKey = btn.dataset.preset;
-        activeHoldings = presetPortfolios[presetKey].holdings;
+        activePreset = btn.dataset.preset;
+        activeHoldings = { ...presetPortfolios[activePreset].holdings };
+        container.querySelectorAll(".preset-btn").forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
+        });
+        document.getElementById("curvo-allocation").textContent = allocationLabel();
         runSimulation();
       });
     });
 
-    document.getElementById("curvo-run-btn")?.addEventListener("click", runSimulation);
+    const debounced = UI.debounce(() => runSimulation(), 350);
+    document.getElementById("curvo-form").addEventListener("input", debounced);
+    document.getElementById("curvo-form").addEventListener("submit", (e) => { e.preventDefault(); runSimulation(); });
+    document.getElementById("curvo-run-btn").addEventListener("click", () => runSimulation());
   }
 
-  async function runSimulation() {
-    const initialAmount = parseFloat(document.getElementById("curvo-initial")?.value || 10000);
-    const monthlyDca = parseFloat(document.getElementById("curvo-dca")?.value || 500);
-    const years = parseInt(document.getElementById("curvo-years")?.value || 20);
-    const inflationRate = parseFloat(document.getElementById("curvo-inflation")?.value || 2.2);
+  const allocationLabel = () =>
+    Object.entries(activeHoldings).map(([t, w]) => `${t} ${w}%`).join(" · ");
 
+  function readParams() {
+    params.initialAmount = clamp(document.getElementById("curvo-initial")?.value, 0, 1e9, params.initialAmount);
+    params.monthlyDca = clamp(document.getElementById("curvo-dca")?.value, 0, 1e7, params.monthlyDca);
+    params.years = Math.round(clamp(document.getElementById("curvo-years")?.value, 1, 40, params.years));
+    params.inflationRate = clamp(document.getElementById("curvo-inflation")?.value, 0, 15, params.inflationRate);
+    return { holdings: activeHoldings, ...params };
+  }
+
+  /* ------------------------------------------------------------ simulation */
+  async function runSimulation() {
+    const body = readParams();
+    const results = document.getElementById("curvo-results-container");
+    const myRun = ++runId;
+    if (results) results.classList.add("is-refreshing"); // keep the frame, dim it
+
+    let data = null;
     try {
       const res = await fetch("/api/portfolio/backtest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          holdings: activeHoldings,
-          initialAmount,
-          monthlyDca,
-          years,
-          inflationRate
-        })
+        body: JSON.stringify(body),
       });
-      if (res.ok) {
-        const data = await res.json();
-        renderSimulationResults(data);
-        return;
-      }
-    } catch (e) {
-      // Fall through to clientside simulation
-    }
+      if (res.ok) data = await res.json();
+    } catch (e) { /* fall through to the clientside engine */ }
 
-    const localData = computeCurvoSimulationClientside({
-      holdings: activeHoldings,
-      initialAmount,
-      monthlyDca,
-      years,
-      inflationRate
-    });
-    renderSimulationResults(localData);
+    if (myRun !== runId) return; // a newer run superseded this one
+    if (!data) data = computeCurvoSimulationClientside(body);
+    renderSimulationResults(data);
+    if (results) results.classList.remove("is-refreshing");
   }
 
   function computeCurvoSimulationClientside(params) {
@@ -245,137 +264,183 @@ window.CurvoModule = (function () {
     };
   }
 
+  /* --------------------------------------------------------------- results */
   function renderSimulationResults(data) {
     const container = document.getElementById("curvo-results-container");
     if (!container || !data) return;
 
     const m = data.blendedMetrics || {};
     const s = data.simulationSummary || {};
+    const timeline = data.timeline || [];
 
-    const formatCur = (num) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(num);
+    const legend = SERIES.slice().reverse()
+      .map((sr) => `<span class="legend-item" role="listitem"><span class="legend-key" style="--c:${sr.color}"></span>${esc(sr.label)}</span>`)
+      .join("");
 
     container.innerHTML = `
-      <div class="grid-4" style="margin-bottom: 20px;">
-        <div class="metric-box">
-          <span class="metric-label">Historical CAGR</span>
-          <span class="metric-value val-positive">${m.cagrPercent}%</span>
-          <span class="metric-sub">Compound annual growth</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Annualized Volatility</span>
-          <span class="metric-value">${m.annualizedVolatility}%</span>
-          <span class="metric-sub">Standard deviation (StDev)</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Sharpe Ratio</span>
-          <span class="metric-value" style="color: var(--accent-cyan);">${m.sharpeRatio}</span>
-          <span class="metric-sub">Risk-adjusted return</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Max Drawdown (Curvo)</span>
-          <span class="metric-value val-negative">${m.maxDrawdown}%</span>
-          <span class="metric-sub">Deepest historical crash</span>
-        </div>
+      <div class="grid-4 mb-5">
+        <div class="metric-box"><span class="metric-label">Historical CAGR</span><span class="metric-value val-positive">${esc(fmt.pct(m.cagrPercent, 2))}</span><span class="metric-sub">Compound annual growth</span></div>
+        <div class="metric-box"><span class="metric-label">Annualised volatility</span><span class="metric-value">${esc(fmt.pct(m.annualizedVolatility, 2))}</span><span class="metric-sub">Standard deviation</span></div>
+        <div class="metric-box"><span class="metric-label">Sharpe ratio</span><span class="metric-value">${esc(fmt.num(m.sharpeRatio, 2))}</span><span class="metric-sub">Risk-adjusted return</span></div>
+        <div class="metric-box"><span class="metric-label">Max drawdown (Curvo)</span><span class="metric-value val-negative">${esc(fmt.pct(m.maxDrawdown, 1))}</span><span class="metric-sub">Deepest historical crash</span></div>
       </div>
 
       <div class="card">
-        <div class="card-header">
-          <div>
-            <h4 class="card-title">📈 Wealth Accumulation Projection (DCA vs Inflation)</h4>
-            <span class="card-subtitle">Real compounding based on historical Curvo CAGR • Visualizing nominal vs inflation-adjusted purchasing power</span>
-          </div>
-          <div style="display: flex; gap: 12px; font-size: 0.75rem; align-items: center;">
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-emerald);"></span> Nominal Portfolio</span>
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-cyan);"></span> Real (Inflation Adjusted)</span>
-            <span style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--text-muted);"></span> Total Deposits</span>
-          </div>
+        ${UI.chart.frameHtml({
+          title: "Wealth accumulation projection (DCA vs inflation)",
+          subtitle: "Compounded at the blend's historical Curvo CAGR · nominal vs inflation-adjusted purchasing power",
+          legend,
+        })}
+
+        <div class="grid-3 totals-row">
+          <div class="total-cell"><div class="total-label">Total out-of-pocket deposits</div><div class="total-value">${esc(fmt.eur(s.totalContributions))}</div></div>
+          <div class="total-cell"><div class="total-label">Final nominal value</div><div class="total-value">${esc(fmt.eur(s.finalNominalValue))}</div><div class="total-sub val-positive">Wealth multiple ${esc(fmt.num(s.returnMultiple, 2))}×</div></div>
+          <div class="total-cell"><div class="total-label">Real purchasing power</div><div class="total-value">${esc(fmt.eur(s.finalRealValue))}</div><div class="total-sub">After inflation adjustment</div></div>
         </div>
 
-        <div id="growth-chart-wrapper" class="chart-container"></div>
-
-        <div class="grid-3" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
-          <div style="text-align: center;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Out-of-Pocket Deposits</div>
-            <div style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">${formatCur(s.totalContributions)}</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Final Nominal Portfolio Value</div>
-            <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent-emerald);">${formatCur(s.finalNominalValue)}</div>
-            <div style="font-size: 0.75rem; color: var(--accent-emerald);">Wealth Multiple: ${s.returnMultiple}x</div>
-          </div>
-          <div style="text-align: center;">
-            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Real Purchasing Power</div>
-            <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent-cyan);">${formatCur(s.finalRealValue)}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">After inflation adjustment</div>
-          </div>
+        <div class="row-between mt-4 wrap-gap">
+          <span class="text-muted text-sm">Verify this exact backtest portfolio on Curvo with underlying European UCITS fund data:</span>
+          ${UI.link(data.curvoVerificationUrl, `${icon("external")} Open on Curvo.eu/backtest`, { cls: "btn btn-secondary btn-sm", html: true })}
         </div>
+      </div>`;
 
-        <div style="margin-top: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <span style="font-size: 0.8rem; color: var(--text-muted);">
-            Verify this exact backtest portfolio live on Curvo with underlying European UCITS fund data:
-          </span>
-          <a href="${data.curvoVerificationUrl}" target="_blank" class="btn btn-secondary btn-sm">
-            🔗 Open Live on Curvo.eu/backtest
-          </a>
-        </div>
-      </div>
-    `;
-
-    renderSvgGrowthChart(data.timeline || []);
+    const frame = container.querySelector("[data-chart-frame]");
+    UI.chart.wireFrame(frame);
+    renderTableTwin(frame.querySelector('[data-view-panel="table"]'), timeline);
+    drawGrowthChart(frame.querySelector('[data-view-panel="chart"]'), timeline, frame);
   }
 
-  function renderSvgGrowthChart(timeline) {
-    const container = document.getElementById("growth-chart-wrapper");
-    if (!container || timeline.length === 0) return;
-
-    const width = container.clientWidth || 900;
-    const height = 300;
-    const padding = { top: 20, right: 30, bottom: 30, left: 70 };
-
-    const maxVal = Math.max(...timeline.map(d => d.portfolioNominal)) * 1.05;
-    const years = timeline.length - 1;
-
-    const xScale = (y) => padding.left + (y / (years || 1)) * (width - padding.left - padding.right);
-    const yScale = (v) => height - padding.bottom - (v / (maxVal || 1)) * (height - padding.top - padding.bottom);
-
-    const nominalPath = timeline.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.year)} ${yScale(d.portfolioNominal)}`).join(" ");
-    const realPath = timeline.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.year)} ${yScale(d.portfolioReal)}`).join(" ");
-    const depositsPath = timeline.map((d, i) => `${i === 0 ? "M" : "L"} ${xScale(d.year)} ${yScale(d.totalDeposits)}`).join(" ");
-
-    let gridLines = "";
-    for (let i = 0; i <= 4; i++) {
-      const v = (maxVal / 4) * i;
-      const y = yScale(v);
-      const label = v >= 1000000 ? (v / 1000000).toFixed(1) + "M €" : (v / 1000).toFixed(0) + "k €";
-      gridLines += `
-        <line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="chart-grid-line" />
-        <text x="${padding.left - 10}" y="${y + 4}" text-anchor="end" class="chart-axis-text">${label}</text>
-      `;
-    }
-
-    let xTicks = "";
-    const step = years <= 10 ? 1 : (years <= 20 ? 2 : 5);
-    for (let y = 0; y <= years; y += step) {
-      const x = xScale(y);
-      xTicks += `
-        <line x1="${x}" y1="${height - padding.bottom}" x2="${x}" y2="${height - padding.bottom + 5}" stroke="var(--border-color)" />
-        <text x="${x}" y="${height - padding.bottom + 18}" text-anchor="middle" class="chart-axis-text">Yr ${y}</text>
-      `;
-    }
-
-    container.innerHTML = `
-      <svg class="chart-svg" viewBox="0 0 ${width} ${height}">
-        ${gridLines}
-        ${xTicks}
-        <path d="${depositsPath}" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-dasharray="4, 4" />
-        <path d="${realPath}" fill="none" stroke="var(--accent-cyan)" stroke-width="2.5" />
-        <path d="${nominalPath}" fill="none" stroke="var(--accent-emerald)" stroke-width="3" />
-      </svg>
-    `;
+  function renderTableTwin(host, timeline) {
+    host.textContent = "";
+    host.appendChild(
+      UI.chart.dataTable({
+        caption: "Projected portfolio value by year",
+        columns: [
+          { key: "year", label: "Year", format: (v) => `Year ${v}` },
+          { key: "totalDeposits", label: "Total deposits", align: "right", format: (v) => fmt.eur(v) },
+          { key: "portfolioNominal", label: "Nominal value", align: "right", format: (v) => fmt.eur(v) },
+          { key: "portfolioReal", label: "Real value", align: "right", format: (v) => fmt.eur(v) },
+        ],
+        rows: timeline,
+      })
+    );
   }
 
-  return {
-    init,
-    runSimulation
-  };
+  /* ----------------------------------------------------------------- chart */
+  function drawGrowthChart(host, timeline, frame) {
+    if (!host || timeline.length === 0) return;
+    const tooltip = UI.chart.tooltip(host);
+    const live = document.createElement("div");
+    live.className = "sr-only";
+    live.setAttribute("role", "status");
+    frame.appendChild(live);
+
+    UI.chart.mountResponsive(host, (width) => {
+      const height = host.clientHeight || 320;
+      const compact = width < 560;
+      const pad = { top: 18, right: compact ? 18 : 84, bottom: 30, left: compact ? 52 : 62 };
+      const plotW = width - pad.left - pad.right;
+      const plotH = height - pad.top - pad.bottom;
+      const years = timeline.length - 1;
+
+      const maxVal = Math.max(...timeline.map((d) => d.portfolioNominal), 1);
+      const scale = UI.chart.niceScale(0, maxVal, 5);
+      const x = (yr) => pad.left + (yr / (years || 1)) * plotW;
+      const y = (v) => pad.top + plotH - (v / (scale.max || 1)) * plotH;
+
+      const grid = scale.ticks
+        .map((t) => `<line class="chart-grid-line" x1="${pad.left}" x2="${width - pad.right}" y1="${y(t)}" y2="${y(t)}"></line>
+                     <text class="chart-axis-text" x="${pad.left - 8}" y="${y(t) + 4}" text-anchor="end">${esc(fmt.eurCompact(t))}</text>`)
+        .join("");
+
+      const step = years <= 10 ? 1 : years <= 20 ? 2 : 5;
+      let xTicks = "";
+      for (let yr = 0; yr <= years; yr += step) {
+        xTicks += `<text class="chart-axis-text" x="${x(yr)}" y="${height - pad.bottom + 18}" text-anchor="middle">${compact ? yr : `Yr ${yr}`}</text>`;
+      }
+
+      const path = (key) => timeline.map((d, i) => `${i === 0 ? "M" : "L"}${x(d.year).toFixed(1)} ${y(d[key]).toFixed(1)}`).join(" ");
+      const last = timeline[timeline.length - 1];
+
+      const lines = SERIES.map((sr) => `<path d="${path(sr.key)}" fill="none" stroke="${sr.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>`).join("");
+      const endDots = SERIES.map((sr) => `<circle cx="${x(last.year)}" cy="${y(last[sr.key])}" r="4.5" fill="${sr.color}" stroke="var(--chart-surface)" stroke-width="2"></circle>`).join("");
+
+      // Direct end-labels only when they cannot collide; otherwise legend + tooltip carry identity
+      let endLabels = "";
+      if (!compact) {
+        const ends = SERIES.map((sr) => ({ sr, py: y(last[sr.key]) })).sort((a, b) => a.py - b.py);
+        const roomy = ends.every((e, i) => i === 0 || e.py - ends[i - 1].py >= 15);
+        if (roomy) {
+          endLabels = ends.map((e) => `<text class="chart-label" x="${x(last.year) + 11}" y="${e.py + 4}">${esc(e.sr.short)}</text>`).join("");
+        }
+      }
+
+      const crosshairDots = SERIES.map(() => `<circle class="cc-dot" r="4.5" stroke="var(--chart-surface)" stroke-width="2"></circle>`).join("");
+
+      host.querySelector("svg")?.remove();
+      host.insertAdjacentHTML("afterbegin", `
+        <svg class="chart-svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" tabindex="0" role="img"
+             aria-label="Wealth projection over ${years} years. Final nominal value ${esc(fmt.eur(last.portfolioNominal))}, real value ${esc(fmt.eur(last.portfolioReal))}, deposits ${esc(fmt.eur(last.totalDeposits))}. Use the left and right arrow keys to read each year, or switch to the table view.">
+          ${grid}
+          <line class="chart-axis-line" x1="${pad.left}" x2="${width - pad.right}" y1="${pad.top + plotH}" y2="${pad.top + plotH}"></line>
+          ${xTicks}
+          ${lines}
+          ${endDots}
+          ${endLabels}
+          <g class="cc" style="display:none">
+            <line class="cc-line" y1="${pad.top}" y2="${pad.top + plotH}" stroke="var(--chart-axis)" stroke-width="1"></line>
+            ${crosshairDots}
+          </g>
+          <rect class="chart-hit" x="${pad.left}" y="${pad.top}" width="${plotW}" height="${plotH}" fill="transparent"></rect>
+        </svg>`);
+
+      const svg = host.querySelector("svg");
+      const cc = svg.querySelector(".cc");
+      const ccLine = svg.querySelector(".cc-line");
+      const ccDots = [...svg.querySelectorAll(".cc-dot")];
+      let focusIdx = timeline.length - 1;
+
+      function show(idx, { announce = false } = {}) {
+        focusIdx = Math.max(0, Math.min(timeline.length - 1, idx));
+        const d = timeline[focusIdx];
+        const px = x(d.year);
+        cc.style.display = "";
+        ccLine.setAttribute("x1", px);
+        ccLine.setAttribute("x2", px);
+        SERIES.forEach((sr, i) => {
+          ccDots[i].setAttribute("cx", px);
+          ccDots[i].setAttribute("cy", y(d[sr.key]));
+          ccDots[i].setAttribute("fill", sr.color);
+        });
+        const rows = SERIES.slice().reverse().map((sr) => ({ color: sr.color, value: fmt.eur(d[sr.key]), label: sr.label }));
+        tooltip.show({ x: px, y: pad.top + plotH / 2, title: `Year ${d.year}`, rows });
+        if (announce) {
+          live.textContent = `Year ${d.year}: ${rows.map((r) => `${r.label} ${r.value}`).join(", ")}`;
+        }
+      }
+      function hide() {
+        cc.style.display = "none";
+        tooltip.hide();
+      }
+
+      svg.addEventListener("pointermove", (e) => {
+        const rect = svg.getBoundingClientRect();
+        const px = e.clientX - rect.left;
+        const yr = Math.round(((px - pad.left) / plotW) * years);
+        show(yr);
+      });
+      svg.addEventListener("pointerleave", () => { if (document.activeElement !== svg) hide(); });
+      svg.addEventListener("focus", () => show(focusIdx, { announce: true }));
+      svg.addEventListener("blur", hide);
+      svg.addEventListener("keydown", (e) => {
+        const move = { ArrowRight: 1, ArrowLeft: -1, PageUp: 5, PageDown: -5 }[e.key];
+        if (move !== undefined) { e.preventDefault(); show(focusIdx + move, { announce: true }); }
+        else if (e.key === "Home") { e.preventDefault(); show(0, { announce: true }); }
+        else if (e.key === "End") { e.preventDefault(); show(timeline.length - 1, { announce: true }); }
+        else if (e.key === "Escape") { hide(); }
+      });
+    });
+  }
+
+  return { init, runSimulation };
 })();

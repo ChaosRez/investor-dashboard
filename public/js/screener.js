@@ -1,668 +1,612 @@
 /**
  * ETF Explorer & Screener Module
  * Real data sourced from justETF, extraETF, and Trackinsight.
- * Evaluates ETFs based on retail priorities: Accumulating, TER, TD, Fund Size, Domicile, Tax, and Broker Availability.
+ * Evaluates ETFs on retail priorities: Accumulating, TER, TD, fund size, domicile, tax, brokers.
+ *
+ * UI notes
+ *  - Dense, sortable table on desktop; each row becomes a card below 1000px.
+ *  - One delegated click handler (no per-render re-binding); filter state survives re-init.
+ *  - Every interpolated value is escaped; URLs are sanitised (see UI.esc / UI.safeUrl).
  */
 
 window.ScreenerModule = (function () {
+  const { esc, icon, fmt } = UI;
+
   let allEtfs = [];
   let filteredEtfs = [];
+  let newsCounts = {};
+  let bound = false;
 
+  // Filter + sort state lives at module scope so a data refresh keeps the user's view.
+  const state = { query: "", acc: "watchlist", domicile: "all", broker: "all", sort: "score", reverse: false };
+
+  const SORTS = {
+    score: { label: "Retail multi-factor score", get: (e) => e.retailScores?.composite, best: "desc" },
+    ter: { label: "Lowest cost (TER)", get: (e) => e.ter, best: "asc" },
+    td: { label: "Best tracking difference", get: (e) => e.trackingDifference5Y, best: "asc" },
+    aum: { label: "Largest fund size", get: (e) => e.aumMillionsEUR, best: "desc" },
+    cagr: { label: "Highest CAGR", get: (e) => e.historicalStatsCurvo?.cagr, best: "desc" },
+  };
+
+  const DOMICILE_CODES = {
+    Ireland: "IE", Luxembourg: "LU", "United States": "US", Germany: "DE", Jersey: "JE", France: "FR", Switzerland: "CH",
+  };
+  const domicileCode = (d) => DOMICILE_CODES[d] || String(d || "—").slice(0, 2).toUpperCase();
+
+  /* ------------------------------------------------------------- lifecycle */
   function init(etfs) {
     allEtfs = etfs || [];
-    filteredEtfs = [...allEtfs];
+    refreshNewsCounts();
     renderFilters();
     applyFilters();
+    bindOnce();
   }
 
+  function refreshNewsCounts() {
+    newsCounts = {};
+    (window.DataStore?.getNews() || []).forEach((n) => {
+      new Set((n.relatedEtfs || []).map((e) => String(e.ticker).toUpperCase())).forEach((t) => {
+        newsCounts[t] = (newsCounts[t] || 0) + 1;
+      });
+    });
+  }
+
+  function bindOnce() {
+    if (bound) return;
+    bound = true;
+
+    const table = document.getElementById("screener-table-container");
+    table.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      if (btn.matches(".th-sort")) {
+        const key = btn.dataset.sort;
+        if (state.sort === key) state.reverse = !state.reverse;
+        else { state.sort = key; state.reverse = false; }
+        const select = document.getElementById("sort-filter");
+        if (select) select.value = key;
+        applyFilters();
+        document.querySelector(`.th-sort[data-sort="${key}"]`)?.focus();
+        return;
+      }
+
+      const ticker = btn.dataset.ticker;
+      if (btn.matches(".view-profile-btn")) {
+        showDetailModal(ticker, btn);
+      } else if (btn.matches(".compare-btn")) {
+        window.ComparisonMatrixModule?.toggleTicker(ticker);
+        refreshCompareStates();
+      } else if (btn.matches(".add-portfolio-btn")) {
+        window.OverlapModule?.addEtfToPortfolio(ticker);
+        window.App?.switchTab("overlap");
+      } else if (btn.matches(".screener-news-badge")) {
+        window.App?.switchTab("news");
+        window.NewsSignalsModule?.filterByEtf(ticker);
+      } else if (btn.matches(".clear-filters-btn")) {
+        resetFilters();
+      }
+    });
+
+    // Keep compare toggles truthful when the selection changes elsewhere
+    document.addEventListener("apex:compare", refreshCompareStates);
+  }
+
+  function refreshCompareStates() {
+    document.querySelectorAll("#screener-table-container .compare-btn").forEach((btn) => {
+      const on = !!window.ComparisonMatrixModule?.isComparing(btn.dataset.ticker);
+      btn.setAttribute("aria-pressed", String(on));
+      btn.setAttribute("data-tip", on ? "Remove from comparison matrix" : "Add to comparison matrix");
+    });
+  }
+
+  /* --------------------------------------------------------------- filters */
   function renderFilters() {
     const container = document.getElementById("screener-filters");
     if (!container) return;
 
+    const watchCount = allEtfs.filter((e) => e.isUserWatchlist).length;
+    const pill = (acc, label, extra = "") =>
+      `<button type="button" class="pill-btn${state.acc === acc ? " active" : ""}" data-acc="${acc}" aria-pressed="${state.acc === acc}"${extra}>${label}</button>`;
+    const opt = (value, label, current) =>
+      `<option value="${esc(value)}"${current === value ? " selected" : ""}>${esc(label)}</option>`;
+
     container.innerHTML = `
-      <div class="filter-bar">
-        <input type="text" id="screener-search" class="filter-input" placeholder="Search by Ticker, ISIN, Index (e.g. VWCE, S&P 500)..." />
-        
-        <div class="pill-group" id="acc-filter-group">
-          <button class="pill-btn" data-acc="all">All Funds</button>
-          <button class="pill-btn active" data-acc="watchlist" id="filter-watchlist-btn">⭐ My Watchlist (10 Funds)</button>
-          <button class="pill-btn" data-acc="acc">✨ Accumulating (Acc) Priority</button>
-          <button class="pill-btn" data-acc="dist">Distributing (Dist)</button>
+      <div class="filter-bar" role="search" aria-label="Filter ETFs">
+        <div class="search-field">
+          ${icon("search")}
+          <input type="search" id="screener-search" class="filter-input" value="${esc(state.query)}"
+                 placeholder="Search ticker, ISIN, index…  ( / )" autocomplete="off" spellcheck="false"
+                 aria-label="Search ETFs by ticker, ISIN, WKN or benchmark index" />
         </div>
 
-        <select id="domicile-filter" class="filter-select">
-          <option value="all">All Domiciles</option>
-          <option value="ireland">Ireland (IE - 15% US Treaty Tax Alpha)</option>
-          <option value="luxembourg">Luxembourg (LU)</option>
+        <div class="pill-group" id="acc-filter-group" role="group" aria-label="Fund selection">
+          ${pill("all", "All Funds")}
+          ${pill("watchlist", `${icon("star", "icon-fill")} My Watchlist (${watchCount})`, ' id="filter-watchlist-btn"')}
+          ${pill("acc", "Accumulating (Acc)")}
+          ${pill("dist", "Distributing (Dist)")}
+        </div>
+
+        <select id="domicile-filter" class="filter-select" aria-label="Domicile">
+          ${opt("all", "All domiciles", state.domicile)}
+          ${opt("ireland", "Ireland (IE)", state.domicile)}
+          ${opt("luxembourg", "Luxembourg (LU)", state.domicile)}
         </select>
 
-        <select id="broker-filter" class="filter-select">
-          <option value="all">All Brokers (Sparplan)</option>
-          <option value="Trade Republic">Trade Republic (Free Sparplan)</option>
-          <option value="Scalable Capital">Scalable Capital (Free PRIME)</option>
-          <option value="Interactive Brokers">Interactive Brokers (Global Tiered)</option>
-          <option value="DEGIRO">DEGIRO (Core Selection)</option>
-          <option value="ING">ING (Free Sparplan)</option>
-          <option value="flatex">flatex</option>
+        <select id="broker-filter" class="filter-select" aria-label="Savings-plan broker">
+          ${opt("all", "Any broker (Sparplan)", state.broker)}
+          ${opt("Trade Republic", "Trade Republic", state.broker)}
+          ${opt("Scalable Capital", "Scalable Capital", state.broker)}
+          ${opt("Interactive Brokers", "Interactive Brokers", state.broker)}
+          ${opt("DEGIRO", "DEGIRO", state.broker)}
+          ${opt("ING", "ING", state.broker)}
+          ${opt("flatex", "flatex", state.broker)}
         </select>
 
-        <select id="sort-filter" class="filter-select">
-          <option value="score">Sort: Retail Multi-Factor Score (High to Low)</option>
-          <option value="ter">Sort: Lowest Total Cost (TER)</option>
-          <option value="td">Sort: Best Tracking Difference (TD)</option>
-          <option value="aum">Sort: Largest Fund Size (AUM)</option>
-          <option value="cagr">Sort: Highest Historical CAGR</option>
+        <select id="sort-filter" class="filter-select" aria-label="Sort by">
+          ${Object.entries(SORTS).map(([k, s]) => opt(k, `Sort: ${s.label}`, state.sort)).join("")}
         </select>
-      </div>
-    `;
+      </div>`;
 
-    // Bind event listeners
-    const searchInput = document.getElementById("screener-search");
-    searchInput.addEventListener("input", applyFilters);
+    document.getElementById("screener-search").addEventListener("input", (e) => {
+      state.query = e.target.value;
+      applyFilters();
+    });
 
-    const accButtons = document.querySelectorAll("#acc-filter-group .pill-btn");
-    accButtons.forEach((btn) => {
+    container.querySelectorAll("#acc-filter-group .pill-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        accButtons.forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
+        state.acc = btn.dataset.acc;
+        container.querySelectorAll("#acc-filter-group .pill-btn").forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle("active", on);
+          b.setAttribute("aria-pressed", String(on));
+        });
         applyFilters();
       });
     });
 
-    document.getElementById("domicile-filter").addEventListener("change", applyFilters);
-    document.getElementById("broker-filter").addEventListener("change", applyFilters);
-    document.getElementById("sort-filter").addEventListener("change", applyFilters);
+    document.getElementById("domicile-filter").addEventListener("change", (e) => { state.domicile = e.target.value; applyFilters(); });
+    document.getElementById("broker-filter").addEventListener("change", (e) => { state.broker = e.target.value; applyFilters(); });
+    document.getElementById("sort-filter").addEventListener("change", (e) => { state.sort = e.target.value; state.reverse = false; applyFilters(); });
+  }
+
+  function resetFilters() {
+    Object.assign(state, { query: "", acc: "all", domicile: "all", broker: "all" });
+    renderFilters();
+    applyFilters();
+  }
+
+  function compareBy(key) {
+    const { get, best } = SORTS[key];
+    const sign = (best === "desc" ? -1 : 1) * (state.reverse ? -1 : 1);
+    return (a, b) => {
+      const va = Number(get(a));
+      const vb = Number(get(b));
+      const missingA = !Number.isFinite(va);
+      const missingB = !Number.isFinite(vb);
+      if (missingA || missingB) return missingA === missingB ? 0 : missingA ? 1 : -1; // missing last
+      return (va - vb) * sign;
+    };
   }
 
   function applyFilters() {
-    const query = (document.getElementById("screener-search")?.value || "").toLowerCase().trim();
-    const activeAccBtn = document.querySelector("#acc-filter-group .pill-btn.active");
-    const accFilter = activeAccBtn ? activeAccBtn.dataset.acc : "all";
-    const domicileFilter = (document.getElementById("domicile-filter")?.value || "all").toLowerCase();
-    const brokerFilter = document.getElementById("broker-filter")?.value || "all";
-    const sortVal = document.getElementById("sort-filter")?.value || "score";
+    const query = state.query.toLowerCase().trim();
 
     filteredEtfs = allEtfs.filter((etf) => {
-      // Search
-      const matchSearch =
-        !query ||
-        etf.ticker.toLowerCase().includes(query) ||
-        etf.isin.toLowerCase().includes(query) ||
-        etf.name.toLowerCase().includes(query) ||
-        etf.benchmarkIndex.toLowerCase().includes(query) ||
-        (etf.wkn && etf.wkn.toLowerCase().includes(query));
+      const haystack = [etf.ticker, etf.isin, etf.name, etf.benchmarkIndex, etf.wkn, ...(etf.secondaryTickers || [])]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      if (query && !haystack.includes(query)) return false;
 
-      // Acc/Dist / Watchlist
-      let matchAcc = true;
-      if (accFilter === "watchlist") matchAcc = etf.isUserWatchlist === true;
-      else if (accFilter === "acc") matchAcc = etf.isAccumulating === true;
-      else if (accFilter === "dist") matchAcc = etf.isAccumulating === false;
+      if (state.acc === "watchlist" && etf.isUserWatchlist !== true) return false;
+      if (state.acc === "acc" && etf.isAccumulating !== true) return false;
+      if (state.acc === "dist" && etf.isAccumulating !== false) return false;
 
-      // Domicile
-      let matchDom = true;
-      if (domicileFilter !== "all") {
-        matchDom = (etf.domicile || "").toLowerCase() === domicileFilter;
-      }
-
-      // Broker
-      let matchBroker = true;
-      if (brokerFilter !== "all") {
-        matchBroker = etf.brokerAvailability?.[brokerFilter]?.sparplan === true;
-      }
-
-      return matchSearch && matchAcc && matchDom && matchBroker;
+      if (state.domicile !== "all" && (etf.domicile || "").toLowerCase() !== state.domicile) return false;
+      if (state.broker !== "all" && etf.brokerAvailability?.[state.broker]?.sparplan !== true) return false;
+      return true;
     });
 
-    // Sorting
-    filteredEtfs.sort((a, b) => {
-      if (sortVal === "score") {
-        return (b.retailScores?.composite || 0) - (a.retailScores?.composite || 0);
-      } else if (sortVal === "ter") {
-        return a.ter - b.ter;
-      } else if (sortVal === "td") {
-        return a.trackingDifference5Y - b.trackingDifference5Y;
-      } else if (sortVal === "aum") {
-        return b.aumMillionsEUR - a.aumMillionsEUR;
-      } else if (sortVal === "cagr") {
-        return (b.historicalStatsCurvo?.cagr || 0) - (a.historicalStatsCurvo?.cagr || 0);
-      }
-      return 0;
-    });
-
+    filteredEtfs.sort(compareBy(state.sort));
     renderTable();
+  }
+
+  /* ----------------------------------------------------------------- table */
+  function money(value, currency) {
+    const cur = /^[A-Z]{3}$/.test(currency || "") ? currency : "EUR";
+    try {
+      return new Intl.NumberFormat(UI.locale, { style: "currency", currency: cur, minimumFractionDigits: 2, maximumFractionDigits: 3 }).format(value);
+    } catch (e) {
+      return `${cur} ${value}`;
+    }
+  }
+
+  function ariaSort(key) {
+    if (state.sort !== key) return "";
+    const descending = (SORTS[key].best === "desc") !== state.reverse;
+    return ` aria-sort="${descending ? "descending" : "ascending"}"`;
+  }
+
+  function sortHeader(key, label, tip, cls = "") {
+    const active = state.sort === key;
+    const descending = active && (SORTS[key].best === "desc") !== state.reverse;
+    const glyph = active ? (descending ? "arrow-down" : "arrow-up") : "sort";
+    return `<th scope="col" class="${cls}"${ariaSort(key)}>
+      <button type="button" class="th-sort${active ? " is-active" : ""}" data-sort="${key}">${esc(label)}${icon(glyph)}</button>${
+        tip ? `<span class="info-tip" data-tip="${esc(tip)}">?</span>` : ""
+      }</th>`;
+  }
+
+  function rowHtml(etf) {
+    const t = esc(etf.ticker);
+    const score = Number(etf.retailScores?.composite);
+    const hasScore = Number.isFinite(score);
+    const comparing = !!window.ComparisonMatrixModule?.isComparing(etf.ticker);
+    const td = Number(etf.trackingDifference5Y);
+    const tdBeats = Number.isFinite(td) && td < 0;
+    const live = etf.liveMarketData;
+    const news = newsCounts[String(etf.ticker).toUpperCase()] || 0;
+    const isIreland = etf.domicile === "Ireland";
+
+    let priceHtml = `<span class="text-muted">—</span>`;
+    if (live && Number.isFinite(Number(live.livePrice))) {
+      const chg = Number(live.dayChangePercent) || 0;
+      const up = chg >= 0;
+      const lo = live.fiftyTwoWeekLow ?? etf.fiftyTwoWeekLow;
+      const hi = live.fiftyTwoWeekHigh ?? etf.fiftyTwoWeekHigh;
+      priceHtml = `
+        <div class="price">
+          <span class="price-value">${esc(money(live.livePrice, live.currency))}</span>
+          <span class="price-change ${up ? "val-positive" : "val-negative"}" aria-label="${up ? "up" : "down"} ${esc(fmt.num(Math.abs(chg), 2))} percent today"><span aria-hidden="true">${up ? "▲" : "▼"}</span> ${esc(fmt.num(Math.abs(chg), 2))}%</span>
+        </div>
+        ${lo && hi ? `<div class="price-sub" data-tip="52-week range from ${esc(live.exchange || "the exchange")}">52W ${esc(lo)}–${esc(hi)}</div>` : ""}`;
+    }
+
+    return `
+      <tr data-ticker="${t}">
+        <th scope="row" class="cell-etf">
+          <div class="etf-id">
+            <span class="ticker etf-ticker">${t}</span>
+            ${window.ProviderLogos?.getLogoSvg(etf.issuer, 20, { label: false }) || ""}
+            ${etf.isUserWatchlist ? `<span class="watch-star" role="img" aria-label="In your watchlist" data-tip="In your personal 10-ETF watchlist">${icon("star", "icon-fill")}</span>` : ""}
+            ${news > 0 ? `<button type="button" class="badge badge-blue screener-news-badge" data-ticker="${t}" aria-label="${news} market news items affecting ${t}" data-tip="${news} active market ${news === 1 ? "catalyst" : "catalysts"} — open the news radar">${icon("rss")} ${news}</button>` : ""}
+          </div>
+          <div class="etf-name">${esc(etf.name)}</div>
+          <div class="etf-meta"><span class="mono">${esc(etf.isin)}</span>${etf.wkn ? ` · WKN ${esc(etf.wkn)}` : ""}</div>
+        </th>
+
+        <td data-label="Score" class="cell-score"><div class="cell-value">
+          ${hasScore
+            ? `<div class="score"><strong>${esc(score)}</strong><span>/100</span></div>
+               <div class="score-bar${score < 85 ? " is-low" : ""}" role="img" aria-label="Retail score ${esc(score)} out of 100"><span style="width:${Math.max(0, Math.min(100, score))}%"></span></div>`
+            : `<span class="text-muted">—</span>`}
+        </div></td>
+
+        <td data-label="Distribution"><div class="cell-value">
+          ${etf.isAccumulating
+            ? `<span class="badge badge-acc" data-tip="Accumulating: dividends are reinvested automatically — no annual tax event, no cash drag.">Acc</span>`
+            : `<span class="badge badge-dist" data-tip="Distributing: pays out cash dividends — a taxable event every distribution.">Dist</span>`}
+        </div></td>
+
+        <td data-label="TER" class="num"><div class="cell-value">${esc(fmt.pct(etf.ter, 2))}</div></td>
+
+        <td data-label="5Y tracking diff." class="num"><div class="cell-value">
+          <span class="${tdBeats ? "val-positive" : ""}">${esc(fmt.pct(td, 2, { sign: true }))}</span>
+          ${tdBeats ? `<div class="cell-sub val-positive">beats index</div>` : ""}
+        </div></td>
+
+        <td data-label="Fund size" class="num"><div class="cell-value">${esc(fmt.aum(etf.aumMillionsEUR))}</div></td>
+
+        <td data-label="Domicile"><div class="cell-value">
+          <span class="badge ${isIreland ? "badge-acc" : "badge-amber"}" data-tip="${esc(etf.domicile)}${isIreland ? " — 15% US dividend treaty withholding, no US estate-tax exposure" : " — standard treaty rate"}">${esc(domicileCode(etf.domicile))}</span>
+        </div></td>
+
+        <td data-label="Curvo CAGR" class="num"><div class="cell-value">${etf.historicalStatsCurvo?.cagr != null ? esc(fmt.pct(etf.historicalStatsCurvo.cagr, 2)) : "—"}</div></td>
+
+        <td data-label="Price" class="cell-price"><div class="cell-value">${priceHtml}</div></td>
+
+        <td class="cell-actions">
+          <button type="button" class="btn btn-secondary btn-sm view-profile-btn" data-ticker="${t}" aria-label="View ${t} details">${icon("eye")} Details</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-icon compare-btn" data-ticker="${t}" aria-pressed="${comparing}" aria-label="Compare ${t}" data-tip="${comparing ? "Remove from comparison matrix" : "Add to comparison matrix"}">${icon("scale")}</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-icon add-portfolio-btn" data-ticker="${t}" aria-label="Add ${t} to overlap audit" data-tip="Add to portfolio overlap audit">${icon("plus")}</button>
+        </td>
+      </tr>`;
+  }
+
+  function newestQuote() {
+    const stamps = allEtfs
+      .map((e) => e.liveMarketData?.lastPriceUpdated)
+      .filter(Boolean)
+      .map((s) => new Date(s).getTime())
+      .filter(Number.isFinite);
+    return stamps.length ? new Date(Math.max(...stamps)).toISOString() : null;
   }
 
   function renderTable() {
     const container = document.getElementById("screener-table-container");
     if (!container) return;
 
+    const filtersActive = state.query || state.acc !== "all" || state.domicile !== "all" || state.broker !== "all";
+
     if (filteredEtfs.length === 0) {
       container.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
-          <p style="font-size: 1.1rem; font-weight: 600;">No ETFs match the selected filters.</p>
-          <p style="font-size: 0.85rem;">Try clearing your search query or selecting "All Funds".</p>
-        </div>
-      `;
+        <div class="empty-state">
+          <div class="empty-state-title">No ETFs match these filters</div>
+          <p class="text-sm mb-4">Try a different search term, or widen the selection.</p>
+          <button type="button" class="btn btn-secondary btn-sm clear-filters-btn">Show all funds</button>
+        </div>`;
       return;
     }
 
-    let rowsHtml = filteredEtfs
-      .map((etf) => {
-        const isAcc = etf.isAccumulating;
-        const accBadge = isAcc
-          ? `<span class="badge badge-acc">✨ Accumulating (Acc)</span>`
-          : `<span class="badge badge-dist">Distributing (Dist)</span>`;
-
-        const isWatchlist = etf.isUserWatchlist === true;
-        const watchlistBadge = isWatchlist
-          ? `<span class="badge badge-watchlist" title="In your personal 10-ETF watchlist">⭐ Watchlist</span>`
-          : "";
-
-        const isComparing = window.ComparisonMatrixModule ? window.ComparisonMatrixModule.isComparing(etf.ticker) : false;
-
-        const tdVal = etf.trackingDifference5Y;
-        const tdColor = tdVal < 0 ? "val-positive" : "text-primary";
-        const tdLabel = tdVal < 0 ? `${tdVal}% (Outperforming Index!)` : `+${tdVal}%`;
-
-        const aumStr = (etf.aumMillionsEUR / 1000).toFixed(1) + "B €";
-        const compositeScore = etf.retailScores?.composite || 90;
-        const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 20) || "";
-
-        let scoreBadgeClass = "badge-blue";
-        if (compositeScore >= 95) scoreBadgeClass = "badge-acc";
-        else if (compositeScore < 85) scoreBadgeClass = "badge-amber";
-
-        const liveMkt = etf.liveMarketData;
-        let liveQuoteHtml = "";
-        if (liveMkt && liveMkt.livePrice) {
-          const chg = liveMkt.dayChangePercent !== undefined ? liveMkt.dayChangePercent : 0;
-          const chgClass = chg >= 0 ? "val-positive" : "val-negative";
-          const chgSign = chg >= 0 ? "+" : "";
-          const curSym = liveMkt.currency === "EUR" ? "€" : (liveMkt.currency === "USD" ? "$" : liveMkt.currency + " ");
-          liveQuoteHtml = `
-            <div style="margin-top: 5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-              <span class="live-price-pill" title="Live quote from ${liveMkt.exchange} via Yahoo Finance">
-                <span class="live-dot-pulse" style="width: 6px; height: 6px; margin-right: 3px;"></span>
-                <span>${curSym}${liveMkt.livePrice}</span>
-                <span class="${chgClass}" style="font-size: 0.72rem;">(${chgSign}${chg}%)</span>
-              </span>
-              ${etf.fiftyTwoWeekLow && etf.fiftyTwoWeekHigh ? `<span style="font-size: 0.68rem; color: var(--text-muted);" title="52-Week Range">52W: ${etf.fiftyTwoWeekLow} - ${etf.fiftyTwoWeekHigh}</span>` : ""}
-            </div>
-          `;
-        }
-
-        const relatedNewsCount = (window.DataStore?.getNews() || []).filter(n => (n.relatedEtfs || []).some(e => e.ticker.toUpperCase() === etf.ticker.toUpperCase())).length;
-        const newsBadgeHtml = relatedNewsCount > 0
-          ? `<span class="badge badge-blue screener-news-badge" data-ticker="${etf.ticker}" title="Click to view ${relatedNewsCount} active market catalysts" style="cursor: pointer; font-size: 0.68rem; font-weight: 700;">📰 ${relatedNewsCount} News</span>`
-          : "";
-
-        return `
-          <tr>
-            <td>
-              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <span style="font-weight: 800; font-size: 1.05rem; color: var(--accent-cyan);">${etf.ticker}</span>
-                ${providerLogo}
-                ${watchlistBadge}
-                <span class="badge ${scoreBadgeClass}">Score ${compositeScore}/100</span>
-                ${newsBadgeHtml}
-              </div>
-              <span class="table-etf-title">${etf.name}</span>
-              <span class="table-etf-sub">ISIN: <strong>${etf.isin}</strong> | WKN: ${etf.wkn}</span>
-              ${liveQuoteHtml}
-            </td>
-            <td>
-              ${accBadge}
-              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;">
-                ${isAcc ? "Zero dividend cash drag • Auto-compound" : "Quarterly cash distribution • Taxable event"}
-              </div>
-            </td>
-            <td>
-              <strong style="font-size: 0.95rem;">${etf.ter.toFixed(2)}%</strong> p.a.
-              <div style="font-size: 0.72rem; color: var(--text-muted);">Ongoing cost</div>
-            </td>
-            <td>
-              <strong class="${tdColor}" style="font-size: 0.95rem;">${tdLabel}</strong>
-              <div style="font-size: 0.72rem; color: var(--text-muted);">5Y Avg (extraETF / TD)</div>
-            </td>
-            <td>
-              <strong>${aumStr}</strong>
-              <div style="font-size: 0.72rem; color: var(--accent-emerald);">● Institutional Safe</div>
-            </td>
-            <td>
-              <span class="badge ${etf.domicile === "Ireland" ? "badge-acc" : "badge-amber"}">${etf.domicile}</span>
-              <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
-                ${etf.domicile === "Ireland" ? "15% US Treaty WHT" : "Standard Treaty"}
-              </div>
-            </td>
-            <td>
-              <strong style="color: var(--accent-blue);">${etf.historicalStatsCurvo?.cagr || "N/A"}%</strong>
-              <div style="font-size: 0.72rem; color: var(--text-muted);">Curvo Backtest CAGR</div>
-            </td>
-            <td style="text-align: right; white-space: nowrap;">
-              <button class="btn btn-primary btn-sm view-profile-btn" data-ticker="${etf.ticker}">
-                🔍 Details
-              </button>
-              <button class="btn btn-secondary btn-sm compare-btn ${isComparing ? "active" : ""}" data-ticker="${etf.ticker}" title="${isComparing ? "Remove from comparison matrix" : "Add to comparison matrix"}">
-                ${isComparing ? "✓ Comparing" : "⚖️ Compare"}
-              </button>
-              <button class="btn btn-secondary btn-sm add-portfolio-btn" data-ticker="${etf.ticker}">
-                + Add to Audit
-              </button>
-            </td>
-          </tr>
-        `;
-      })
-      .join("");
-
+    const newest = newestQuote();
     container.innerHTML = `
-      <div class="live-sync-banner">
-        <div>
-          <span class="live-dot-pulse"></span>
-          <strong>Dynamic Feeds Active:</strong> Live prices via <em>Yahoo Finance (European Exchanges)</em> • Live AUM via <em>justETF.com</em> • Central Bank Wire via <em>ECB</em>.
-        </div>
-        <div style="font-size: 0.74rem; color: var(--text-muted);">
-          Institutional Grounded • Verified Real Datasets
-        </div>
+      <div class="results-bar">
+        <span class="results-count" role="status">Showing <strong>${filteredEtfs.length}</strong> of ${allEtfs.length} funds</span>
+        ${filtersActive && state.acc !== "all" ? `<button type="button" class="btn btn-ghost btn-sm clear-filters-btn">${icon("x")} Show all funds</button>` : ""}
+        <span class="results-note">Quotes via Yahoo Finance · AUM via justETF${newest ? ` · newest quote ${esc(fmt.dateTimeUtc(newest))}` : ""}</span>
       </div>
-      <div class="table-responsive">
-        <table class="data-table">
+
+      <div class="etf-table-wrap">
+        <table class="etf-table">
+          <caption class="sr-only">ETF screener results, sortable by score, cost, tracking difference, fund size and CAGR</caption>
           <thead>
             <tr>
-              <th>
-                ETF & Issuer
-                <span class="info-tip" data-tip="The fund ticker, official issuer logo, underlying benchmark index, and statutory ISIN.">?</span>
-              </th>
-              <th>
-                Distribution & Tax
-                <span class="info-tip" data-tip="Accumulating (Acc) reinvests dividends directly to avoid tax leakage. Distributing (Dist) pays cash, creating annual tax events.">?</span>
-              </th>
-              <th>
-                Total Cost (TER)
-                <span class="info-tip" data-tip="Total Expense Ratio: Ongoing annual operating fees retained directly from NAV. Aim for < 0.25% for core broad market equity.">?</span>
-              </th>
-              <th>
-                Tracking Diff (TD)
-                <span class="info-tip" data-tip="Tracking Difference: Actual annual performance vs benchmark net index. Negative TD means the fund outperformed due to tax optimization & lending!">?</span>
-              </th>
-              <th>
-                Fund Size (AUM)
-                <span class="info-tip" data-tip="Assets Under Management: Funds > €100M eliminate liquidation/merger risk. Funds > €10B provide the tightest bid-ask spreads.">?</span>
-              </th>
-              <th>
-                Domicile
-                <span class="info-tip" data-tip="Ireland (IE) enjoys 15% US dividend treaty withholding (vs 30% statutory) and 100% exemption from the 40% US Estate Tax trap.">?</span>
-              </th>
-              <th>
-                Curvo CAGR
-                <span class="info-tip" data-tip="Compound Annual Growth Rate verified from Curvo historical backtesting data series.">?</span>
-              </th>
-              <th style="text-align: right;">Action</th>
+              <th scope="col">ETF <span class="info-tip" data-tip="Ticker, issuer, benchmark name and statutory ISIN. The star marks your personal watchlist.">?</span></th>
+              ${sortHeader("score", "Score", "Retail multi-factor score (0–100): index coverage, total cost, tracking, fund size, domicile tax efficiency and broker availability.", "")}
+              <th scope="col">Type <span class="info-tip" data-tip="Accumulating (Acc) reinvests dividends to avoid tax leakage. Distributing (Dist) pays cash, creating annual tax events.">?</span></th>
+              ${sortHeader("ter", "TER", "Total Expense Ratio: ongoing annual fee retained from NAV. Aim for under 0.25% for core broad-market equity.", "num")}
+              ${sortHeader("td", "5Y TD", "Tracking Difference vs the net index. Negative means the fund outperformed — via tax optimisation and securities lending.", "num")}
+              ${sortHeader("aum", "Fund size", "Assets under management. Above €100M removes closure risk; above €10B gives the tightest spreads.", "num")}
+              <th scope="col">Domicile <span class="info-tip" data-tip="Ireland (IE): 15% US dividend treaty withholding (vs 30%) and no exposure to the 40% US estate tax.">?</span></th>
+              ${sortHeader("cagr", "CAGR", "Compound annual growth rate from Curvo historical backtest data.", "num")}
+              <th scope="col">Price</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
-          <tbody>
-            ${rowsHtml}
-          </tbody>
+          <tbody>${filteredEtfs.map(rowHtml).join("")}</tbody>
         </table>
-      </div>
-    `;
-
-    // Bind row action buttons
-    container.querySelectorAll(".view-profile-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const ticker = e.currentTarget.dataset.ticker;
-        showDetailModal(ticker);
-      });
-    });
-
-    container.querySelectorAll(".compare-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const ticker = e.currentTarget.dataset.ticker;
-        if (window.ComparisonMatrixModule) {
-          window.ComparisonMatrixModule.toggleTicker(ticker);
-          renderTable();
-        }
-      });
-    });
-
-    container.querySelectorAll(".add-portfolio-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const ticker = e.currentTarget.dataset.ticker;
-        window.OverlapModule?.addEtfToPortfolio(ticker);
-        window.App?.switchTab("overlap");
-      });
-    });
-
-    container.querySelectorAll(".screener-news-badge").forEach((badge) => {
-      badge.addEventListener("click", (e) => {
-        const ticker = e.currentTarget.dataset.ticker;
-        window.App?.switchTab("news");
-        window.NewsSignalsModule?.filterByEtf(ticker);
-      });
-    });
+      </div>`;
   }
 
-  function showDetailModal(ticker) {
-    const etf = allEtfs.find((e) => e.ticker.toUpperCase() === ticker.toUpperCase());
-    if (!etf) return;
-
-    const modalBody = document.getElementById("modal-body");
-    if (!modalBody) return;
-
-    // Active Macro News & Catalysts for this ETF
-    const relatedNews = (window.DataStore?.getNews() || []).filter(n =>
-      (n.relatedEtfs || []).some(e => e.ticker.toUpperCase() === ticker.toUpperCase())
-    );
-
-    let modalNewsHtml = "";
-    if (relatedNews.length === 0) {
-      modalNewsHtml = `
-        <div style="padding: 12px 16px; background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem;">
-          ℹ️ No urgent sector-specific alerts active for <strong>${etf.ticker}</strong>. Fund performance is primarily governed by broad multi-year macroeconomic drivers.
-        </div>
-      `;
-    } else {
-      modalNewsHtml = relatedNews.map(item => {
-        const sig = item.signal || {};
-        const rel = (item.relatedEtfs || []).find(e => e.ticker.toUpperCase() === ticker.toUpperCase()) || {};
-        let signalBadgeClass = "badge-amber";
-        if (sig.bias.toLowerCase().includes("bullish")) signalBadgeClass = "badge-acc";
-        else if (sig.bias.toLowerCase().includes("bearish") || sig.bias.toLowerCase().includes("caution")) signalBadgeClass = "badge-red";
-
-        return `
-          <div style="margin-bottom: 12px; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="badge ${signalBadgeClass}">${sig.bias}</span>
-                <span class="badge ${sig.impactBadge === "critical" ? "badge-red" : "badge-amber"}">${sig.impact}</span>
-              </div>
-              <span style="font-size: 0.76rem; color: var(--text-muted);">
-                📅 ${item.date} • Source: <a href="${item.sourceUrl || '#'}" target="_blank" style="color: var(--accent-blue); text-decoration: underline;">${item.source} ↗</a>
-              </span>
-            </div>
-            <strong style="font-size: 0.92rem; color: var(--text-primary); display: block; margin-bottom: 4px;">${item.title}</strong>
-            ${item.summary ? `<p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4;">${item.summary}</p>` : ""}
-            <div style="padding: 8px 10px; background: var(--bg-card); border-radius: 4px; border: 1px solid var(--border-color); font-size: 0.82rem; line-height: 1.45;">
-              <strong style="color: var(--text-primary);">🎯 Fundamental Transmission Mechanism:</strong> ${rel.relation || "Systemic market transmission."}
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    // Top holdings list
-    const holdingsListHtml = (etf.topHoldings || [])
-      .map(
-        (h) => `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border-color); font-size: 0.85rem;">
-          <span><strong>${h.name}</strong> <span style="color: var(--text-muted); font-size: 0.75rem;">(${h.symbol})</span></span>
-          <span style="font-weight: 700; color: var(--accent-cyan);">${h.weight.toFixed(2)}%</span>
-        </div>
-      `
-      )
-      .join("");
-
-    // Sector breakdown
-    const sectorHtml = Object.entries(etf.sectorBreakdown || {})
-      .map(
-        ([sec, val]) => `
-        <div style="margin-bottom: 8px;">
-          <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 3px;">
-            <span>${sec}</span>
-            <strong>${val.toFixed(1)}%</strong>
-          </div>
-          <div class="progress-track" style="height: 6px;">
-            <div class="progress-fill" style="width: ${val}%; background: var(--accent-blue);"></div>
-          </div>
-        </div>
-      `
-      )
-      .join("");
-
-    // Broker availability
-    const brokersHtml = Object.entries(etf.brokerAvailability || {})
-      .map(
-        ([broker, data]) => `
-        <div style="display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.82rem; border-bottom: 1px solid var(--border-color);">
-          <span><strong>${broker}</strong></span>
-          <span style="color: ${data.sparplan ? "var(--accent-emerald)" : "var(--text-muted)"}; font-weight: 600;">
-            ${data.sparplan ? "✅ Sparplan: " + data.fee : "❌ Manual execution"}
-          </span>
-        </div>
-      `
-      )
-      .join("");
-
-    const providerLogo = window.ProviderLogos?.getLogoSvg(etf.issuer, 26) || "";
-
-    let stageBadge = `<span class="stage-status-badge badge-start-here">🏁 Stage 1: Core Foundation (Start Here)</span>`;
-    if (etf.ticker === "XEON") {
-      stageBadge = `<span class="stage-status-badge badge-essential">💶 Stage 4: Overnight Cash Buffer (€STR)</span>`;
-    } else if (etf.ticker === "SGLD") {
-      stageBadge = `<span class="stage-status-badge badge-essential">🪙 Stage 4: Real Commodity / Gold ETC</span>`;
-    } else if (etf.ticker === "AGGU") {
-      stageBadge = `<span class="stage-status-badge badge-essential">🛡️ Stage 4/5: Defensive Shield (Bonds)</span>`;
-    } else if (["EIMI", "MEUD", "IUSN", "ZPRV", "GGRA"].includes(etf.ticker)) {
-      stageBadge = `<span class="stage-status-badge badge-optional">🧮 Stage 5: Factor / Regional Tilt (Optional)</span>`;
-    } else if (etf.ticker === "QDVE") {
-      stageBadge = `<span class="stage-status-badge badge-optional">⚡ Stage 5: Satellite Tech Tilt (High Beta)</span>`;
-    } else if (etf.ticker === "VUSA") {
-      stageBadge = `<span class="stage-status-badge badge-maintain">⚠️ Distributing Benchmark</span>`;
-    }
-
-    modalBody.innerHTML = `
-      <div style="margin-bottom: 20px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--accent-blue);">${etf.ticker}</h2>
-            ${providerLogo}
-            <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">
-              ${etf.isAccumulating ? "✨ Accumulating (Acc)" : "Distributing (Dist)"}
-            </span>
-            ${etf.isUserWatchlist ? `<span class="badge badge-watchlist">⭐ My Watchlist</span>` : ""}
-            <span class="badge badge-blue">Score ${etf.retailScores?.composite || 95}/100</span>
-          </div>
-          <div>
-            ${stageBadge}
-          </div>
-        </div>
-        <h3 style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">${etf.name}</h3>
-        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px;">
-          ISIN: <strong>${etf.isin}</strong> | WKN: <strong>${etf.wkn}</strong> | Provider: <strong>${etf.issuer}</strong> | Domicile: <strong>${etf.domicile}</strong>
-        </p>
-
-        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;">
-          <button class="btn btn-primary btn-sm modal-action-compare" data-ticker="${etf.ticker}">
-            ⚖️ Add to Comparison Matrix
-          </button>
-          <button class="btn btn-secondary btn-sm modal-action-audit" data-ticker="${etf.ticker}">
-            + Add to Portfolio Overlap Audit
-          </button>
-        </div>
-      </div>
-
-      ${etf.liveMarketData && etf.liveMarketData.livePrice ? `
-      <!-- Live Dynamic Market Execution Card -->
-      <div class="card" style="margin-bottom: 18px; background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.35); padding: 14px 18px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="live-dot-pulse"></span>
-            <strong style="color: var(--accent-emerald); font-size: 0.95rem;">Live Market Execution (Yahoo Finance)</strong>
-            <span style="font-size: 0.74rem; color: var(--text-muted);">• Exchange: <strong>${etf.liveMarketData.exchange}</strong></span>
-          </div>
-          <span class="badge badge-acc">Dynamic Live Stream</span>
-        </div>
-        <div class="grid-4" style="gap: 12px;">
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">Traded Price</div>
-            <strong style="font-size: 1.15rem; color: var(--text-primary);">${etf.liveMarketData.currency === "EUR" ? "€" : "$"}${etf.liveMarketData.livePrice}</strong>
-          </div>
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">Daily Change</div>
-            <strong class="${etf.liveMarketData.dayChangePercent >= 0 ? "val-positive" : "val-negative"}" style="font-size: 1.15rem;">
-              ${etf.liveMarketData.dayChangePercent >= 0 ? "+" : ""}${etf.liveMarketData.dayChangePercent}%
-            </strong>
-          </div>
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">52-Week Range</div>
-            <strong style="font-size: 0.92rem;">${etf.liveMarketData.fiftyTwoWeekLow || "N/A"} – ${etf.liveMarketData.fiftyTwoWeekHigh || "N/A"}</strong>
-          </div>
-          <div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">Live AUM (justETF)</div>
-            <strong style="font-size: 0.95rem; color: var(--accent-emerald);">${(etf.aumMillionsEUR / 1000).toFixed(1)}B €</strong>
-          </div>
-        </div>
-      </div>
-      ` : ""}
-
-      <!-- Quick Metrics Grid -->
-      <div class="grid-4" style="margin-bottom: 20px;">
-        <div class="metric-box">
-          <span class="metric-label">TER (Total Cost)</span>
-          <span class="metric-value">${etf.ter.toFixed(2)}%</span>
-          <span class="metric-sub">Annual ongoing fee</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">5Y Tracking Diff</span>
-          <span class="metric-value ${etf.trackingDifference5Y < 0 ? "val-positive" : ""}">${etf.trackingDifference5Y < 0 ? "" : "+"}${etf.trackingDifference5Y}%</span>
-          <span class="metric-sub">${etf.trackingDifference5Y < 0 ? "Beating index net of fee!" : "Annual tracking drag"}</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Fund Size (AUM)</span>
-          <span class="metric-value">${(etf.aumMillionsEUR / 1000).toFixed(1)}B €</span>
-          <span class="metric-sub">Zero liquidation risk</span>
-        </div>
-        <div class="metric-box">
-          <span class="metric-label">Constituents</span>
-          <span class="metric-value">${etf.holdingCount}</span>
-          <span class="metric-sub">Physical replication</span>
-        </div>
-      </div>
-
-      <!-- Analysis Columns -->
-      <div class="grid-2" style="margin-bottom: 20px;">
-        <div class="card" style="margin-bottom: 0;">
-          <h4 class="card-title">🏆 Curvo Historical Backtest</h4>
-          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">Covered period: ${etf.historicalStatsCurvo?.period}</p>
-          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
-            <div style="display: flex; justify-content: space-between;"><span>Compound Annual Growth (CAGR):</span> <strong>${etf.historicalStatsCurvo?.cagr}%</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Sharpe Ratio (Risk-Adjusted):</span> <strong>${etf.historicalStatsCurvo?.sharpe}</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Annual Volatility (StDev):</span> <strong>${etf.historicalStatsCurvo?.stdev}%</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Deepest Drawdown:</span> <strong class="val-negative">${etf.historicalStatsCurvo?.maxDrawdown}%</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Recovery Time:</span> <span>${etf.historicalStatsCurvo?.recoveryPeriod}</span></div>
-          </div>
-          <div style="margin-top: 12px;">
-            <a href="${etf.historicalStatsCurvo?.curvoUrl}" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%;">
-              🔗 View on Curvo.eu/backtest
-            </a>
-          </div>
-        </div>
-
-        <div class="card" style="margin-bottom: 0;">
-          <h4 class="card-title">🧮 Portfolio Visualizer Quantitative Metrics</h4>
-          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">Advanced factor & risk statistics</p>
-          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem;">
-            <div style="display: flex; justify-content: space-between;"><span>Sortino Ratio (Downside Risk):</span> <strong>${etf.quantitativeStatsPV?.sortino}</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Calmar Ratio:</span> <strong>${etf.quantitativeStatsPV?.calmar}</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Value-at-Risk (95% Monthly VaR):</span> <strong class="val-negative">${etf.quantitativeStatsPV?.var95}%</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Market Beta:</span> <strong>${etf.quantitativeStatsPV?.marketBeta}</strong></div>
-            <div style="display: flex; justify-content: space-between;"><span>Morningstar Style Box:</span> <span class="badge badge-blue">${etf.morningstar?.styleBox}</span></div>
-          </div>
-          <div style="margin-top: 12px;">
-            <a href="${etf.quantitativeStatsPV?.pvUrl}" target="_blank" class="btn btn-secondary btn-sm" style="width: 100%;">
-              🔗 Verify on Portfolio Visualizer
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top Holdings & Sectors -->
-      <div class="grid-2" style="margin-bottom: 20px;">
-        <div class="card" style="margin-bottom: 0;">
-          <h4 class="card-title">Top 10 Fund Holdings</h4>
-          ${holdingsListHtml}
-        </div>
-        <div class="card" style="margin-bottom: 0;">
-          <h4 class="card-title">Sector Exposure</h4>
-          ${sectorHtml}
-        </div>
-      </div>
-
-      <!-- Tax & Domicile Analysis -->
-      <div class="card" style="margin-bottom: 20px; border-left: 4px solid var(--accent-emerald);">
-        <h4 class="card-title">🏛️ Domicile & Tax Treatment (Retail Investor Checklist)</h4>
-        <div style="font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);">
-          <p><strong>Domicile Rating:</strong> ${etf.taxTreatment?.domicileEfficiency}</p>
-          <p><strong>US Treaty Withholding:</strong> ${etf.taxTreatment?.usTreatyAdvantage}</p>
-          <p><strong>Local Withholding:</strong> ${etf.taxTreatment?.localDividendTax}</p>
-          <p><strong>Compounding Friction:</strong> ${etf.taxTreatment?.reinvestmentEfficiency}</p>
-          <p><strong>US Estate Tax:</strong> ${etf.taxTreatment?.usEstateTax}</p>
-        </div>
-      </div>
-
-      <!-- Broker Savings Plans -->
-      <div class="card" style="margin-bottom: 20px;">
-        <h4 class="card-title">🏦 Broker Availability & Savings Plans (extraETF Data)</h4>
-        ${brokersHtml}
-      </div>
-
-      <!-- Active Macro News & Fundamental Signals (Two-Sided Grounding) -->
-      <div class="card" style="margin-bottom: 20px; border-left: 4px solid var(--accent-blue);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
-          <div>
-            <h4 class="card-title" style="margin-bottom: 2px;">📰 Active Macro & Market News Affecting ${etf.ticker}</h4>
-            <span class="card-subtitle">Transparent real-world transmission verified from official sources</span>
-          </div>
-          <button class="btn btn-secondary btn-sm modal-jump-radar-btn" data-ticker="${etf.ticker}">
-            📡 Open in Full Signal Radar
-          </button>
-        </div>
-        ${modalNewsHtml}
-      </div>
-
-      <!-- Official Issuer Documents -->
-      <div class="card" style="margin-bottom: 0;">
-        <h4 class="card-title">📑 Official Issuer Documents & Final Verification</h4>
-        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">Always verify the legal KID before allocating capital:</p>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <a href="${etf.officialDocs?.kidUrl}" target="_blank" class="btn btn-primary btn-sm">
-            📄 Key Information Document (KID / PRIIPs)
-          </a>
-          <a href="${etf.officialDocs?.factsheetUrl}" target="_blank" class="btn btn-secondary btn-sm">
-            📊 Official Monthly Factsheet (PDF)
-          </a>
-          <a href="${etf.officialDocs?.issuerPage}" target="_blank" class="btn btn-secondary btn-sm">
-            🌐 Issuer Fund Page
-          </a>
-        </div>
-      </div>
-    `;
-
-    const detailModal = document.getElementById("detail-modal");
-    if (detailModal) {
-      detailModal.querySelector(".modal-action-compare")?.addEventListener("click", () => {
-        window.ComparisonMatrixModule?.addTicker(ticker);
-        detailModal.classList.remove("active");
-        window.App?.switchTab("comparison");
-      });
-
-      detailModal.querySelector(".modal-action-audit")?.addEventListener("click", () => {
-        window.OverlapModule?.addEtfToPortfolio(ticker);
-        detailModal.classList.remove("active");
-        window.App?.switchTab("overlap");
-      });
-
-      detailModal.querySelector(".modal-jump-radar-btn")?.addEventListener("click", () => {
-        detailModal.classList.remove("active");
-        window.App?.switchTab("news");
-        window.NewsSignalsModule?.filterByEtf(ticker);
-      });
-
-      detailModal.classList.add("active");
-    }
-  }
-
-  return {
-    init,
-    showDetailModal
+  /* ---------------------------------------------------------- detail dialog */
+  const STAGE_BADGES = {
+    XEON: ["badge-essential", "Stage 4 · Overnight cash buffer (€STR)"],
+    SGLD: ["badge-essential", "Stage 4 · Real commodity / gold ETC"],
+    AGGU: ["badge-essential", "Stage 4/5 · Defensive shield (bonds)"],
+    EIMI: ["badge-optional", "Stage 5 · Factor / regional tilt (optional)"],
+    MEUD: ["badge-optional", "Stage 5 · Factor / regional tilt (optional)"],
+    IUSN: ["badge-optional", "Stage 5 · Factor / regional tilt (optional)"],
+    ZPRV: ["badge-optional", "Stage 5 · Factor / regional tilt (optional)"],
+    GGRA: ["badge-optional", "Stage 5 · Factor / regional tilt (optional)"],
+    QDVE: ["badge-optional", "Stage 5 · Satellite tech tilt (high beta)"],
+    VUSA: ["badge-maintain", "Distributing benchmark"],
   };
+
+  function aumTier(millions) {
+    const m = Number(millions);
+    if (!Number.isFinite(m)) return { tone: "", text: "Fund size unavailable" };
+    if (m >= 10000) return { tone: "val-positive", text: "Institutional-size fund" };
+    if (m >= 1000) return { tone: "val-positive", text: "Large fund — low closure risk" };
+    if (m >= 100) return { tone: "", text: "Above the €100M closure threshold" };
+    return { tone: "val-negative", text: "Below €100M — closure risk" };
+  }
+
+  const kv = (label, value) => `<div class="kv"><dt>${label}</dt><dd>${value}</dd></div>`;
+
+  function barRows(entries, { max, format }) {
+    const top = max || Math.max(...entries.map(([, v]) => Number(v) || 0), 1);
+    return entries
+      .map(([label, value, sub]) => {
+        const v = Number(value) || 0;
+        return `<div class="bar-row">
+          <div class="bar-row-head"><span>${esc(label)}${sub ? ` <span class="text-muted text-xs">(${esc(sub)})</span>` : ""}</span><strong>${esc(format(v))}</strong></div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.max(1.5, Math.min(100, (v / top) * 100)).toFixed(1)}%"></div></div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  function modalNewsHtml(etf) {
+    const related = (window.DataStore?.getNews() || []).filter((n) =>
+      (n.relatedEtfs || []).some((e) => String(e.ticker).toUpperCase() === String(etf.ticker).toUpperCase())
+    );
+    if (related.length === 0) {
+      return `<div class="callout callout-info">${icon("info")}<div>No urgent sector-specific alerts active for <strong>${esc(etf.ticker)}</strong>. Fund performance is primarily governed by broad multi-year macroeconomic drivers.</div></div>`;
+    }
+    return related
+      .map((item) => {
+        const sig = item.signal || {};
+        const rel = (item.relatedEtfs || []).find((e) => String(e.ticker).toUpperCase() === String(etf.ticker).toUpperCase()) || {};
+        return `
+          <article class="mini-news">
+            <div class="row-between mini-news-head">
+              <div class="cluster">
+                <span class="badge badge-${UI.signalTone(sig.bias)}">${esc(sig.bias || "Watch / Neutral")}</span>
+                <span class="badge ${sig.impactBadge === "critical" ? "badge-red" : "badge-amber"}">${esc(sig.impact || "")}</span>
+              </div>
+              <span class="text-muted text-xs">${esc(item.date)} · ${UI.link(item.sourceUrl, `${item.source || "Source"} ↗`)}</span>
+            </div>
+            <h5 class="mini-news-title">${esc(item.title)}</h5>
+            ${item.summary ? `<p class="text-secondary text-sm">${esc(item.summary)}</p>` : ""}
+            <p class="mini-news-mech"><strong>Transmission mechanism:</strong> ${esc(rel.relation || "Systemic market transmission.")}</p>
+          </article>`;
+      })
+      .join("");
+  }
+
+  function showDetailModal(ticker, opener) {
+    const etf = allEtfs.find((e) => e.ticker.toUpperCase() === String(ticker).toUpperCase());
+    const body = document.getElementById("modal-body");
+    if (!etf || !body) return;
+
+    const t = esc(etf.ticker);
+    const live = etf.liveMarketData && Number.isFinite(Number(etf.liveMarketData.livePrice)) ? etf.liveMarketData : null;
+    const hist = etf.historicalStatsCurvo || {};
+    const pv = etf.quantitativeStatsPV || {};
+    const tax = etf.taxTreatment || {};
+    const docs = etf.officialDocs || {};
+    const [stageTone, stageText] = STAGE_BADGES[etf.ticker] || ["badge-start-here", "Stage 1 · Core foundation (start here)"];
+    const td = Number(etf.trackingDifference5Y);
+    const tier = aumTier(etf.aumMillionsEUR);
+    const comparing = !!window.ComparisonMatrixModule?.isComparing(etf.ticker);
+    const quoteTime = live && live.lastPriceUpdated ? new Date(live.lastPriceUpdated).getTime() : NaN;
+    const liveFresh = Number.isFinite(quoteTime) && (Date.now() - quoteTime) / 36e5 <= 36;
+
+    const holdings = (etf.topHoldings || []).slice(0, 10).map((h) => [h.name, h.weight, h.symbol]);
+    const sectors = Object.entries(etf.sectorBreakdown || {}).sort((a, b) => b[1] - a[1]).map(([s, v]) => [s, v]);
+    const brokers = Object.entries(etf.brokerAvailability || {});
+
+    body.innerHTML = `
+      <div class="modal-head">
+        <h2 id="detail-modal-title" class="modal-title etf-modal-title">
+          <span class="ticker">${t}</span>
+          <span class="etf-modal-name">${esc(etf.name)}</span>
+        </h2>
+        <div class="cluster mt-2">
+          ${window.ProviderLogos?.getLogoSvg(etf.issuer, 24) || ""}
+          <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">${etf.isAccumulating ? "Accumulating (Acc)" : "Distributing (Dist)"}</span>
+          ${etf.isUserWatchlist ? `<span class="badge badge-watchlist">${icon("star", "icon-fill")} My watchlist</span>` : ""}
+          ${Number.isFinite(Number(etf.retailScores?.composite)) ? `<span class="badge badge-blue">Score ${esc(etf.retailScores.composite)}/100</span>` : ""}
+          <span class="stage-status-badge ${stageTone}">${esc(stageText)}</span>
+        </div>
+        <p class="text-muted text-sm mt-2">
+          ISIN <strong class="mono">${esc(etf.isin)}</strong> · WKN <strong>${esc(etf.wkn)}</strong> ·
+          Provider <strong>${esc(etf.issuer)}</strong> · Domicile <strong>${esc(etf.domicile)}</strong>
+        </p>
+        <div class="cluster mt-3">
+          <button type="button" class="btn btn-primary btn-sm modal-action-compare" data-ticker="${t}">${icon("scale")} ${comparing ? "Open comparison matrix" : "Add to comparison matrix"}</button>
+          <button type="button" class="btn btn-secondary btn-sm modal-action-audit" data-ticker="${t}">${icon("plus")} Add to overlap audit</button>
+        </div>
+      </div>
+
+      ${live ? `
+      <section class="callout ${liveFresh ? "callout-success" : "callout-info"} live-card" aria-label="Market quote">
+        <div class="live-card-inner">
+          <div class="row-between">
+            <strong><span class="status-dot is-inline" data-state="${liveFresh ? "fresh" : "aging"}"></span>${liveFresh ? "Live quote" : "Last quote"} · ${esc(live.exchange || "Exchange")}</strong>
+            ${live.lastPriceUpdated ? `<span class="text-muted text-xs" data-tip="${esc(fmt.dateTimeUtc(live.lastPriceUpdated))}">updated ${esc(fmt.relative(live.lastPriceUpdated))}</span>` : ""}
+          </div>
+          <div class="grid-4 mt-3">
+            <div><div class="text-muted text-xs">Traded price</div><strong class="live-figure">${esc(money(live.livePrice, live.currency))}</strong></div>
+            <div><div class="text-muted text-xs">Daily change</div><strong class="live-figure ${Number(live.dayChangePercent) >= 0 ? "val-positive" : "val-negative"}">${esc(fmt.pct(live.dayChangePercent, 2, { sign: true }))}</strong></div>
+            <div><div class="text-muted text-xs">52-week range</div><strong class="live-figure">${esc(live.fiftyTwoWeekLow ?? "N/A")} – ${esc(live.fiftyTwoWeekHigh ?? "N/A")}</strong></div>
+            <div><div class="text-muted text-xs">Fund size (justETF)</div><strong class="live-figure">${esc(fmt.aum(etf.aumMillionsEUR))}</strong></div>
+          </div>
+        </div>
+      </section>` : ""}
+
+      <div class="grid-4 mb-5">
+        <div class="metric-box"><span class="metric-label">TER (total cost)</span><span class="metric-value">${esc(fmt.pct(etf.ter, 2))}</span><span class="metric-sub">Annual ongoing fee</span></div>
+        <div class="metric-box"><span class="metric-label">5Y tracking difference</span><span class="metric-value ${td < 0 ? "val-positive" : ""}">${esc(fmt.pct(td, 2, { sign: true }))}</span><span class="metric-sub">${td < 0 ? "Beating the index net of fees" : "Annual tracking drag"}</span></div>
+        <div class="metric-box"><span class="metric-label">Fund size (AUM)</span><span class="metric-value">${esc(fmt.aum(etf.aumMillionsEUR))}</span><span class="metric-sub ${tier.tone}">${esc(tier.text)}</span></div>
+        <div class="metric-box"><span class="metric-label">Constituents</span><span class="metric-value">${esc(fmt.num(etf.holdingCount))}</span><span class="metric-sub">${esc(etf.replication || "")}</span></div>
+      </div>
+
+      <div class="grid-2 mb-5">
+        <section class="card modal-card" aria-labelledby="dm-curvo">
+          <h3 id="dm-curvo" class="card-title">Curvo historical backtest</h3>
+          <p class="text-muted text-xs mb-3">Covered period: ${esc(hist.period || "n/a")}</p>
+          <dl class="kv-list">
+            ${kv("Compound annual growth (CAGR)", esc(fmt.pct(hist.cagr, 2)))}
+            ${kv("Sharpe ratio", esc(fmt.num(hist.sharpe, 2)))}
+            ${kv("Annual volatility (StDev)", esc(fmt.pct(hist.stdev, 2)))}
+            ${kv("Deepest drawdown", `<span class="val-negative">${esc(fmt.pct(hist.maxDrawdown, 1))}</span>`)}
+            ${kv("Recovery time", esc(hist.recoveryPeriod || "—"))}
+          </dl>
+          ${hist.curvoUrl ? `<div class="mt-3">${UI.link(hist.curvoUrl, "View on Curvo.eu/backtest ↗", { cls: "btn btn-secondary btn-sm btn-block" })}</div>` : ""}
+        </section>
+
+        <section class="card modal-card" aria-labelledby="dm-pv">
+          <h3 id="dm-pv" class="card-title">Portfolio Visualizer metrics</h3>
+          <p class="text-muted text-xs mb-3">Advanced factor and risk statistics</p>
+          <dl class="kv-list">
+            ${kv("Sortino ratio (downside risk)", esc(fmt.num(pv.sortino, 2)))}
+            ${kv("Calmar ratio", esc(fmt.num(pv.calmar, 2)))}
+            ${kv("95% monthly VaR", `<span class="val-negative">${esc(fmt.pct(pv.var95, 2))}</span>`)}
+            ${kv("Market beta", esc(fmt.num(pv.marketBeta, 2)))}
+            ${kv("Morningstar style box", `<span class="badge badge-blue">${esc(etf.morningstar?.styleBox || "—")}</span>`)}
+          </dl>
+          ${pv.pvUrl ? `<div class="mt-3">${UI.link(pv.pvUrl, "Verify on Portfolio Visualizer ↗", { cls: "btn btn-secondary btn-sm btn-block" })}</div>` : ""}
+        </section>
+      </div>
+
+      <div class="grid-2 mb-5">
+        <section class="card modal-card" aria-labelledby="dm-hold">
+          <h3 id="dm-hold" class="card-title">Top ${holdings.length || 10} holdings</h3>
+          ${holdings.length ? barRows(holdings, { format: (v) => fmt.pct(v, 2) }) : `<p class="text-muted text-sm">Sovereign collateral / cash basket — no equity constituents.</p>`}
+        </section>
+        <section class="card modal-card" aria-labelledby="dm-sect">
+          <h3 id="dm-sect" class="card-title">Sector exposure</h3>
+          ${sectors.length ? barRows(sectors, { format: (v) => fmt.pct(v, 1) }) : `<p class="text-muted text-sm">Not applicable for this asset class.</p>`}
+        </section>
+      </div>
+
+      <section class="card modal-card callout-edge-emerald mb-5" aria-labelledby="dm-tax">
+        <h3 id="dm-tax" class="card-title">Domicile &amp; tax treatment</h3>
+        <dl class="kv-list kv-wide">
+          ${kv("Domicile rating", esc(tax.domicileEfficiency || "—"))}
+          ${kv("US treaty withholding", esc(tax.usTreatyAdvantage || "—"))}
+          ${kv("Local withholding", esc(tax.localDividendTax || "—"))}
+          ${kv("Compounding friction", esc(tax.reinvestmentEfficiency || "—"))}
+          ${kv("US estate tax", esc(tax.usEstateTax || "—"))}
+        </dl>
+      </section>
+
+      <section class="card modal-card mb-5" aria-labelledby="dm-brk">
+        <h3 id="dm-brk" class="card-title">Broker availability &amp; savings plans <span class="text-muted text-xs">(extraETF)</span></h3>
+        <dl class="kv-list">
+          ${brokers.length
+            ? brokers.map(([broker, d]) => kv(`<strong>${esc(broker)}</strong>`, d.sparplan
+                ? `<span class="val-positive">${icon("check")} Sparplan · ${esc(d.fee)}</span>`
+                : `<span class="text-muted">${icon("x")} Manual execution</span>`)).join("")
+            : `<div class="text-muted text-sm">No broker data available.</div>`}
+        </dl>
+      </section>
+
+      <section class="card modal-card callout-edge-blue mb-5" aria-labelledby="dm-news">
+        <div class="card-header">
+          <div>
+            <h3 id="dm-news" class="card-title">Active macro &amp; market news affecting ${t}</h3>
+            <span class="card-subtitle">Transmission mechanisms from official sources</span>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm modal-jump-radar-btn" data-ticker="${t}">${icon("rss")} Open in signal radar</button>
+        </div>
+        ${modalNewsHtml(etf)}
+      </section>
+
+      <section class="card modal-card mb-0" aria-labelledby="dm-docs">
+        <h3 id="dm-docs" class="card-title">Official issuer documents</h3>
+        <p class="text-muted text-sm mb-3">Always verify the legal KID before allocating capital:</p>
+        <div class="cluster">
+          ${docs.kidUrl ? UI.link(docs.kidUrl, `${icon("file-text")} Key Information Document (KID)`, { cls: "btn btn-primary btn-sm", html: true }) : ""}
+          ${docs.factsheetUrl ? UI.link(docs.factsheetUrl, `${icon("file-text")} Monthly factsheet (PDF)`, { cls: "btn btn-secondary btn-sm", html: true }) : ""}
+          ${docs.issuerPage ? UI.link(docs.issuerPage, `${icon("globe")} Issuer fund page`, { cls: "btn btn-secondary btn-sm", html: true }) : ""}
+        </div>
+      </section>`;
+
+    const overlay = document.getElementById("detail-modal");
+    const tk = etf.ticker;
+
+    overlay.querySelector(".modal-action-compare")?.addEventListener("click", () => {
+      window.ComparisonMatrixModule?.addTicker(tk);
+      UI.dialog.close("detail-modal");
+      window.App?.switchTab("comparison");
+    });
+    overlay.querySelector(".modal-action-audit")?.addEventListener("click", () => {
+      window.OverlapModule?.addEtfToPortfolio(tk);
+      UI.dialog.close("detail-modal");
+      window.App?.switchTab("overlap");
+    });
+    overlay.querySelector(".modal-jump-radar-btn")?.addEventListener("click", () => {
+      UI.dialog.close("detail-modal");
+      window.App?.switchTab("news");
+      window.NewsSignalsModule?.filterByEtf(tk);
+    });
+
+    body.scrollTop = 0;
+    UI.dialog.open("detail-modal", { opener: opener || document.activeElement });
+  }
+
+  return { init, showDetailModal };
 })();

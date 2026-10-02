@@ -3,530 +3,334 @@
  * Side-by-side comparative analytics for 2 to 5 ETFs simultaneously.
  * Compares live market quotes, TER, tracking difference, AUM, tax domicile,
  * replication, Curvo CAGR, PV risk metrics, top holdings, and official KIDs.
+ *
+ * Semantics: real <thead>/<th scope> markup, a sticky label column for horizontal
+ * scrolling, and an "apex:compare" event so other views (screener) stay in sync.
  */
 
 window.ComparisonMatrixModule = (function () {
+  const { esc, icon, fmt } = UI;
+  const MAX_COMPARE = 5;
+
   let allEtfs = [];
   let etfsByTicker = {};
   let selectedTickers = ["IUSQ", "SXR8", "IMAE", "XEON", "WTAI"]; // Default to user watchlist top picks
+  let bound = false;
 
   const comparisonPresets = {
     "user-watchlist": {
       name: "⭐ My Watchlist Core & Tilts",
       description: "Side-by-side view of your 5 primary watchlist ETFs",
-      tickers: ["IUSQ", "SXR8", "IMAE", "XEON", "WTAI"]
+      tickers: ["IUSQ", "SXR8", "IMAE", "XEON", "WTAI"],
     },
     "all-world-core": {
       name: "🌍 Global Core Shootout",
       description: "VWCE vs IWDA vs IUSQ (MSCI ACWI) vs FWRA (Invesco All-World)",
-      tickers: ["VWCE", "IWDA", "IUSQ", "FWRA"]
+      tickers: ["VWCE", "IWDA", "IUSQ", "FWRA"],
     },
     "tech-ai": {
       name: "🤖 AI & Tech Showdown",
       description: "S&P 500 Tech (QDVE) vs Pure-Play AI (WTAI) vs AI Infrastructure (AII)",
-      tickers: ["QDVE", "WTAI", "AII"]
+      tickers: ["QDVE", "WTAI", "AII"],
     },
     "cash-yield": {
       name: "🛡️ Cash & Yield Alternatives",
       description: "Overnight €STR Cash (XEON) vs Global Bonds (AGGU) vs High Dividend (VHYL)",
-      tickers: ["XEON", "AGGU", "VHYL"]
+      tickers: ["XEON", "AGGU", "VHYL"],
     },
     "batteries-resources": {
       name: "⚡ Energy Transition & Materials",
       description: "Battery Value-Chain (BATT) vs Rare Earths (RARE) vs China A-Shares (XCS6)",
-      tickers: ["BATT", "RARE", "XCS6"]
-    }
+      tickers: ["BATT", "RARE", "XCS6"],
+    },
   };
 
+  /* ------------------------------------------------------------- lifecycle */
   function init(etfs) {
     allEtfs = etfs || [];
     etfsByTicker = {};
-    allEtfs.forEach((e) => {
-      etfsByTicker[e.ticker.toUpperCase()] = e;
-    });
+    allEtfs.forEach((e) => { etfsByTicker[e.ticker.toUpperCase()] = e; });
 
-    // Check localStorage for saved comparison list
-    const saved = localStorage.getItem("apex_comparison_list");
-    if (saved) {
-      try {
-        const parsed = jsonParseSafe(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          selectedTickers = parsed.filter((t) => etfsByTicker[t]);
-        }
-      } catch (e) {}
-    }
+    try {
+      const parsed = JSON.parse(localStorage.getItem("apex_comparison_list"));
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        selectedTickers = parsed.filter((t) => etfsByTicker[t]).slice(0, MAX_COMPARE);
+      }
+    } catch (e) { /* no saved list, or storage unavailable */ }
 
     renderInterface();
     updateCompareBadge();
+    bindOnce();
   }
 
-  function jsonParseSafe(str) {
-    try {
-      return JSON.parse(str);
-    } catch (e) {
-      return null;
-    }
+  function bindOnce() {
+    if (bound) return;
+    bound = true;
+    // Single delegated handler for the whole matrix (survives re-renders)
+    document.getElementById("comparison-matrix-container").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      if (btn.matches(".compare-remove-btn")) {
+        removeTicker(btn.dataset.ticker);
+      } else if (btn.matches("#compare-clear-btn")) {
+        selectedTickers = [];
+        commit();
+      } else if (btn.matches(".compare-preset-btn")) {
+        const preset = comparisonPresets[btn.dataset.preset];
+        if (preset) {
+          selectedTickers = preset.tickers.filter((t) => etfsByTicker[t]);
+          commit();
+        }
+      } else if (btn.matches(".compare-add-portfolio-btn")) {
+        window.OverlapModule?.addEtfToPortfolio(btn.dataset.ticker, 20);
+        window.App?.switchTab("overlap");
+      } else if (btn.matches(".jump-to-news-btn")) {
+        window.App?.switchTab("news");
+        window.NewsSignalsModule?.filterByEtf(btn.dataset.ticker);
+      }
+    });
+
+    document.getElementById("comparison-matrix-container").addEventListener("change", (e) => {
+      if (e.target.matches("#compare-add-select") && e.target.value) addTicker(e.target.value);
+    });
+  }
+
+  /* ----------------------------------------------------------------- state */
+  function commit() {
+    try { localStorage.setItem("apex_comparison_list", JSON.stringify(selectedTickers)); } catch (e) { /* ignore */ }
+    renderInterface();
+    updateCompareBadge();
+    document.dispatchEvent(new CustomEvent("apex:compare", { detail: { tickers: [...selectedTickers] } }));
   }
 
   function addTicker(ticker) {
-    ticker = ticker.toUpperCase();
-    if (!etfsByTicker[ticker]) return false;
-    if (selectedTickers.includes(ticker)) return false;
-    if (selectedTickers.length >= 5) {
-      alert("You can compare up to 5 ETFs simultaneously. Please remove one first.");
+    ticker = String(ticker).toUpperCase();
+    if (!etfsByTicker[ticker] || selectedTickers.includes(ticker)) return false;
+    if (selectedTickers.length >= MAX_COMPARE) {
+      UI.toast(`You can compare up to ${MAX_COMPARE} ETFs at once. Remove one first.`, { type: "warning" });
       return false;
     }
     selectedTickers.push(ticker);
-    saveState();
-    renderInterface();
-    updateCompareBadge();
+    commit();
     return true;
   }
 
   function removeTicker(ticker) {
-    ticker = ticker.toUpperCase();
+    ticker = String(ticker).toUpperCase();
     selectedTickers = selectedTickers.filter((t) => t !== ticker);
-    saveState();
-    renderInterface();
-    updateCompareBadge();
+    commit();
   }
 
   function toggleTicker(ticker) {
-    ticker = ticker.toUpperCase();
+    ticker = String(ticker).toUpperCase();
     if (selectedTickers.includes(ticker)) {
       removeTicker(ticker);
       return false;
-    } else {
-      return addTicker(ticker);
     }
+    return addTicker(ticker);
   }
 
-  function isComparing(ticker) {
-    return selectedTickers.includes((ticker || "").toUpperCase());
-  }
-
-  function saveState() {
-    localStorage.setItem("apex_comparison_list", JSON.stringify(selectedTickers));
-  }
+  const isComparing = (ticker) => selectedTickers.includes(String(ticker || "").toUpperCase());
 
   function updateCompareBadge() {
     const badge = document.getElementById("compare-count-badge");
-    if (badge) {
-      badge.innerText = selectedTickers.length;
-    }
+    if (badge) badge.textContent = String(selectedTickers.length);
+  }
+
+  /* ---------------------------------------------------------------- render */
+  function sameSet(a, b) {
+    return a.length === b.length && a.every((t) => b.includes(t));
   }
 
   function renderInterface() {
     const container = document.getElementById("comparison-matrix-container");
     if (!container) return;
 
-    const comparedEtfs = selectedTickers.map((t) => etfsByTicker[t]).filter(Boolean);
+    const compared = selectedTickers.map((t) => etfsByTicker[t]).filter(Boolean);
+    const available = allEtfs.filter((e) => !selectedTickers.includes(e.ticker));
+    const hadFocus = container.contains(document.activeElement) ? document.activeElement.id : null;
 
-    // Preset buttons HTML
     const presetsHtml = Object.entries(comparisonPresets)
       .map(([key, p]) => `
-        <button class="btn btn-secondary btn-sm compare-preset-btn" data-preset="${key}" style="text-align: left; padding: 8px 12px; font-size: 0.78rem;">
-          <strong>${p.name}</strong>
-          <div style="font-size: 0.7rem; color: var(--text-muted);">${p.description}</div>
-        </button>
-      `)
+        <button type="button" class="preset-card compare-preset-btn" data-preset="${key}" aria-pressed="${sameSet(p.tickers, selectedTickers)}">
+          <span class="preset-card-title">${esc(p.name)}</span>
+          <span class="preset-card-desc">${esc(p.description)}</span>
+        </button>`)
       .join("");
 
-    // Selector Dropdown to add more funds
-    const availableToAdd = allEtfs.filter((e) => !selectedTickers.includes(e.ticker));
-    const addSelectHtml = `
-      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-        <select id="compare-add-select" class="filter-select" style="min-width: 220px; font-size: 0.82rem;">
-          <option value="">+ Add ETF to Comparison Matrix...</option>
-          ${availableToAdd.map((e) => `<option value="${e.ticker}">${e.ticker} - ${e.name.substring(0, 32)}...</option>`).join("")}
-        </select>
-        <button id="compare-clear-btn" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3);">
-          ✕ Clear All
-        </button>
-      </div>
-    `;
-
-    // Side-by-side Table Columns
-    let tableHtml = "";
-    if (comparedEtfs.length === 0) {
-      tableHtml = `
-        <div style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
-          <p style="font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">No ETFs currently selected for comparison.</p>
-          <p style="font-size: 0.88rem; margin-bottom: 18px;">Pick a preset above or add funds from your watchlist or the ETF Screener.</p>
-          <button class="btn btn-primary btn-sm compare-preset-btn" data-preset="user-watchlist">
-            ⭐ Load My Watchlist Comparison
-          </button>
-        </div>
-      `;
-    } else {
-      tableHtml = buildComparisonTable(comparedEtfs);
-    }
+    const body = compared.length === 0
+      ? `<div class="empty-state">
+           <div class="empty-state-title">No ETFs selected for comparison</div>
+           <p class="text-sm mb-4">Pick a blueprint above, add funds from the dropdown, or use the compare button in the ETF Screener.</p>
+           <button type="button" class="btn btn-primary btn-sm compare-preset-btn" data-preset="user-watchlist">${icon("star", "icon-fill")} Load my watchlist comparison</button>
+         </div>`
+      : `<div class="table-responsive compare-wrap">${buildComparisonTable(compared)}</div>`;
 
     container.innerHTML = `
-      <div class="card" style="margin-bottom: 20px;">
-        <div class="card-header" style="flex-wrap: wrap; gap: 12px;">
+      <div class="card">
+        <div class="card-header">
           <div>
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <h3 class="card-title" style="margin-bottom: 0;">⚖️ Side-by-Side ETF Comparison Matrix</h3>
-              <span class="badge badge-acc">Comparing ${comparedEtfs.length} of max 5</span>
+            <div class="cluster">
+              <h2 class="card-title">${icon("scale")} Side-by-side ETF comparison matrix</h2>
+              <span class="badge badge-acc">Comparing ${compared.length} of ${MAX_COMPARE}</span>
             </div>
-            <span class="card-subtitle">Comprehensive multi-dimensional evaluation: Live Price, TER, 5Y Tracking Difference, Tax Domicile, Curvo CAGR, and PRIIPs SRI Risk</span>
+            <span class="card-subtitle">Live price, TER, 5Y tracking difference, tax domicile, Curvo CAGR and PRIIPs SRI risk — in one view</span>
           </div>
-          ${addSelectHtml}
-        </div>
-
-        <!-- Comparison Presets Bar -->
-        <div style="margin-bottom: 16px;">
-          <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px;">
-            Quick Comparison Blueprints:
-          </div>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px;">
-            ${presetsHtml}
+          <div class="cluster">
+            <label class="sr-only" for="compare-add-select">Add an ETF to the comparison</label>
+            <select id="compare-add-select" class="filter-select" ${available.length === 0 || compared.length >= MAX_COMPARE ? "disabled" : ""}>
+              <option value="">+ Add ETF to comparison…</option>
+              ${available.map((e) => `<option value="${esc(e.ticker)}">${esc(e.ticker)} — ${esc(e.name)}</option>`).join("")}
+            </select>
+            <button type="button" id="compare-clear-btn" class="btn btn-danger btn-sm" ${compared.length === 0 ? "disabled" : ""}>${icon("x")} Clear all</button>
           </div>
         </div>
 
-        <div class="table-responsive" style="margin-top: 14px;">
-          ${tableHtml}
+        <div class="mb-4">
+          <h3 class="section-label">Quick comparison blueprints</h3>
+          <div class="preset-grid">${presetsHtml}</div>
         </div>
-      </div>
-    `;
 
-    bindEvents(container);
+        ${body}
+      </div>`;
+
+    if (hadFocus) document.getElementById(hadFocus)?.focus();
+  }
+
+  /** Best-in-set marker for objective metrics (lowest cost, largest fund, …). */
+  function bestMark(etf, etfs, getter, mode, text) {
+    const mine = Number(getter(etf));
+    const values = etfs.map((o) => Number(getter(o))).filter(Number.isFinite);
+    if (!Number.isFinite(mine) || values.length < 2) return "";
+    const best = mode === "min" ? Math.min(...values) : Math.max(...values);
+    return mine === best ? `<div class="best-mark">${icon("star", "icon-fill")} ${esc(text)}</div>` : "";
   }
 
   function buildComparisonTable(etfs) {
-    const colCount = etfs.length;
+    const cols = etfs.length + 1;
+    const tip = (t) => (t ? `<span class="info-tip" data-tip="${esc(t)}">?</span>` : "");
+    const row = (label, tipText, cell) => `
+      <tr>
+        <th scope="row" class="compare-sticky-col">${esc(label)}${tip(tipText)}</th>
+        ${etfs.map((e) => `<td>${cell(e)}</td>`).join("")}
+      </tr>`;
+    const section = (title) => `
+      <tr class="section-row"><th scope="colgroup" colspan="${cols}"><span class="section-title">${esc(title)}</span></th></tr>`;
 
-    // Helper row builder
-    function makeRow(label, tip, valueExtractor, isHeader = false) {
-      const tipHtml = tip ? `<span class="info-tip" data-tip="${tip}">?</span>` : "";
-      const cells = etfs
-        .map((etf, i) => {
-          const val = valueExtractor(etf, i);
-          return `<td style="vertical-align: middle; text-align: center; border-left: 1px solid var(--border-color);">${val}</td>`;
-        })
-        .join("");
+    const news = window.DataStore?.getNews() || [];
 
-      return `
+    const head = `
+      <thead>
         <tr>
-          <td style="font-weight: 700; font-size: 0.82rem; background: var(--bg-card); color: var(--text-secondary); width: 220px; white-space: nowrap;">
-            ${label} ${tipHtml}
-          </td>
-          ${cells}
+          <th scope="col" class="compare-sticky-col">ETF profile</th>
+          ${etfs.map((e) => `
+            <th scope="col" class="compare-etf-col">
+              <div class="compare-profile">
+                <div class="cluster compare-profile-id">
+                  <span class="ticker compare-ticker">${esc(e.ticker)}</span>
+                  ${window.ProviderLogos?.getLogoSvg(e.issuer, 22, { label: false }) || ""}
+                </div>
+                <div class="compare-name">${esc(e.name)}</div>
+                <div class="compare-isin">ISIN <span class="mono">${esc(e.isin)}</span></div>
+                <button type="button" class="btn btn-danger btn-sm compare-remove-btn" data-ticker="${esc(e.ticker)}" aria-label="Remove ${esc(e.ticker)} from comparison">${icon("x")} Remove</button>
+              </div>
+            </th>`).join("")}
         </tr>
-      `;
-    }
+      </thead>`;
 
-    // Category divider row
-    function makeDivider(title) {
-      return `
-        <tr style="background: var(--bg-secondary);">
-          <td colspan="${colCount + 1}" style="font-weight: 800; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-cyan); padding: 8px 12px;">
-            ${title}
-          </td>
-        </tr>
-      `;
-    }
-
-    let rows = [];
-
-    // Row: Header & Remove Button
-    rows.push(
-      makeRow("ETF Profile", null, (e) => {
-        const logo = window.ProviderLogos?.getLogoSvg(e.issuer, 24) || "";
-        return `
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-weight: 800; font-size: 1.25rem; color: var(--accent-cyan);">${e.ticker}</span>
-              ${logo}
-            </div>
-            <div style="font-weight: 700; font-size: 0.88rem; color: var(--text-primary); max-width: 220px; line-height: 1.3;">${e.name}</div>
-            <div style="font-size: 0.72rem; color: var(--text-muted);">ISIN: <strong>${e.isin}</strong></div>
-            <button class="btn btn-secondary btn-sm compare-remove-btn" data-ticker="${e.ticker}" style="margin-top: 6px; font-size: 0.7rem; color: var(--accent-rose); border-color: rgba(244, 63, 94, 0.3);">
-              ✕ Remove
-            </button>
-          </div>
-        `;
-      })
-    );
-
-    // Section 1: Live Market & Execution
-    rows.push(makeDivider("1. Live Market Execution & Traded Pricing"));
-    rows.push(
-      makeRow("Live Traded Price", "Current market quote fetched in real time from Yahoo Finance European exchanges.", (e) => {
+    const body = [
+      section("1 · Market quote"),
+      row("Traded price", "Latest quote fetched from Yahoo Finance European exchanges.", (e) => {
         const m = e.liveMarketData;
-        if (!m || !m.livePrice) return `<span style="color: var(--text-muted);">Offline Baseline</span>`;
-        const chg = m.dayChangePercent || 0;
-        const chgClass = chg >= 0 ? "val-positive" : "val-negative";
-        const cur = m.currency === "EUR" ? "€" : (m.currency === "USD" ? "$" : m.currency + " ");
-        return `
-          <div>
-            <strong style="font-size: 1.1rem; color: var(--text-primary);">${cur}${m.livePrice}</strong>
-            <div class="${chgClass}" style="font-size: 0.76rem; font-weight: 700;">
-              ${chg >= 0 ? "+" : ""}${chg}% today
-            </div>
-          </div>
-        `;
-      })
-    );
-    rows.push(
-      makeRow("52-Week Range", "Highest and lowest traded prices over the past rolling 52 weeks.", (e) => {
+        if (!m || !Number.isFinite(Number(m.livePrice))) return `<span class="text-muted">No quote</span>`;
+        const chg = Number(m.dayChangePercent) || 0;
+        const cur = m.currency === "EUR" ? "€" : m.currency === "USD" ? "$" : `${m.currency} `;
+        return `<strong class="cell-big">${esc(cur)}${esc(m.livePrice)}</strong>
+                <div class="${chg >= 0 ? "val-positive" : "val-negative"} text-xs fw-700"><span aria-hidden="true">${chg >= 0 ? "▲" : "▼"}</span> ${esc(fmt.pct(Math.abs(chg), 2))} on the day</div>
+                ${m.lastPriceUpdated ? `<div class="text-muted text-xs">${esc(fmt.relative(m.lastPriceUpdated))}</div>` : ""}`;
+      }),
+      row("52-week range", "Highest and lowest traded prices over the past rolling 52 weeks.", (e) => {
         const m = e.liveMarketData || {};
-        if (m.fiftyTwoWeekLow && m.fiftyTwoWeekHigh) {
-          return `<strong style="font-size: 0.82rem;">${m.fiftyTwoWeekLow} – ${m.fiftyTwoWeekHigh}</strong>`;
-        }
-        return `<span>N/A</span>`;
-      })
-    );
-    rows.push(
-      makeRow("Primary Trading Exchange", "Official European exchange where the fund shares trade.", (e) => {
-        return `<span style="font-size: 0.78rem;">${e.liveMarketData?.exchange || "XETRA (Frankfurt)"}</span>`;
-      })
-    );
+        return m.fiftyTwoWeekLow && m.fiftyTwoWeekHigh
+          ? `<strong>${esc(m.fiftyTwoWeekLow)} – ${esc(m.fiftyTwoWeekHigh)}</strong>`
+          : `<span class="text-muted">N/A</span>`;
+      }),
+      row("Primary exchange", "Official European exchange where the fund shares trade.", (e) =>
+        `<span class="text-sm">${esc(e.liveMarketData?.exchange || "XETRA (Frankfurt)")}</span>`),
 
-    // Section 2: Costs & Tracking Precision
-    rows.push(makeDivider("2. Costs, Tracking Difference & Liquidity"));
-    rows.push(
-      makeRow("Total Expense Ratio (TER)", "Ongoing annual management fee retained directly from NAV.", (e) => {
-        const isLowest = etfs.every((o) => o.ter >= e.ter);
-        return `
-          <strong style="font-size: 1.05rem; ${isLowest ? "color: var(--accent-emerald);" : ""}">${e.ter.toFixed(2)}%</strong> p.a.
-          ${isLowest ? `<div style="font-size: 0.68rem; color: var(--accent-emerald);">★ Lowest in Comparison</div>` : ""}
-        `;
-      })
-    );
-    rows.push(
-      makeRow("5Y Tracking Diff (TD)", "Average annual outperformance or underperformance relative to the net index. Negative TD indicates fund beats the benchmark net of fees!", (e) => {
-        const td = e.trackingDifference5Y;
-        const tdClass = td < 0 ? "val-positive" : "";
-        return `
-          <strong class="${tdClass}" style="font-size: 1.0rem;">${td < 0 ? "" : "+"}${td}%</strong>
-          <div style="font-size: 0.7rem; color: var(--text-muted);">${td < 0 ? "Outperforming benchmark!" : "Annual tracking drag"}</div>
-        `;
-      })
-    );
-    rows.push(
-      makeRow("Fund Size (AUM)", "Assets Under Management. Funds > €100M eliminate closure risk; > €10B provide institutional bid-ask spreads.", (e) => {
-        const aumB = (e.aumMillionsEUR / 1000).toFixed(1);
-        return `
-          <strong style="font-size: 0.95rem;">${aumB}B €</strong>
-          <div style="font-size: 0.7rem; color: var(--accent-emerald);">● Institutional Safe</div>
-        `;
-      })
-    );
+      section("2 · Costs, tracking & liquidity"),
+      row("Total expense ratio (TER)", "Ongoing annual management fee retained directly from NAV.", (e) =>
+        `<strong class="cell-big">${esc(fmt.pct(e.ter, 2))}</strong> <span class="text-muted text-xs">p.a.</span>${bestMark(e, etfs, (x) => x.ter, "min", "Lowest cost")}`),
+      row("5Y tracking difference", "Average annual out- or under-performance vs the net index. Negative means the fund beats its benchmark net of fees.", (e) => {
+        const td = Number(e.trackingDifference5Y);
+        return `<strong class="${td < 0 ? "val-positive" : ""}">${esc(fmt.pct(td, 2, { sign: true }))}</strong>
+                <div class="text-muted text-xs">${td < 0 ? "Outperforming benchmark" : "Annual tracking drag"}</div>${bestMark(e, etfs, (x) => x.trackingDifference5Y, "min", "Best tracking")}`;
+      }),
+      row("Fund size (AUM)", "Above €100M removes closure risk; above €10B gives institutional bid-ask spreads.", (e) =>
+        `<strong>${esc(fmt.aum(e.aumMillionsEUR))}</strong>${bestMark(e, etfs, (x) => x.aumMillionsEUR, "max", "Largest fund")}`),
 
-    // Section 3: Tax Efficiency & Structure
-    rows.push(makeDivider("3. Tax Treatment & Fund Architecture"));
-    rows.push(
-      makeRow("Distribution Policy", "Accumulating (Acc) reinvests dividends directly without taxable events. Distributing pays cash creating annual tax friction.", (e) => {
-        return e.isAccumulating
-          ? `<span class="badge badge-acc">✨ Accumulating (Acc)</span><div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 3px;">Auto-compound</div>`
-          : `<span class="badge badge-dist">Distributing (Dist)</span><div style="font-size: 0.68rem; color: var(--accent-rose); margin-top: 3px;">Taxable dividend payout</div>`;
-      })
-    );
-    rows.push(
-      makeRow("Tax Domicile & US WHT", "Ireland domicile offers 15% US withholding tax treaty vs 30% statutory rate, and shields investors from US Estate Tax.", (e) => {
-        const isIE = e.domicile === "Ireland";
-        return `
-          <span class="badge ${isIE ? "badge-acc" : "badge-amber"}">${e.domicile}</span>
-          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 3px;">
-            ${isIE ? "15% US Treaty WHT • Shielded from US Estate Tax" : "Standard Treaty Rate"}
-          </div>
-        `;
-      })
-    );
-    rows.push(
-      makeRow("Replication Method", "Physical full replication buys underlying constituents. Synthetic swap uses central counterparty collateral.", (e) => {
-        return `<span style="font-size: 0.78rem;">${e.replication || "Physical (Full)"}</span>`;
-      })
-    );
+      section("3 · Tax treatment & structure"),
+      row("Distribution policy", "Accumulating (Acc) reinvests dividends without taxable events. Distributing pays cash, creating annual tax friction.", (e) =>
+        e.isAccumulating
+          ? `<span class="badge badge-acc">Accumulating (Acc)</span><div class="text-muted text-xs mt-1">Auto-compounds</div>`
+          : `<span class="badge badge-dist">Distributing (Dist)</span><div class="val-negative text-xs mt-1">Taxable dividend payout</div>`),
+      row("Domicile & US withholding", "Ireland offers a 15% US dividend treaty rate (vs 30%) and shields investors from US estate tax.", (e) => {
+        const ie = e.domicile === "Ireland";
+        return `<span class="badge ${ie ? "badge-acc" : "badge-amber"}">${esc(e.domicile)}</span>
+                <div class="text-muted text-xs mt-1">${ie ? "15% US treaty WHT · shielded from US estate tax" : "Standard treaty rate"}</div>`;
+      }),
+      row("Replication method", "Physical replication buys the underlying constituents. Synthetic uses a swap with collateral.", (e) =>
+        `<span class="text-sm">${esc(e.replication || "—")}</span>`),
 
-    // Section 4: Quantitative Performance & Risk
-    rows.push(makeDivider("4. Historical Returns & Quant Risk"));
-    rows.push(
-      makeRow("Curvo Backtest CAGR", "Compound Annual Growth Rate verified from Curvo.eu historical data series.", (e) => {
-        return `<strong style="font-size: 1.05rem; color: var(--accent-blue);">${e.historicalStatsCurvo?.cagr || "N/A"}%</strong>`;
-      })
-    );
-    rows.push(
-      makeRow("Annualized Volatility (StDev)", "Standard deviation of returns. Lower indicates smoother compounding.", (e) => {
-        return `<strong>${e.historicalStatsCurvo?.stdev || "N/A"}%</strong>`;
-      })
-    );
-    rows.push(
-      makeRow("Max Drawdown & Recovery", "Deepest peak-to-trough decline during historical market crashes.", (e) => {
-        return `
-          <span class="val-negative" style="font-weight: 700;">${e.historicalStatsCurvo?.maxDrawdown || "N/A"}%</span>
-          <div style="font-size: 0.7rem; color: var(--text-muted);">${e.historicalStatsCurvo?.recoveryPeriod || "N/A"}</div>
-        `;
-      })
-    );
-    rows.push(
-      makeRow("Sortino Ratio (Downside)", "Downside risk-adjusted return penalizing ONLY losses.", (e) => {
-        return `<strong style="color: var(--accent-cyan); font-size: 0.95rem;">${e.quantitativeStatsPV?.sortino || "N/A"}</strong>`;
-      })
-    );
-    rows.push(
-      makeRow("Value-at-Risk (95% Monthly VaR)", "Worst expected monthly drawdown at 95% confidence.", (e) => {
-        return `<span class="val-negative" style="font-weight: 700;">${e.quantitativeStatsPV?.var95 || "N/A"}%</span>`;
-      })
-    );
+      section("4 · Historical returns & risk"),
+      row("Curvo backtest CAGR", "Compound annual growth rate from Curvo.eu historical data.", (e) =>
+        `<strong class="cell-big accent-blue">${e.historicalStatsCurvo?.cagr != null ? esc(fmt.pct(e.historicalStatsCurvo.cagr, 2)) : "N/A"}</strong>${bestMark(e, etfs, (x) => x.historicalStatsCurvo?.cagr, "max", "Highest CAGR")}`),
+      row("Annualised volatility", "Standard deviation of returns. Lower means smoother compounding.", (e) =>
+        `<strong>${e.historicalStatsCurvo?.stdev != null ? esc(fmt.pct(e.historicalStatsCurvo.stdev, 2)) : "N/A"}</strong>`),
+      row("Max drawdown & recovery", "Deepest peak-to-trough decline in the historical series.", (e) =>
+        `<span class="val-negative fw-700">${e.historicalStatsCurvo?.maxDrawdown != null ? esc(fmt.pct(e.historicalStatsCurvo.maxDrawdown, 1)) : "N/A"}</span>
+         <div class="text-muted text-xs">${esc(e.historicalStatsCurvo?.recoveryPeriod || "")}</div>`),
+      row("Sortino ratio", "Downside-risk-adjusted return — penalises only losses.", (e) =>
+        `<strong>${esc(fmt.num(e.quantitativeStatsPV?.sortino, 2))}</strong>`),
+      row("95% monthly VaR", "Worst expected monthly loss at 95% confidence.", (e) =>
+        `<span class="val-negative fw-700">${e.quantitativeStatsPV?.var95 != null ? esc(fmt.pct(e.quantitativeStatsPV.var95, 2)) : "N/A"}</span>`),
 
-    // Section 5: Top 5 Holdings
-    rows.push(makeDivider("5. Top Constituent Holdings"));
-    rows.push(
-      makeRow("Top 5 Holdings Breakdown", "Top 5 individual stock weights inside the fund.", (e) => {
+      section("5 · Top constituent holdings"),
+      row("Top 5 holdings", "The five largest individual positions inside the fund.", (e) => {
         const top5 = (e.topHoldings || []).slice(0, 5);
-        if (top5.length === 0) {
-          return `<div style="font-size: 0.74rem; color: var(--text-muted); font-style: italic;">Sovereign Collateral / Cash Basket</div>`;
-        }
-        return `
-          <div style="text-align: left; font-size: 0.74rem; line-height: 1.4; display: flex; flex-direction: column; gap: 3px;">
-            ${top5.map((h) => `<div style="display: flex; justify-content: space-between; gap: 4px;"><span>${h.name.substring(0, 18)}:</span><strong>${h.weight}%</strong></div>`).join("")}
-          </div>
-        `;
-      })
-    );
+        if (top5.length === 0) return `<span class="text-muted text-xs">Sovereign collateral / cash basket</span>`;
+        return `<ul class="holdings-mini">${top5.map((h) => `<li><span>${esc(h.name)}</span><strong>${esc(fmt.pct(h.weight, 2))}</strong></li>`).join("")}</ul>`;
+      }),
 
-    // Section 6: Active Macro News & Signal Radar
-    rows.push(makeDivider("6. Active Macro News & Signal Radar"));
-    rows.push(
-      makeRow("Active Signal Bias", "Prevailing macroeconomic and regulatory news signal affecting this ETF.", (e) => {
-        const relatedNews = (window.DataStore?.getNews() || []).filter(n =>
-          (n.relatedEtfs || []).some(r => r.ticker.toUpperCase() === e.ticker.toUpperCase())
-        );
-        if (relatedNews.length === 0) {
-          return `<div style="font-size: 0.74rem; color: var(--text-muted);">Standard Multi-Year Factors</div>`;
-        }
-        const topNews = relatedNews[0];
-        const sig = topNews.signal || {};
-        let signalBadgeClass = "badge-amber";
-        if (sig.bias.toLowerCase().includes("bullish")) signalBadgeClass = "badge-acc";
-        else if (sig.bias.toLowerCase().includes("bearish") || sig.bias.toLowerCase().includes("caution")) signalBadgeClass = "badge-red";
+      section("6 · Macro news signal"),
+      row("Active signal", "Prevailing macroeconomic and regulatory news signal affecting this ETF.", (e) => {
+        const related = news.filter((n) => (n.relatedEtfs || []).some((r) => String(r.ticker).toUpperCase() === e.ticker.toUpperCase()));
+        if (related.length === 0) return `<span class="text-muted text-xs">Standard multi-year factors</span>`;
+        const top = related[0];
+        return `<span class="badge badge-${UI.signalTone(top.signal?.bias)}">${esc(top.signal?.bias || "Watch / Neutral")}</span>
+                <div class="compare-news-title">${esc(String(top.title).slice(0, 56))}${String(top.title).length > 56 ? "…" : ""}</div>
+                <button type="button" class="btn btn-secondary btn-sm jump-to-news-btn mt-2" data-ticker="${esc(e.ticker)}">${icon("rss")} ${related.length} ${related.length === 1 ? "story" : "stories"}</button>`;
+      }),
 
-        return `
-          <div style="display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center;">
-            <span class="badge ${signalBadgeClass}" style="font-size: 0.75rem; font-weight: 700;">${sig.bias}</span>
-            <div style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.3; max-width: 140px;">
-              ${topNews.title.slice(0, 50)}...
-            </div>
-            <button class="btn btn-secondary btn-sm jump-to-news-btn" data-ticker="${e.ticker}" style="margin-top: 4px; font-size: 0.68rem; padding: 2px 8px; width: 120px;">
-              📡 View News (${relatedNews.length})
-            </button>
-          </div>
-        `;
-      })
-    );
-
-    // Section 7: Official Documents & Direct Actions
-    rows.push(makeDivider("7. Statutory Documents & Action"));
-    rows.push(
-      makeRow("PRIIPs SRI Risk Rating", "Synthetic Risk Indicator from 1 (lowest risk) to 7 (highest risk) published on statutory KID.", (e) => {
-        return `
-          <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-            <span class="badge ${e.sriRisk <= 2 ? "badge-acc" : (e.sriRisk >= 5 ? "badge-red" : "badge-blue")}" style="font-size: 0.85rem; font-weight: 800;">
-              SRI ${e.sriRisk} / 7
-            </span>
-          </div>
-        `;
-      })
-    );
-    rows.push(
-      makeRow("Official Factsheet & KID", "Mandatory official legal documents from issuer website.", (e) => {
-        return `
-          <div style="display: flex; flex-direction: column; gap: 4px; align-items: center;">
-            <a href="${e.officialDocs?.kidUrl || '#'}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.7rem; width: 120px;">
-              📑 Official KID
-            </a>
-            <a href="${e.officialDocs?.factsheetUrl || '#'}" target="_blank" class="btn btn-secondary btn-sm" style="font-size: 0.7rem; width: 120px;">
-              📊 Factsheet
-            </a>
-          </div>
-        `;
-      })
-    );
-    rows.push(
-      makeRow("Portfolio Integration", "Directly add this ETF to your custom portfolio in the Overlap Auditor.", (e) => {
-        return `
-          <button class="btn btn-primary btn-sm compare-add-portfolio-btn" data-ticker="${e.ticker}" style="font-size: 0.74rem; width: 130px;">
-            + Add to Portfolio
-          </button>
-        `;
-      })
-    );
+      section("7 · Statutory documents & actions"),
+      row("PRIIPs SRI risk", "Synthetic Risk Indicator from 1 (lowest) to 7 (highest) published on the statutory KID.", (e) =>
+        `<span class="badge ${e.sriRisk <= 2 ? "badge-acc" : e.sriRisk >= 5 ? "badge-red" : "badge-blue"}">SRI ${esc(e.sriRisk)} / 7</span>`),
+      row("Official KID & factsheet", "Mandatory legal documents from the issuer.", (e) => `
+        <div class="stack compare-docs">
+          ${UI.link(e.officialDocs?.kidUrl, `${icon("file-text")} Official KID`, { cls: "btn btn-secondary btn-sm", html: true })}
+          ${UI.link(e.officialDocs?.factsheetUrl, `${icon("file-text")} Factsheet`, { cls: "btn btn-secondary btn-sm", html: true })}
+        </div>`),
+      row("Portfolio", "Add this ETF to your custom portfolio in the Overlap Auditor.", (e) =>
+        `<button type="button" class="btn btn-primary btn-sm compare-add-portfolio-btn" data-ticker="${esc(e.ticker)}">${icon("plus")} Add to portfolio</button>`),
+    ].join("");
 
     return `
-      <table class="data-table" style="width: 100%; border-collapse: collapse;">
-        <tbody>
-          ${rows.join("")}
-        </tbody>
-      </table>
-    `;
-  }
-
-  function bindEvents(container) {
-    // Add dropdown change
-    const addSelect = container.querySelector("#compare-add-select");
-    if (addSelect) {
-      addSelect.addEventListener("change", (e) => {
-        const t = e.target.value;
-        if (t) {
-          addTicker(t);
-        }
-      });
-    }
-
-    // Clear all
-    const clearBtn = container.querySelector("#compare-clear-btn");
-    if (clearBtn) {
-      clearBtn.addEventListener("click", () => {
-        selectedTickers = [];
-        saveState();
-        renderInterface();
-        updateCompareBadge();
-      });
-    }
-
-    // Remove buttons
-    container.querySelectorAll(".compare-remove-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        removeTicker(btn.dataset.ticker);
-      });
-    });
-
-    // Preset buttons
-    container.querySelectorAll(".compare-preset-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const key = btn.dataset.preset;
-        const p = comparisonPresets[key];
-        if (p) {
-          selectedTickers = [...p.tickers];
-          saveState();
-          renderInterface();
-          updateCompareBadge();
-        }
-      });
-    });
-
-    // Add to Portfolio buttons
-    container.querySelectorAll(".compare-add-portfolio-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const ticker = btn.dataset.ticker;
-        if (window.OverlapModule) {
-          window.OverlapModule.addEtfToPortfolio(ticker, 20);
-          window.App?.switchTab("overlap");
-        }
-      });
-    });
-
-    // Jump to News buttons
-    container.querySelectorAll(".jump-to-news-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const ticker = e.currentTarget.dataset.ticker;
-        window.App?.switchTab("news");
-        window.NewsSignalsModule?.filterByEtf(ticker);
-      });
-    });
+      <table class="compare-table">
+        <caption class="sr-only">Side-by-side comparison of ${etfs.map((e) => esc(e.ticker)).join(", ")}</caption>
+        ${head}
+        <tbody>${body}</tbody>
+      </table>`;
   }
 
   return {
@@ -536,6 +340,6 @@ window.ComparisonMatrixModule = (function () {
     toggleTicker,
     isComparing,
     getSelectedTickers: () => [...selectedTickers],
-    renderInterface
+    renderInterface,
   };
 })();

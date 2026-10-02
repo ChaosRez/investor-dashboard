@@ -4,134 +4,156 @@
  * Grounded strictly in verified sources: ECB, Fed, European Commission, PBoC, IEA, FT, Bloomberg, Reuters.
  * Labels signal levels (Bullish/Neutral/Bearish, High/Moderate Impact, Strategic/Tactical).
  * Explains explicit transmission mechanisms (no baseless correlations) with disciplined Boglehead actions.
+ *
+ * Security: headlines and summaries come from third-party RSS feeds, so EVERY field is
+ * escaped (UI.esc) and every link is protocol-checked (UI.safeUrl) before it reaches the DOM.
  */
 
 window.NewsSignalsModule = (function () {
+  const { esc, icon, fmt } = UI;
+
   let allNews = [];
   let filteredNews = [];
-  let currentEtfFilter = "all";
-  let currentSignalFilter = "all";
-  let currentImpactFilter = "all";
+  let bound = false;
+  const filters = { etf: "all", signal: "all", impact: "all" };
 
   // Watchlist reference for badging and grouping
   const WATCHLIST_TICKERS = ["IUSQ", "SXR8", "IMAE", "XEON", "VHYL", "AII", "WTAI", "BATT", "RARE", "XCS6"];
 
+  const TONE_COLOR = { acc: "var(--accent-emerald)", amber: "var(--accent-amber)", red: "var(--accent-rose)" };
+  const TONE_LABEL = { acc: "Bullish", amber: "Watch", red: "Caution" };
+
+  const bias = (item) => String(item.signal?.bias || "").toLowerCase();
+  const touches = (item, ticker) =>
+    (item.relatedEtfs || []).some((e) => String(e.ticker).toUpperCase() === String(ticker).toUpperCase());
+
+  /* ------------------------------------------------------------- lifecycle */
   function init(news) {
     allNews = news || [];
-    filteredNews = [...allNews];
     renderFilters();
-    renderFeed();
+    applyNewsFilters({ announce: false });
+    bindOnce();
+  }
+
+  function bindOnce() {
+    if (bound) return;
+    bound = true;
+
+    const feed = document.getElementById("news-feed-container");
+    feed.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const ticker = btn.dataset.ticker;
+
+      if (btn.matches(".news-action-filter, [data-action='filter-etf']")) filterByEtf(ticker);
+      else if (btn.matches(".news-action-modal, .jump-etf-modal-btn")) window.ScreenerModule?.showDetailModal(ticker, btn);
+      else if (btn.matches(".jump-etf-compare-btn")) {
+        window.ComparisonMatrixModule?.addTicker(ticker);
+        window.App?.switchTab("comparison");
+      } else if (btn.matches(".jump-etf-portfolio-btn")) {
+        window.OverlapModule?.addEtfToPortfolio(ticker);
+        window.App?.switchTab("overlap");
+      } else if (btn.matches(".empty-state-reset-btn")) resetFilters();
+    });
+
+    const bar = document.getElementById("news-filters-container");
+    bar.addEventListener("change", (e) => {
+      if (e.target.id === "news-etf-filter") { filters.etf = e.target.value; applyNewsFilters(); }
+      else if (e.target.id === "news-impact-filter") { filters.impact = e.target.value; applyNewsFilters(); }
+    });
+    bar.addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      if (btn.dataset.signal) {
+        filters.signal = btn.dataset.signal;
+        syncSignalPills();
+        applyNewsFilters();
+      } else if (btn.id === "reset-news-filters-btn") resetFilters();
+    });
+  }
+
+  /* --------------------------------------------------------------- filters */
+  function filtersActive() {
+    return filters.etf !== "all" || filters.signal !== "all" || filters.impact !== "all";
+  }
+
+  function resetFilters() {
+    Object.assign(filters, { etf: "all", signal: "all", impact: "all" });
+    renderFilters();
+    applyNewsFilters();
   }
 
   function renderFilters() {
     const container = document.getElementById("news-filters-container");
     if (!container) return;
 
-    // Collect all unique tickers mentioned across news
-    const tickersSet = new Set();
-    allNews.forEach(item => {
-      (item.relatedEtfs || []).forEach(e => tickersSet.add(e.ticker.toUpperCase()));
-    });
-    const uniqueTickers = Array.from(tickersSet).sort();
+    const tickers = new Set();
+    allNews.forEach((item) => (item.relatedEtfs || []).forEach((e) => tickers.add(String(e.ticker).toUpperCase())));
+    const unique = [...tickers].sort();
+    const watch = unique.filter((t) => WATCHLIST_TICKERS.includes(t));
+    const other = unique.filter((t) => !WATCHLIST_TICKERS.includes(t));
+    const sel = (v) => (filters.etf === v ? " selected" : "");
 
-    const watchlistInNews = uniqueTickers.filter(t => WATCHLIST_TICKERS.includes(t));
-    const otherInNews = uniqueTickers.filter(t => !WATCHLIST_TICKERS.includes(t));
+    const pills = [
+      ["all", "All signals"],
+      ["watchlist", `${icon("star", "icon-fill")} My watchlist`],
+      ["bullish", "Bullish"],
+      ["watch", "Watch / neutral"],
+      ["bearish", "Bearish / caution"],
+    ]
+      .map(([key, label]) => `<button type="button" class="pill-btn${filters.signal === key ? " active" : ""}" data-signal="${key}" aria-pressed="${filters.signal === key}">${label}</button>`)
+      .join("");
 
     container.innerHTML = `
-      <div class="filter-bar" style="flex-wrap: wrap; gap: 10px;">
-        <select id="news-etf-filter" class="filter-select" style="min-width: 240px; font-weight: 600;">
-          <option value="all">🌐 All Affected ETFs (${uniqueTickers.length} tracked)</option>
-          <optgroup label="⭐ My Watchlist ETFs">
-            ${watchlistInNews.map(t => `<option value="${t}" ${currentEtfFilter === t ? "selected" : ""}>⭐ ${t} (Watchlist)</option>`).join("")}
-          </optgroup>
-          <optgroup label="🌍 Global Core & Other ETFs">
-            ${otherInNews.map(t => `<option value="${t}" ${currentEtfFilter === t ? "selected" : ""}>${t}</option>`).join("")}
-          </optgroup>
+      <div class="filter-bar" role="group" aria-label="News filters">
+        <label class="sr-only" for="news-etf-filter">Filter by ETF</label>
+        <select id="news-etf-filter" class="filter-select">
+          <option value="all">All affected ETFs (${unique.length})</option>
+          <optgroup label="My watchlist">${watch.map((t) => `<option value="${esc(t)}"${sel(t)}>★ ${esc(t)}</option>`).join("")}</optgroup>
+          <optgroup label="Global core &amp; other ETFs">${other.map((t) => `<option value="${esc(t)}"${sel(t)}>${esc(t)}</option>`).join("")}</optgroup>
         </select>
 
-        <div class="pill-group" id="news-signal-pill-group">
-          <button class="pill-btn ${currentSignalFilter === "all" ? "active" : ""}" data-signal="all">All Signals</button>
-          <button class="pill-btn ${currentSignalFilter === "watchlist" ? "active" : ""}" data-signal="watchlist" style="color: #fbbf24; font-weight: 700;">⭐ My Watchlist News</button>
-          <button class="pill-btn ${currentSignalFilter === "bullish" ? "active" : ""}" data-signal="bullish">🟢 Bullish</button>
-          <button class="pill-btn ${currentSignalFilter === "watch" ? "active" : ""}" data-signal="watch">🟡 Watch / Neutral</button>
-          <button class="pill-btn ${currentSignalFilter === "bearish" ? "active" : ""}" data-signal="bearish">🔴 Bearish / Caution</button>
-        </div>
+        <div class="pill-group" id="news-signal-pill-group" role="group" aria-label="Signal bias">${pills}</div>
 
+        <label class="sr-only" for="news-impact-filter">Filter by impact level</label>
         <select id="news-impact-filter" class="filter-select">
-          <option value="all" ${currentImpactFilter === "all" ? "selected" : ""}>All Impact Levels</option>
-          <option value="critical" ${currentImpactFilter === "critical" ? "selected" : ""}>⚡ Critical / High Impact Only</option>
-          <option value="medium" ${currentImpactFilter === "medium" ? "selected" : ""}>⚖️ Moderate Impact</option>
+          <option value="all"${filters.impact === "all" ? " selected" : ""}>All impact levels</option>
+          <option value="critical"${filters.impact === "critical" ? " selected" : ""}>Critical / high impact only</option>
+          <option value="medium"${filters.impact === "medium" ? " selected" : ""}>Moderate impact</option>
         </select>
 
-        ${currentEtfFilter !== "all" || currentSignalFilter !== "all" || currentImpactFilter !== "all" ? `
-          <button id="reset-news-filters-btn" class="btn btn-secondary btn-sm" style="margin-left: auto;">
-            ✕ Reset Filters
-          </button>
-        ` : ""}
-      </div>
-    `;
+        ${filtersActive() ? `<button type="button" id="reset-news-filters-btn" class="btn btn-ghost btn-sm filter-reset">${icon("x")} Reset filters</button>` : ""}
+      </div>`;
+  }
 
-    document.getElementById("news-etf-filter")?.addEventListener("change", (e) => {
-      currentEtfFilter = e.target.value;
-      applyNewsFilters();
-    });
-
-    document.getElementById("news-impact-filter")?.addEventListener("change", (e) => {
-      currentImpactFilter = e.target.value;
-      applyNewsFilters();
-    });
-
-    document.getElementById("reset-news-filters-btn")?.addEventListener("click", () => {
-      currentEtfFilter = "all";
-      currentSignalFilter = "all";
-      currentImpactFilter = "all";
-      renderFilters();
-      applyNewsFilters();
-    });
-
-    const pills = document.querySelectorAll("#news-signal-pill-group .pill-btn");
-    pills.forEach(btn => {
-      btn.addEventListener("click", () => {
-        pills.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        currentSignalFilter = btn.dataset.signal;
-        applyNewsFilters();
-      });
+  function syncSignalPills() {
+    document.querySelectorAll("#news-signal-pill-group .pill-btn").forEach((b) => {
+      const on = b.dataset.signal === filters.signal;
+      b.classList.toggle("active", on);
+      b.setAttribute("aria-pressed", String(on));
     });
   }
 
-  function applyNewsFilters() {
-    filteredNews = allNews.filter(item => {
-      // ETF Match
-      let matchEtf = true;
-      if (currentEtfFilter !== "all") {
-        matchEtf = (item.relatedEtfs || []).some(e => e.ticker.toUpperCase() === currentEtfFilter.toUpperCase());
-      }
+  function applyNewsFilters({ announce = true } = {}) {
+    filteredNews = allNews.filter((item) => {
+      if (filters.etf !== "all" && !touches(item, filters.etf)) return false;
 
-      // Signal Match
-      let matchSignal = true;
-      if (currentSignalFilter === "watchlist") {
-        matchSignal = (item.relatedEtfs || []).some(e => WATCHLIST_TICKERS.includes(e.ticker.toUpperCase()));
-      } else if (currentSignalFilter === "bullish") {
-        matchSignal = item.signal?.bias.toLowerCase().includes("bullish");
-      } else if (currentSignalFilter === "watch") {
-        matchSignal = item.signal?.bias.toLowerCase().includes("watch") || item.signal?.bias.toLowerCase().includes("neutral");
-      } else if (currentSignalFilter === "bearish") {
-        matchSignal = item.signal?.bias.toLowerCase().includes("bearish") || item.signal?.bias.toLowerCase().includes("caution");
-      }
+      const b = bias(item);
+      if (filters.signal === "watchlist" && !(item.relatedEtfs || []).some((e) => WATCHLIST_TICKERS.includes(String(e.ticker).toUpperCase()))) return false;
+      if (filters.signal === "bullish" && !b.includes("bullish")) return false;
+      if (filters.signal === "watch" && !(b.includes("watch") || b.includes("neutral"))) return false;
+      if (filters.signal === "bearish" && !(b.includes("bearish") || b.includes("caution"))) return false;
 
-      // Impact Match
-      let matchImpact = true;
-      if (currentImpactFilter !== "all") {
-        matchImpact = (item.signal?.impactBadge || "").toLowerCase() === currentImpactFilter.toLowerCase();
-      }
-
-      return matchEtf && matchSignal && matchImpact;
+      if (filters.impact !== "all" && String(item.signal?.impactBadge || "").toLowerCase() !== filters.impact) return false;
+      return true;
     });
-
-    renderFeed();
+    renderFeed(announce);
+    // The reset button appears/disappears with the filter state
+    const hasReset = !!document.getElementById("reset-news-filters-btn");
+    if (hasReset !== filtersActive()) renderFilters();
   }
 
+  /* ------------------------------------------------------------------ feed */
   function getMacroSensitivityRationale(ticker) {
     const map = {
       XEON: "€STR Solactive Benchmark • ECB Deposit Facility Rate Transmission • Zero Duration Risk (Overnight Synthetic Swap)",
@@ -147,245 +169,159 @@ window.NewsSignalsModule = (function () {
       QDVE: "Semiconductor Lithography & Compute Capex • Mega-Cap Tech Concentration (Apple/Microsoft/NVIDIA) • AI Hardware Supercycle",
       EIMI: "Emerging Markets Currency Beta • TSMC Foundry Supremacy • China Policy Tailwinds (24% Benchmark Weight)",
       MEUD: "Stoxx Europe 600 Valuation Discount • ECB Borrowing Cost Relief • Industrials & Healthcare Dividends",
-      VWCE: "Global Market-Cap Diversification • 3,600+ Underlying Constituents • Total Market Equity Resiliency"
+      VWCE: "Global Market-Cap Diversification • 3,600+ Underlying Constituents • Total Market Equity Resiliency",
     };
-    return map[ticker.toUpperCase()] || "Macroeconomic Growth • Central Bank Interest Rate Cycle • Corporate Earnings Resilience";
+    return map[String(ticker).toUpperCase()] || "Macroeconomic Growth • Central Bank Interest Rate Cycle • Corporate Earnings Resilience";
   }
 
-  function renderFeed() {
+  function formatNewsDate(raw) {
+    const s = String(raw || "");
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      return new Intl.DateTimeFormat(UI.locale, { dateStyle: "medium", timeZone: "UTC" }).format(new Date(`${s}T00:00:00Z`));
+    }
+    const d = new Date(s);
+    return Number.isNaN(d.getTime()) ? s : fmt.dateTimeUtc(d.toISOString());
+  }
+
+  function bannerHtml() {
+    const t = filters.etf;
+    const etf = window.DataStore?.getEtfByTicker(t);
+    const news = allNews.filter((n) => touches(n, t));
+    const count = (re) => news.filter((n) => re.test(bias(n))).length;
+    const bullish = count(/bullish/);
+    const watch = count(/watch|neutral/);
+    const caution = count(/bearish|caution/);
+    const price = etf?.liveMarketData?.livePrice ?? etf?.currentPriceEUR;
+
+    return `
+      <section id="macro-profile-banner" class="card banner-card" aria-label="${esc(t)} macro profile">
+        <div class="row-between wrap-gap mb-3">
+          <div>
+            <div class="cluster">
+              <span class="etf-tag etf-tag-lg">${esc(t)}</span>
+              ${WATCHLIST_TICKERS.includes(t.toUpperCase()) ? `<span class="badge badge-watchlist">${icon("star", "icon-fill")} Watchlist fund</span>` : ""}
+              <strong>${esc(etf ? etf.name : t)}</strong>
+            </div>
+            <p class="text-muted text-sm mt-1">
+              Provider <strong>${esc(etf?.issuer || "UCITS issuer")}</strong> · ISIN <code>${esc(etf?.isin || "N/A")}</code> ·
+              TER <strong>${etf?.ter != null ? esc(fmt.pct(etf.ter, 2)) : "N/A"}</strong> ·
+              Price <strong>${price != null ? esc(`€${price}`) : "Live NAV"}</strong>
+            </p>
+          </div>
+          <div class="cluster">
+            <button type="button" class="btn btn-secondary btn-sm jump-etf-modal-btn" data-ticker="${esc(t)}">${icon("file-text")} Factsheet / details</button>
+            <button type="button" class="btn btn-secondary btn-sm jump-etf-compare-btn" data-ticker="${esc(t)}">${icon("scale")} Compare</button>
+            <button type="button" class="btn btn-primary btn-sm jump-etf-portfolio-btn" data-ticker="${esc(t)}">${icon("plus")} Add to portfolio</button>
+          </div>
+        </div>
+
+        <div class="panel mb-3">
+          <div class="section-label">${icon("zap")} Macro drivers &amp; fundamental transmission channels</div>
+          <div class="fw-600">${esc(getMacroSensitivityRationale(t))}</div>
+        </div>
+
+        <div class="cluster text-sm">
+          <strong>${news.length} active ${news.length === 1 ? "catalyst" : "catalysts"}:</strong>
+          ${bullish ? `<span class="badge badge-acc">${bullish} bullish</span>` : ""}
+          ${watch ? `<span class="badge badge-amber">${watch} watch / neutral</span>` : ""}
+          ${caution ? `<span class="badge badge-red">${caution} caution</span>` : ""}
+        </div>
+      </section>`;
+  }
+
+  function cardHtml(item) {
+    const sig = item.signal || {};
+    const tone = UI.signalTone(sig.bias);
+
+    const etfRows = (item.relatedEtfs || [])
+      .map((e) => {
+        const t = String(e.ticker).toUpperCase();
+        const watch = WATCHLIST_TICKERS.includes(t);
+        const current = filters.etf.toUpperCase() === t;
+        return `
+          <div class="transmission${current ? " is-current" : ""}">
+            <div class="row-between wrap-gap">
+              <div class="cluster">
+                <button type="button" class="etf-tag" data-action="filter-etf" data-ticker="${esc(t)}" data-tip="Filter the feed by ${esc(t)}">${watch ? icon("star", "icon-fill") : ""}${esc(t)}</button>
+                ${window.ProviderLogos?.getLogoSvg(e.issuer || e.ticker, 16, { label: false }) || ""}
+                <span class="text-sm fw-600">${esc(e.issuer || "")}</span>
+                ${watch ? `<span class="badge badge-watchlist badge-sm">Watchlist</span>` : ""}
+              </div>
+              <div class="cluster">
+                <button type="button" class="btn btn-secondary btn-sm news-action-filter" data-ticker="${esc(t)}">${icon("search")} Filter to ${esc(t)}</button>
+                <button type="button" class="btn btn-secondary btn-sm news-action-modal" data-ticker="${esc(t)}">${icon("file-text")} Inspect</button>
+              </div>
+            </div>
+            <p class="transmission-text"><strong>Transmission mechanism:</strong> ${esc(e.relation)}</p>
+          </div>`;
+      })
+      .join("");
+
+    const source = item.sourceUrl
+      ? UI.link(item.sourceUrl, `${item.source || "Source"} ↗`)
+      : `<strong>${esc(item.source || "Source")}</strong>`;
+
+    return `
+      <article class="news-card" style="border-left-color:${TONE_COLOR[tone]}">
+        <div class="news-header">
+          <div class="cluster">
+            <span class="badge badge-${tone} signal-pill">${esc(sig.bias || "Watch / Neutral")}</span>
+            <span class="badge ${sig.impactBadge === "critical" ? "badge-red" : "badge-amber"}">${esc(sig.impact || "")}</span>
+            <span class="badge badge-blue">${esc(sig.timeframe || "")}</span>
+            ${item.isLiveStream ? `<span class="badge badge-neutral badge-sm">Live feed</span>` : ""}
+          </div>
+          <div class="news-date">${esc(formatNewsDate(item.date))} · Source: ${source}</div>
+        </div>
+
+        <h3 class="news-title">${esc(item.title)}</h3>
+        ${item.summary ? `<p class="news-summary">${esc(item.summary)}</p>` : ""}
+
+        <div class="panel transmission-box">
+          <div class="row-between wrap-gap section-label">
+            <span>Target ETFs affected &amp; financial transmission channel</span>
+            <span class="grounding-note">${icon("check")} Zero-speculation fundamental grounding</span>
+          </div>
+          ${etfRows}
+        </div>
+
+        <div class="retail-action-box">
+          <strong>${icon("shield")} Retail Boglehead action:</strong>
+          <span>${esc(item.retailAction || item.retailBogleheadAction || "Maintain disciplined automated DCA into broad market index ETFs without attempting to front-run rate cycles.")}</span>
+        </div>
+      </article>`;
+  }
+
+  function renderFeed(announce = true) {
     const container = document.getElementById("news-feed-container");
     if (!container) return;
 
-    let profileBannerHtml = "";
-
-    // If a specific ETF is selected, render its dedicated Macro Profile & Signal Radar banner
-    if (currentEtfFilter !== "all") {
-      const etf = window.DataStore?.getEtfByTicker(currentEtfFilter);
-      const isWatchlist = WATCHLIST_TICKERS.includes(currentEtfFilter.toUpperCase());
-      const sensitivity = getMacroSensitivityRationale(currentEtfFilter);
-      const etfNews = allNews.filter(n => (n.relatedEtfs || []).some(e => e.ticker.toUpperCase() === currentEtfFilter.toUpperCase()));
-      const bullishCount = etfNews.filter(n => n.signal?.bias.toLowerCase().includes("bullish")).length;
-      const watchCount = etfNews.filter(n => n.signal?.bias.toLowerCase().includes("watch") || n.signal?.bias.toLowerCase().includes("neutral")).length;
-      const cautionCount = etfNews.filter(n => n.signal?.bias.toLowerCase().includes("bearish") || n.signal?.bias.toLowerCase().includes("caution")).length;
-
-      profileBannerHtml = `
-        <div id="macro-profile-banner" class="card" style="border-left: 4px solid var(--accent-blue); margin-bottom: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(16, 185, 129, 0.05));">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
-            <div>
-              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                <span class="etf-tag" style="font-size: 1.05rem; padding: 4px 10px; font-weight: 800;">${currentEtfFilter}</span>
-                ${isWatchlist ? '<span class="badge-watchlist">⭐ Watchlist Fund</span>' : ""}
-                <span style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">${etf ? etf.name : currentEtfFilter}</span>
-              </div>
-              <p style="font-size: 0.84rem; color: var(--text-muted); margin: 0;">
-                Provider: <strong>${etf?.issuer || "UCITS Issuer"}</strong> | ISIN: <code>${etf?.isin || "N/A"}</code> | TER: <strong>${etf?.ter || 0}%</strong> | Traded Price: <strong>${etf?.currentPriceEUR ? "€" + etf.currentPriceEUR : "Live NAV"}</strong>
-              </p>
-            </div>
-            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button class="btn btn-secondary btn-sm jump-etf-modal-btn" data-ticker="${currentEtfFilter}">
-                📄 View Factsheet / Details
-              </button>
-              <button class="btn btn-secondary btn-sm jump-etf-compare-btn" data-ticker="${currentEtfFilter}">
-                ⚖️ Compare in Matrix
-              </button>
-              <button class="btn btn-primary btn-sm jump-etf-portfolio-btn" data-ticker="${currentEtfFilter}">
-                🔗 Add to Portfolio
-              </button>
-            </div>
-          </div>
-
-          <div style="background: var(--bg-card); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 12px;">
-            <div style="font-size: 0.76rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px;">
-              ⚡ Macro Drivers & Fundamental Transmission Channels:
-            </div>
-            <div style="font-size: 0.88rem; color: var(--text-primary); font-weight: 600;">
-              ${sensitivity}
-            </div>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: 12px; font-size: 0.84rem; flex-wrap: wrap;">
-            <span><strong>${etfNews.length} Active Catalysts:</strong></span>
-            ${bullishCount > 0 ? `<span class="badge badge-acc">🟢 ${bullishCount} Bullish</span>` : ""}
-            ${watchCount > 0 ? `<span class="badge badge-amber">🟡 ${watchCount} Watch / Neutral</span>` : ""}
-            ${cautionCount > 0 ? `<span class="badge badge-red">🔴 ${cautionCount} Caution</span>` : ""}
-          </div>
-        </div>
-      `;
-    }
+    const banner = filters.etf !== "all" ? bannerHtml() : "";
+    const summary = `<div class="results-bar"><span class="results-count"${announce ? ' role="status"' : ""}>Showing <strong>${filteredNews.length}</strong> of ${allNews.length} stories</span></div>`;
 
     if (filteredNews.length === 0) {
-      container.innerHTML = `
-        ${profileBannerHtml}
-        <div style="text-align: center; padding: 40px; color: var(--text-muted); background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-          <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">No market news items match this filter combination.</p>
-          <p style="font-size: 0.85rem;">Try selecting "All Affected ETFs" or resetting your signal filters.</p>
-          <button class="btn btn-secondary btn-sm" id="empty-state-reset-btn" style="margin-top: 10px;">
-            Show All News
-          </button>
-        </div>
-      `;
-
-      document.getElementById("empty-state-reset-btn")?.addEventListener("click", () => {
-        currentEtfFilter = "all";
-        currentSignalFilter = "all";
-        currentImpactFilter = "all";
-        renderFilters();
-        applyNewsFilters();
-      });
+      container.innerHTML = `${banner}${summary}
+        <div class="empty-state">
+          <div class="empty-state-title">No market news matches this filter combination</div>
+          <p class="text-sm mb-4">Try selecting "All affected ETFs" or resetting the signal filters.</p>
+          <button type="button" class="btn btn-secondary btn-sm empty-state-reset-btn">Show all news</button>
+        </div>`;
       return;
     }
-
-    const cardsHtml = filteredNews.map(item => {
-      const sig = item.signal || {};
-      let signalPillStyle = "background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399;";
-      if (sig.bias.toLowerCase().includes("bearish") || sig.bias.toLowerCase().includes("caution")) {
-        signalPillStyle = "background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.4); color: #fb7185;";
-      } else if (sig.bias.toLowerCase().includes("watch") || sig.bias.toLowerCase().includes("neutral")) {
-        signalPillStyle = "background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24;";
-      }
-
-      // Related ETFs list with two-sided interactive controls
-      const etfListHtml = (item.relatedEtfs || []).map(e => {
-        const logo = window.ProviderLogos?.getLogoSvg(e.issuer || e.ticker, 16) || "";
-        const isWatchlist = WATCHLIST_TICKERS.includes(e.ticker.toUpperCase());
-        const isCurrentlySelected = currentEtfFilter.toUpperCase() === e.ticker.toUpperCase();
-
-        return `
-          <div style="margin-bottom: 10px; padding: 10px; background: var(--bg-card); border-radius: 6px; border: 1px solid ${isCurrentlySelected ? "var(--accent-blue)" : "var(--border-color)"};">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span class="etf-tag" style="cursor: pointer; font-size: 0.85rem;" title="Click to filter feed by ${e.ticker}" data-action="filter-etf" data-ticker="${e.ticker}">
-                  ${isWatchlist ? "⭐ " : ""}${e.ticker}
-                </span>
-                ${logo}
-                <span style="font-size: 0.82rem; font-weight: 700; color: var(--text-primary);">${e.issuer || ""}</span>
-                ${isWatchlist ? '<span class="badge-watchlist" style="font-size: 0.65rem;">Watchlist</span>' : ""}
-              </div>
-              <div style="display: flex; gap: 6px;">
-                <button class="btn btn-secondary btn-sm news-action-filter" data-ticker="${e.ticker}" style="font-size: 0.7rem; padding: 2px 8px;">
-                  🔍 Filter to ${e.ticker}
-                </button>
-                <button class="btn btn-secondary btn-sm news-action-modal" data-ticker="${e.ticker}" style="font-size: 0.7rem; padding: 2px 8px;">
-                  📄 Inspect Details
-                </button>
-              </div>
-            </div>
-            <div style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
-              <strong style="color: var(--text-primary);">Transmission Mechanism:</strong> ${e.relation}
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      const sourceLink = item.sourceUrl
-        ? `<a href="${item.sourceUrl}" target="_blank" style="color: var(--accent-blue); text-decoration: underline; font-weight: 600;">${item.source} ↗</a>`
-        : `<strong>${item.source}</strong>`;
-
-      return `
-        <div class="news-card" style="border-left-color: ${sig.biasColor || "var(--accent-blue)"};">
-          <div class="news-header">
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <span class="signal-pill" style="${signalPillStyle}">
-                ${sig.bias}
-              </span>
-              <span class="badge ${sig.impactBadge === "critical" ? "badge-red" : "badge-amber"}">
-                ${sig.impact}
-              </span>
-              <span class="badge badge-blue">
-                ${sig.timeframe}
-              </span>
-            </div>
-            <div class="news-date">
-              📅 ${item.date} • Verified Source: ${sourceLink}
-            </div>
-          </div>
-
-          <h3 class="news-title">${item.title}</h3>
-          ${item.summary ? `<p class="news-summary">${item.summary}</p>` : ""}
-
-          <div style="background: var(--bg-secondary); padding: 12px; border-radius: var(--radius-sm); margin-bottom: 12px; border: 1px solid var(--border-color);">
-            <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between;">
-              <span>Target ETFs Affected & Financial Transmission Channel:</span>
-              <span style="font-size: 0.7rem; text-transform: none; color: var(--accent-emerald);">● Zero-speculation fundamental grounding</span>
-            </div>
-            ${etfListHtml}
-          </div>
-
-          <div class="retail-action-box">
-            <strong>🛡️ Retail Boglehead Action:</strong>
-            <span>${item.retailAction || item.retailBogleheadAction || "Maintain disciplined automated DCA into broad market index ETFs without attempting to front-run rate cycles."}</span>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    container.innerHTML = profileBannerHtml + cardsHtml;
-
-    // Bind interactive buttons inside cards and banner
-    bindCardInteractions(container);
-  }
-
-  function bindCardInteractions(container) {
-    // Jump buttons in banner
-    container.querySelectorAll(".jump-etf-modal-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const ticker = btn.dataset.ticker;
-        window.ScreenerModule?.showDetailModal(ticker);
-      });
-    });
-
-    container.querySelectorAll(".jump-etf-compare-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const ticker = btn.dataset.ticker;
-        window.ComparisonMatrixModule?.addTicker(ticker);
-        window.App?.switchTab("comparison");
-      });
-    });
-
-    container.querySelectorAll(".jump-etf-portfolio-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const ticker = btn.dataset.ticker;
-        window.OverlapModule?.addEtfToPortfolio(ticker);
-        window.App?.switchTab("overlap");
-      });
-    });
-
-    // In-card action buttons
-    container.querySelectorAll(".news-action-filter").forEach(btn => {
-      btn.addEventListener("click", () => {
-        filterByEtf(btn.dataset.ticker);
-      });
-    });
-
-    container.querySelectorAll("[data-action='filter-etf']").forEach(btn => {
-      btn.addEventListener("click", () => {
-        filterByEtf(btn.dataset.ticker);
-      });
-    });
-
-    container.querySelectorAll(".news-action-modal").forEach(btn => {
-      btn.addEventListener("click", () => {
-        window.ScreenerModule?.showDetailModal(btn.dataset.ticker);
-      });
-    });
+    container.innerHTML = `${banner}${summary}${filteredNews.map(cardHtml).join("")}`;
   }
 
   function filterByEtf(ticker) {
-    currentEtfFilter = (ticker || "all").toUpperCase();
-    currentSignalFilter = "all";
+    filters.etf = (ticker || "all").toUpperCase();
+    filters.signal = "all";
     renderFilters();
     applyNewsFilters();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Bring the (now filtered) feed into view without fighting the tab-switch scroll
+    document.getElementById("news-filters-container")?.scrollIntoView({ behavior: UI.prefersReducedMotion() ? "auto" : "smooth", block: "start" });
   }
 
   function getNewsForEtf(ticker) {
-    ticker = (ticker || "").toUpperCase();
-    return allNews.filter(n => (n.relatedEtfs || []).some(e => e.ticker.toUpperCase() === ticker));
+    return allNews.filter((n) => touches(n, ticker));
   }
 
-  return {
-    init,
-    filterByEtf,
-    getNewsForEtf
-  };
+  return { init, filterByEtf, getNewsForEtf };
 })();
