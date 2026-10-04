@@ -271,7 +271,7 @@ When modifying or extending this codebase, follow these rules:
 ### Decision 10.4: Render Instantly, Hydrate Later, Compute Lazily
 * **Decision:** `app.js` renders every view from the bundled `data-store.js`, then fetches the REST API in the background and re-renders only if the payload differs. Heavy API calls (overlap audit, Curvo backtest, risk-parity analytics) run the first time their tab is shown, and in-flight refreshes keep the previous render dimmed instead of flashing a placeholder. View state (filters, scenario inputs, allocations) survives a data refresh.
 * **Honest degradation:** risk-parity analytics have no client-side port (ADR 1.1 parity does not extend to them). When the server is unreachable the section says so and offers Retry, rather than showing "Calculating…" forever.
-* **Data freshness:** the header judges freshness from the newest **quote** timestamp (not the sync time, which can be newer than the quotes it stored) and states the age plainly.
+* **Data freshness:** the header judges freshness from the **oldest** quote timestamp (not the sync time, which can be newer than the quotes it stored, and not the newest quote, which would let one refreshed ETF make days-old prices look fresh), re-evaluates itself every minute, and states the age plainly.
 
 ### Decision 10.5: Chart Rules
 * Charts follow the data-viz method: single-hue sequential ramps for magnitude (the correlation heatmap — darkness/brightness = redundancy, self-correlation dimmed), a fixed validated categorical order for series, solid hairline grids, 2px lines, surface rings on markers, crosshair + single tooltip for time series, ≥24px hit targets for scatter points, and a **Table** twin for every chart.
@@ -281,3 +281,11 @@ When modifying or extending this codebase, follow these rules:
 * **Context:** `SimpleHTTPRequestHandler` sent no cache headers, so after an edit browsers kept using heuristically cached CSS/JS against new HTML (an unstyled page).
 * **Decision:** the server sends `Cache-Control: no-cache` for non-API responses (cheap `304`s via `Last-Modified`), and `index.html` versions its stylesheet and script URLs with `?v=`. Bump the version when shipping frontend changes.
 
+### Decision 10.7: Live Sync Must Report What It Actually Refreshed
+* **Context:** A first real end-to-end Live Sync returned `status: "success", etfsSynced: 22` and the UI said "Live data synced" while **no price had changed**: Yahoo answered HTTP 429 to the sync's spoofed browser User-Agent for all 21 quotes, the ECB feed failed TLS verification, and the justETF patterns no longer matched the page. Every failure was swallowed (`except: return None`). The "day change" was also computed against Yahoo's `chartPreviousClose`, which for `range=5d` is the close five sessions back (+0.82% shown for a +1.04% day).
+* **Decision:**
+  1. Fetch helpers accept an optional `errors` list and record *why* a request failed (`HTTP 429`, `TLS certificate could not be verified`, `timed out`, `page layout not recognised`). `run_full_sync` returns `status` = `success` / `partial` / `failed`, per-source counts and `warnings`; `etfsSynced` stays as the legacy "ETFs processed" count. The UI shows these verbatim (`describeSync` in `app.js`) and falls back to diffing `lastSyncedAt` when talking to an older server.
+  2. Requests identify honestly (`ApexETF/1.0`) instead of spoofing a browser. TLS verification is never relaxed; a CA-bundle problem is reported and documented (README → Troubleshooting).
+  3. Daily change uses the last daily bar before the quote's trading day.
+  4. `{"error": …}` from the sync is sent as HTTP 500, so clients checking `res.ok` are not told it worked.
+* **Known limits (not changed):** the server is single-threaded, so a ~15 s sync blocks every other request; `news.json` is rebuilt from scratch each run, so a feed outage drops the previously fetched live headlines; `SGLD` has no Yahoo symbol.
