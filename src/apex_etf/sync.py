@@ -8,52 +8,99 @@ European Central Bank (ECB) and market financial wires.
 import json
 import os
 import re
+import socket
+import ssl
 import sys
 import time
 import urllib.request
 import urllib.error
 import xml.etree.ElementTree as ET
+from collections import Counter
 from datetime import datetime, timezone
 from typing import Dict, Any, List, Optional
 
 from .config import DATA_DIR, BASE_DIR, ETF_MARKET_MAP, WATCHLIST_TICKERS
 from .macro_news import VERIFIED_MACRO_NEWS
 
-def fetch_url(url: str, timeout: int = 5) -> Optional[str]:
+# Yahoo answers HTTP 429 to browser-spoofing and urllib's default User-Agents, so identify honestly.
+USER_AGENT = "ApexETF/1.0 (personal dashboard)"
+
+def describe_fetch_error(exc: BaseException) -> str:
+    """Short reason a request failed, suitable for showing in the Live Sync summary."""
+    if isinstance(exc, urllib.error.HTTPError):
+        return f"HTTP {exc.code}"
+    reason = getattr(exc, "reason", exc)
+    if isinstance(reason, ssl.SSLCertVerificationError):
+        return "TLS certificate could not be verified"
+    if isinstance(reason, (socket.timeout, TimeoutError)):
+        return "timed out"
+    if isinstance(reason, OSError):
+        return "network unreachable"
+    return type(reason).__name__
+
+def fetch_url(url: str, timeout: int = 5, errors: Optional[List[str]] = None) -> Optional[str]:
+    """GET a URL as text. Returns None on any failure; the reason is appended to `errors` when given."""
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"})
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             return resp.read().decode("utf-8", errors="ignore")
-    except Exception:
+    except Exception as exc:
+        if errors is not None:
+            errors.append(describe_fetch_error(exc))
         return None
 
-def fetch_json(url: str, timeout: int = 5) -> Optional[Dict[str, Any]]:
-    content = fetch_url(url, timeout)
+def fetch_json(url: str, timeout: int = 5, errors: Optional[List[str]] = None) -> Optional[Dict[str, Any]]:
+    content = fetch_url(url, timeout, errors)
     if content:
         try:
             return json.loads(content)
         except Exception:
+            if errors is not None:
+                errors.append("invalid JSON")
             return None
     return None
 
-def sync_etf_market_data(ticker: str) -> Optional[Dict[str, Any]]:
+def previous_session_close(result: Dict[str, Any]) -> Optional[float]:
+    """Close of the last session *before* the latest quote.
+
+    Yahoo's `chartPreviousClose` is the close before the whole requested range (five sessions back
+    for range=5d), so using it as the base turns a daily change into a five-day change. The daily
+    bars give the real prior close; the range-level fields are only a fallback.
+    """
+    meta = result.get("meta", {})
+    stamps = result.get("timestamp") or []
+    closes = ((result.get("indicators") or {}).get("quote") or [{}])[0].get("close") or []
+    trade_ts = meta.get("regularMarketTime")
+    if trade_ts and stamps and closes:
+        trade_day = datetime.fromtimestamp(trade_ts, timezone.utc).date()
+        prior = [
+            c for ts, c in zip(stamps, closes)
+            if c is not None and datetime.fromtimestamp(ts, timezone.utc).date() < trade_day
+        ]
+        if prior:
+            return prior[-1]
+    return meta.get("previousClose") or meta.get("chartPreviousClose")
+
+def sync_etf_market_data(ticker: str, errors: Optional[List[str]] = None) -> Optional[Dict[str, Any]]:
     """Fetches live market quote, 52W range, and daily return from Yahoo Finance."""
     info = ETF_MARKET_MAP.get(ticker.upper())
     if not info:
         return None
-    
+
     symbol = info["symbol"]
     url = f"https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=5d&interval=1d"
-    data = fetch_json(url)
+    data = fetch_json(url, errors=errors)
     if not data or "chart" not in data or not data["chart"].get("result"):
+        if data and errors is not None:
+            errors.append("no chart data")
         return None
 
     try:
         result = data["chart"]["result"][0]
         meta = result.get("meta", {})
         price = meta.get("regularMarketPrice")
-        prev_close = meta.get("chartPreviousClose") or meta.get("previousClose")
-        
+        prev_close = previous_session_close(result)
+
         if price is None:
             return None
 
@@ -65,6 +112,7 @@ def sync_etf_market_data(ticker: str) -> Optional[Dict[str, Any]]:
         w52_high = meta.get("fiftyTwoWeekHigh")
         w52_low = meta.get("fiftyTwoWeekLow")
 
+        fetched_at = datetime.now(timezone.utc).isoformat()
         return {
             "livePrice": round(price, 3),
             "currency": meta.get("currency", "EUR"),
@@ -74,39 +122,61 @@ def sync_etf_market_data(ticker: str) -> Optional[Dict[str, Any]]:
             "fiftyTwoWeekHigh": round(w52_high, 2) if w52_high else None,
             "fiftyTwoWeekLow": round(w52_low, 2) if w52_low else None,
             "exchange": info.get("exchange", "European Exchange"),
-            "marketTime": datetime.now(timezone.utc).isoformat()
+            "marketTime": fetched_at,
+            # Same moment under the name the bundled dataset and the dashboard already use
+            "lastPriceUpdated": fetched_at
         }
     except Exception:
         return None
 
-def scrape_justetf_fund_data(isin: str) -> Optional[Dict[str, Any]]:
+# justETF profile markup. Current layout first, the older one as a fallback.
+JUSTETF_SIZE_PATTERNS = (
+    # <td data-testid="etf-basics_label_fund-size"> Fund size </td> <td> <div> EUR 53,011 m
+    r'etf-basics_label_fund-size[^>]*>\s*Fund size\s*</td>\s*<td[^>]*>\s*<div[^>]*>\s*EUR\s*([0-9][0-9,.]*)\s*m\b',
+    # Fund size</div><div>53,167 m EUR
+    r'Fund size[^<]*</div>\s*<div[^>]*>\s*([0-9,.]+)\s*m\s*EUR',
+)
+JUSTETF_TER_PATTERNS = (
+    # <div class="val" data-testid="tl_etf-basics_value_ter">0.14% p.a.</div>
+    r'data-testid="tl_etf-basics_value_ter"[^>]*>\s*([0-9]+(?:\.[0-9]+)?)\s*%',
+    # Total expense ratio</div><div>0.22% p.a.
+    r'Total expense ratio[^<]*</div>\s*<div[^>]*>\s*([0-9.]+)\s*%',
+)
+
+def _first_match(patterns, html: str) -> Optional[str]:
+    for pattern in patterns:
+        found = re.search(pattern, html, re.IGNORECASE)
+        if found:
+            return found.group(1)
+    return None
+
+def scrape_justetf_fund_data(isin: str, errors: Optional[List[str]] = None) -> Optional[Dict[str, Any]]:
     """Fetches fund size and confirms expense ratio from justETF profile."""
     url = f"https://www.justetf.com/en/etf-profile.html?isin={isin}"
-    html = fetch_url(url)
+    html = fetch_url(url, errors=errors)
     if not html:
         return None
 
     result = {}
     try:
-        # Regex for fund size (e.g., "53,167 m EUR" or "130,706 m EUR")
-        size_match = re.search(r'Fund size[^<]*</div>\s*<div[^>]*>\s*([0-9,.]+)\s*m\s*EUR', html, re.IGNORECASE)
-        if size_match:
-            size_clean = size_match.group(1).replace(",", "")
-            result["aumMillionsEUR"] = float(size_clean)
+        size = _first_match(JUSTETF_SIZE_PATTERNS, html)
+        if size:
+            result["aumMillionsEUR"] = float(size.replace(",", ""))
 
-        # Regex for TER (e.g. "0.22% p.a.")
-        ter_match = re.search(r'Total expense ratio[^<]*</div>\s*<div[^>]*>\s*([0-9.]+)\s*%', html, re.IGNORECASE)
-        if ter_match:
-            result["ter"] = float(ter_match.group(1))
+        ter = _first_match(JUSTETF_TER_PATTERNS, html)
+        if ter:
+            result["ter"] = float(ter)
 
+        if not result and errors is not None:
+            errors.append("page layout not recognised")
         return result if result else None
     except Exception:
         return None
 
-def sync_live_ecb_news() -> List[Dict[str, Any]]:
+def sync_live_ecb_news(errors: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """Streams live monetary policy decisions and press releases from the official European Central Bank RSS."""
     url = "https://www.ecb.europa.eu/rss/press.html"
-    xml_data = fetch_url(url)
+    xml_data = fetch_url(url, errors=errors)
     if not xml_data:
         return []
 
@@ -163,14 +233,15 @@ def sync_live_ecb_news() -> List[Dict[str, Any]]:
                 "retailAction": "ECB policy signals should not trigger ad-hoc adjustments. Bond allocations (AGGU) automatically harvest shifting yield curves. Continue monthly automated DCA without attempting to front-run rate meetings."
             })
     except Exception:
-        pass
+        if errors is not None:
+            errors.append("unreadable feed")
 
     return items
 
-def sync_live_marketwatch_news() -> List[Dict[str, Any]]:
+def sync_live_marketwatch_news(errors: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """Streams live market headlines from MarketWatch RSS."""
     url = "https://feeds.content.dowjones.io/public/rss/mw_topstories"
-    xml_data = fetch_url(url)
+    xml_data = fetch_url(url, errors=errors)
     if not xml_data:
         return []
 
@@ -225,7 +296,8 @@ def sync_live_marketwatch_news() -> List[Dict[str, Any]]:
                 "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
             })
     except Exception:
-        pass
+        if errors is not None:
+            errors.append("unreadable feed")
 
     return items
 
@@ -269,6 +341,10 @@ window.APEX_DATA_STORE = {{
     except Exception as e:
         print(f"Error rebuilding data-store.js: {e}", file=sys.stderr)
 
+def _top_reason(errors: List[str], default: str = "no data returned") -> str:
+    """Most frequent failure reason in a list, e.g. 'HTTP 429'."""
+    return Counter(errors).most_common(1)[0][0] if errors else default
+
 def run_full_sync() -> Dict[str, Any]:
     """
     Executes a complete dynamic sync:
@@ -277,6 +353,9 @@ def run_full_sync() -> Dict[str, Any]:
     3. Streams live news from ECB RSS and MarketWatch RSS.
     4. Preserves verified macroeconomic events with transmission mechanisms.
     5. Rebuilds data-store.js.
+
+    The result reports what actually refreshed: `status` is "success" only when every source
+    delivered, "partial" when some did not (see `warnings`) and "failed" when nothing refreshed.
     """
     etfs_path = os.path.join(DATA_DIR, "etfs.json")
     if not os.path.exists(etfs_path):
@@ -287,13 +366,27 @@ def run_full_sync() -> Dict[str, Any]:
 
     updated_count = 0
     sync_details = []
+    quote_errors: List[str] = []
+    fund_errors: List[str] = []
+    quotes_updated = 0
+    quotes_failed: List[str] = []
+    quotes_skipped: List[str] = []  # tickers with no Yahoo symbol configured
+    fund_updated = 0
+    fund_failed = 0
 
     for etf in etfs:
         ticker = etf["ticker"]
         isin = etf.get("isin")
-        
+        quote_updated = False
+
         # 1. Market Data Sync
-        market_data = sync_etf_market_data(ticker)
+        if ticker.upper() not in ETF_MARKET_MAP:
+            quotes_skipped.append(ticker)
+            market_data = None
+        else:
+            market_data = sync_etf_market_data(ticker, errors=quote_errors)
+            if not market_data:
+                quotes_failed.append(ticker)
         if market_data:
             etf["liveMarketData"] = market_data
             etf["lastSyncedAt"] = datetime.now(timezone.utc).isoformat()
@@ -303,15 +396,20 @@ def run_full_sync() -> Dict[str, Any]:
                 etf["fiftyTwoWeekHigh"] = market_data["fiftyTwoWeekHigh"]
             if market_data.get("fiftyTwoWeekLow"):
                 etf["fiftyTwoWeekLow"] = market_data["fiftyTwoWeekLow"]
+            quotes_updated += 1
+            quote_updated = True
 
         # 2. justETF AUM Validation
         if isin:
-            fund_data = scrape_justetf_fund_data(isin)
+            fund_data = scrape_justetf_fund_data(isin, errors=fund_errors)
             if fund_data:
+                fund_updated += 1
                 if "aumMillionsEUR" in fund_data and fund_data["aumMillionsEUR"] > 0:
                     etf["aumMillionsEUR"] = fund_data["aumMillionsEUR"]
                 if "ter" in fund_data:
                     etf["ter"] = fund_data["ter"]
+            else:
+                fund_failed += 1
 
         updated_count += 1
         sync_details.append({
@@ -319,7 +417,8 @@ def run_full_sync() -> Dict[str, Any]:
             "price": etf.get("liveMarketData", {}).get("livePrice", etf.get("currentPriceEUR")),
             "currency": etf.get("liveMarketData", {}).get("currency", "EUR"),
             "dayChange": etf.get("liveMarketData", {}).get("dayChangePercent", 0.0),
-            "aumMillions": etf.get("aumMillionsEUR", 0.0)
+            "aumMillions": etf.get("aumMillionsEUR", 0.0),
+            "quoteUpdated": quote_updated
         })
         time.sleep(0.05)  # Politeness interval
 
@@ -328,8 +427,10 @@ def run_full_sync() -> Dict[str, Any]:
         json.dump(etfs, f, indent=2)
 
     # 3. Stream live news feeds
-    live_ecb = sync_live_ecb_news()
-    live_mw = sync_live_marketwatch_news()
+    ecb_errors: List[str] = []
+    mw_errors: List[str] = []
+    live_ecb = sync_live_ecb_news(errors=ecb_errors)
+    live_mw = sync_live_marketwatch_news(errors=mw_errors)
     live_news_items = live_ecb + live_mw
 
     news_path = os.path.join(DATA_DIR, "news.json")
@@ -341,17 +442,41 @@ def run_full_sync() -> Dict[str, Any]:
     # Rebuild data-store.js
     build_js_store()
 
+    # What actually worked, in words the dashboard can show as-is
+    warnings: List[str] = []
+    quote_targets = len(etfs) - len(quotes_skipped)
+    if quotes_failed:
+        warnings.append(f"Yahoo Finance: {len(quotes_failed)} of {quote_targets} price requests failed ({_top_reason(quote_errors)}).")
+    if fund_failed:
+        warnings.append(f"justETF: fund size and TER unavailable for {fund_failed} of {fund_updated + fund_failed} funds ({_top_reason(fund_errors)}).")
+    if not live_ecb:
+        warnings.append(f"ECB feed: no headlines ({_top_reason(ecb_errors)}).")
+    if not live_mw:
+        warnings.append(f"MarketWatch feed: no headlines ({_top_reason(mw_errors)}).")
+
+    sources = []
+    if quotes_updated:
+        sources.append("Yahoo Finance (Live Market Quotes, 52W High/Low, Daily Change)")
+    if fund_updated:
+        sources.append("justETF.com (Live Fund Size AUM & TER Verification)")
+    if live_ecb:
+        sources.append("European Central Bank RSS (Live Monetary Policy & Rate Guidelines)")
+    if live_mw:
+        sources.append("MarketWatch RSS (Real-Time Equity & Earnings Headlines)")
+
+    refreshed_anything = bool(quotes_updated or fund_updated or live_news_items)
     return {
-        "status": "success",
+        "status": "failed" if not refreshed_anything else "partial" if warnings else "success",
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "etfsSynced": updated_count,
+        "etfsSynced": updated_count,  # ETFs processed; see quotesUpdated for how many prices refreshed
+        "quotesUpdated": quotes_updated,
+        "quotesFailed": quotes_failed,
+        "quotesSkipped": quotes_skipped,
+        "fundDataUpdated": fund_updated,
         "liveNewsItemsFetched": len(live_news_items),
-        "sources": [
-            "Yahoo Finance (Live Market Quotes, 52W High/Low, Trailing Returns)",
-            "justETF.com (Live Fund Size AUM & TER Verification)",
-            "European Central Bank RSS (Live Monetary Policy & Rate Guidelines)",
-            "MarketWatch RSS (Real-Time Equity & Earnings Headlines)"
-        ],
+        "newsSources": {"ecb": len(live_ecb), "marketwatch": len(live_mw)},
+        "warnings": warnings,
+        "sources": sources,
         "details": sync_details
     }
 

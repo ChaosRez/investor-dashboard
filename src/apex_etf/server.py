@@ -169,7 +169,7 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
             try:
                 sync_res = run_full_sync()
                 reload_datasets()
-                self.send_json(sync_res)
+                self.send_json(sync_res, status=500 if "error" in sync_res else 200)
             except Exception as e:
                 self.send_json({"error": f"Sync failed: {str(e)}"}, status=500)
             return

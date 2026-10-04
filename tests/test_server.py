@@ -9,6 +9,7 @@ import time
 import unittest
 import urllib.request
 import urllib.error
+from unittest import mock
 
 from apex_etf.server import ETFHandler
 
@@ -156,6 +157,23 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertIn("pyportfolioopt", data)
         self.assertIn("riskfolio", data)
         self.assertIn("quantstats", data)
+
+    def test_post_sync_passes_partial_results_through(self):
+        partial = {"status": "partial", "quotesUpdated": 0, "warnings": ["Yahoo Finance: 21 of 21 price requests failed (HTTP 429)."]}
+        with mock.patch("apex_etf.server.run_full_sync", return_value=partial), \
+             mock.patch("apex_etf.server.reload_datasets"):
+            self.assertEqual(self.post_json("/api/sync", {}), partial)
+
+    def test_post_sync_error_result_is_not_a_200(self):
+        # {"error": ...} used to be returned with HTTP 200, so clients checking res.ok saw "success"
+        with mock.patch("apex_etf.server.run_full_sync", return_value={"error": "etfs.json not found"}), \
+             mock.patch("apex_etf.server.reload_datasets"):
+            req = urllib.request.Request(f"{self.base_url}/api/sync", data=b"{}", method="POST",
+                                         headers={"Content-Type": "application/json"})
+            with self.assertRaises(urllib.error.HTTPError) as ctx:
+                urllib.request.urlopen(req, timeout=3.0)
+        self.assertEqual(ctx.exception.code, 500)
+        self.assertEqual(json.loads(ctx.exception.read().decode("utf-8")), {"error": "etfs.json not found"})
 
 if __name__ == "__main__":
     unittest.main()
