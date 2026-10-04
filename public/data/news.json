@@ -1,11 +1,11 @@
 [
   {
-    "id": "mw-56221780",
-    "title": "\ud83c\udf10 MarketWatch: The 15 worst-performing S&P 500 stocks during a dismal September",
-    "summary": "The S&P 500 has gained slightly in September, but three-quarters of its components have declined.",
-    "date": "Wed, 30 Sep 2026 21:22:00 GMT",
+    "id": "mw-86385900",
+    "title": "\ud83c\udf10 MarketWatch: \u2018I don\u2019t want to die on the sales floor\u2019: I\u2019m 67 and earn $19.50 an hour at a big-box store. When can I finally retire?",
+    "summary": "\u201cI started taking Social Security at 66 and receive $2,410 a month. I have $214,000 in my 401(k).\u201d",
+    "date": "Sat, 03 Oct 2026 19:30:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/the-15-worst-performing-s-p-500-stocks-during-a-dismal-september-991f8a07?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/i-dont-want-to-die-on-the-sales-floor-im-67-and-earn-19-50-an-hour-at-a-big-box-store-when-can-i-finally-retire-369abcf9?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",
@@ -39,12 +39,12 @@
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-26179853",
-    "title": "\ud83c\udf10 MarketWatch: Trump touts economic wins in battleground states \u2014 like a $54 billion Alaskan pipeline \u2014 as the midterms draw closer",
-    "summary": "President Donald Trump is spending time this week talking up big job-creating projects in battleground states.",
-    "date": "Wed, 30 Sep 2026 21:16:00 GMT",
+    "id": "mw-23685892",
+    "title": "\ud83c\udf10 MarketWatch: These bond strategies can help you get a safe 5% return on your cash",
+    "summary": "With U.S. Treasury yields on the rise, financial planners say they\u2019re seeing a growing interest in bonds, especially among investors looking to secure fixed income in retirement.",
+    "date": "Sat, 03 Oct 2026 18:49:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/trump-touts-economic-wins-in-battleground-states-like-a-54-billion-alaskan-pipeline-as-the-midterms-draw-closer-46db0149?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/these-bond-strategies-can-help-you-get-a-safe-5-return-on-your-cash-5fa45ccd?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",
@@ -78,12 +78,129 @@
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-60435306",
-    "title": "\ud83c\udf10 MarketWatch: How the \u2018AI Put\u2019 has become the only thing that matters for stocks",
-    "summary": "While investors worry a spike in global bond yields will trigger a selloff in U.S. equities, strategists at BofA Global Research say the real threat lies elsewhere.",
-    "date": "Wed, 30 Sep 2026 20:59:00 GMT",
+    "id": "mw-29165561",
+    "title": "\ud83c\udf10 MarketWatch: \u2018I want to make her proud\u2019: My mother, a divorc\u00e9e, died and I\u2019m her executor. Do I need to file for probate?",
+    "summary": "\u201cThe only debts were utility and credit-card bills, which we will pay off.\u201d",
+    "date": "Sat, 03 Oct 2026 18:30:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/this-is-the-big-risk-that-stock-investors-should-be-watching-as-rising-bond-yields-menace-markets-904cae0a?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/i-want-to-make-her-proud-my-mother-a-divorcee-died-and-im-her-executor-do-i-need-to-file-for-probate-a39b1123?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-62162479",
+    "title": "\ud83c\udf10 MarketWatch: A tough job market is pushing more young Americans to make a big bet: on themselves",
+    "summary": "There has been a rise in entrepreneurship among young Americans as the entry-level labor market has become tougher to join.",
+    "date": "Sat, 03 Oct 2026 17:24:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/a-tough-job-market-is-pushing-more-young-americans-to-make-a-big-bet-on-themselves-1aaddeca?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-25346973",
+    "title": "\ud83c\udf10 MarketWatch: Switching jobs to get higher pay works best in these industries",
+    "summary": "Finding a new job is one way to get a pay increase at a time when inflation has been outpacing wage growth.",
+    "date": "Sat, 03 Oct 2026 16:42:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/the-best-industry-to-change-jobs-to-get-paid-more-money-and-the-worst-ae33a3a7?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-30703392",
+    "title": "\ud83c\udf10 MarketWatch: My wife never went back to work after raising our kids. Do I have to share my retirement savings 50/50?",
+    "summary": "\u201cFor 14 years I have gotten up every morning and gone to work while she has been free to pursue whatever interested her.\u201d",
+    "date": "Sat, 03 Oct 2026 16:30:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/my-wife-never-went-back-to-work-after-raising-our-kids-do-i-have-to-share-my-retirement-savings-50-50-f0727f82?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Bullish Sentiment",
@@ -117,133 +234,16 @@
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-11359324",
-    "title": "\ud83c\udf10 MarketWatch: A brutal September for bonds points to an even darker October",
-    "summary": "September has been a brutal month for the bond market. If history is any guide, October might be even worse.",
-    "date": "Wed, 30 Sep 2026 20:56:00 GMT",
+    "id": "mw-59905270",
+    "title": "\ud83c\udf10 MarketWatch: \u2018I have $400,000 in equity\u2019: I\u2019m 80. Should I sell my house because of dangerous stairs \u2014 or spend thousands renovating?",
+    "summary": "\u201cGenerally, the advice I\u2019ve read says not to sell because I have a low-interest-rate mortgage.\u201d",
+    "date": "Sat, 03 Oct 2026 16:00:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/a-brutal-september-for-bonds-points-to-an-even-darker-october-239d0fb5?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/i-have-a-low-interest-rate-im-80-years-old-should-i-move-out-of-my-house-because-of-dangerous-stairs-389c3c7b?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-91652095",
-    "title": "\ud83c\udf10 MarketWatch: I\u2019m 71 and still working. I earn $108,000 a year. Am I doing the right thing?",
-    "summary": "\u201cI have $152,000 in my IRA and Roth accounts.\u201d",
-    "date": "Wed, 30 Sep 2026 20:45:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/im-71-and-still-working-i-earn-108-000-a-year-am-i-doing-the-right-thing-aaedcaa4?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-31688037",
-    "title": "\ud83c\udf10 MarketWatch: U.S. bond yields post biggest jump in a generation as global rout rattles investors",
-    "summary": "Yields in the global bond market have risen with startling speed over the past few months, and the more than $30 trillion market for U.S. government debt certainly hasn\u2019t been immune.",
-    "date": "Wed, 30 Sep 2026 20:32:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/u-s-bond-yields-head-for-biggest-jump-in-a-generation-as-global-rout-rattles-investors-7dede2f2?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-70983891",
-    "title": "\ud83c\udf10 MarketWatch: Paramount\u2019s mega debt sale reveals how higher bond yields are squeezing corporate America",
-    "summary": "\u2018Over the near term, we expect supply to fall off, unless someone has to borrow,\u2019 says Invesco\u2019s Matt Brill",
-    "date": "Wed, 30 Sep 2026 19:42:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/paramounts-mega-debt-sale-reveals-how-higher-bond-yields-are-squeezing-corporate-america-e9694ec3?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
+      "bias": "Bullish Sentiment",
+      "biasColor": "var(--accent-emerald)",
       "impact": "Moderate Impact",
       "impactBadge": "medium",
       "timeframe": "Tactical (1\u20134 Weeks)"

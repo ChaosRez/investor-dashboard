@@ -1,9 +1,16 @@
 /**
- * ApexETF Real Data Store
- * Grounded verified data from justETF, extraETF, Curvo, Portfolio Visualizer, Morningstar, Trackinsight, and official KIDs.
+ * ApexETF Grounded Data Store
+ * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
+ * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
+ * Last Synced: 2026-10-03T19:54:49.623924+00:00
  */
 
 window.APEX_DATA_STORE = {
+  syncMeta: {
+    lastSyncedAt: "2026-10-03T19:54:49.623948+00:00",
+    isLiveDynamic: true,
+    sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
+  },
   etfs: [
   {
     "ticker": "VWCE",
@@ -22,7 +29,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.14,
     "trackingDifference5Y": 0.02,
     "trackingDifference1Y": 0.01,
-    "aumMillionsEUR": 53167.0,
+    "aumMillionsEUR": 53011.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -196,24 +203,22 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Gold Benchmark (Single-Fund 'VWCE and Chill')"
     },
-    "lastSyncedAt": "2026-09-29T14:14:51.186472+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:29.221447+00:00",
     "liveMarketData": {
-      "livePrice": 169.88,
+      "livePrice": 171.14,
       "currency": "EUR",
-      "previousClose": 170.5,
-      "dayChange": -0.62,
-      "dayChangePercent": -0.36,
-      "fiftyTwoWeekHigh": 170.92,
+      "previousClose": 169.38,
+      "dayChange": 1.76,
+      "dayChangePercent": 1.04,
+      "fiftyTwoWeekHigh": 171.8,
       "fiftyTwoWeekLow": 138.24,
-      "regularMarketDayHigh": 170.1,
-      "regularMarketDayLow": 169.36,
-      "regularMarketVolume": 119618,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:18.139019+00:00"
+      "marketTime": "2026-10-03T19:54:29.220731+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:29.220731+00:00"
     },
-    "currentPriceEUR": 169.88,
-    "dayChangePercent": -0.36,
-    "fiftyTwoWeekHigh": 170.92,
+    "currentPriceEUR": 171.14,
+    "dayChangePercent": 1.04,
+    "fiftyTwoWeekHigh": 171.8,
     "fiftyTwoWeekLow": 138.24
   },
   {
@@ -233,7 +238,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.2,
     "trackingDifference5Y": -0.01,
     "trackingDifference1Y": -0.02,
-    "aumMillionsEUR": 130706.0,
+    "aumMillionsEUR": 129628.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -406,24 +411,22 @@ window.APEX_DATA_STORE = {
       "brokerScore": 98,
       "bogleheadsRating": "Core Developed Foundation (Pair with EIMI 88/12)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:51.673375+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:30.395311+00:00",
     "liveMarketData": {
-      "livePrice": 129.08,
+      "livePrice": 130.05,
       "currency": "EUR",
-      "previousClose": 129.1,
-      "dayChange": -0.02,
-      "dayChangePercent": -0.02,
-      "fiftyTwoWeekHigh": 129.83,
+      "previousClose": 128.81,
+      "dayChange": 1.24,
+      "dayChangePercent": 0.96,
+      "fiftyTwoWeekHigh": 130.55,
       "fiftyTwoWeekLow": 106.13,
-      "regularMarketDayHigh": 129.27,
-      "regularMarketDayLow": 128.71,
-      "regularMarketVolume": 60039,
       "exchange": "Euronext Amsterdam",
-      "lastPriceUpdated": "2026-09-29T13:29:18.787822+00:00"
+      "marketTime": "2026-10-03T19:54:30.395282+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:30.395282+00:00"
     },
-    "currentPriceEUR": 129.08,
-    "dayChangePercent": -0.02,
-    "fiftyTwoWeekHigh": 129.83,
+    "currentPriceEUR": 130.05,
+    "dayChangePercent": 0.96,
+    "fiftyTwoWeekHigh": 130.55,
     "fiftyTwoWeekLow": 106.13
   },
   {
@@ -443,7 +446,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.18,
     "trackingDifference1Y": -0.21,
-    "aumMillionsEUR": 136853.0,
+    "aumMillionsEUR": 136043.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -607,24 +610,22 @@ window.APEX_DATA_STORE = {
       "brokerScore": 98,
       "bogleheadsRating": "Lowest Cost US Engine (Caution: 100% US single-country risk)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:52.080449+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:31.235678+00:00",
     "liveMarketData": {
-      "livePrice": 731.74,
+      "livePrice": 739.48,
       "currency": "EUR",
-      "previousClose": 731.94,
-      "dayChange": -0.2,
-      "dayChangePercent": -0.03,
-      "fiftyTwoWeekHigh": 735.02,
+      "previousClose": 732.5,
+      "dayChange": 6.98,
+      "dayChangePercent": 0.95,
+      "fiftyTwoWeekHigh": 742.64,
       "fiftyTwoWeekLow": 595.6,
-      "regularMarketDayHigh": 732.3,
-      "regularMarketDayLow": 729.28,
-      "regularMarketVolume": 11288,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:19.501004+00:00"
+      "marketTime": "2026-10-03T19:54:31.235639+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:31.235639+00:00"
     },
-    "currentPriceEUR": 731.74,
-    "dayChangePercent": -0.03,
-    "fiftyTwoWeekHigh": 735.02,
+    "currentPriceEUR": 739.48,
+    "dayChangePercent": 0.95,
+    "fiftyTwoWeekHigh": 742.64,
     "fiftyTwoWeekLow": 595.6,
     "isUserWatchlist": true
   },
@@ -644,7 +645,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.19,
     "trackingDifference1Y": -0.2,
-    "aumMillionsEUR": 32157.0,
+    "aumMillionsEUR": 32001.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -808,24 +809,22 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Vanguard US Flagship Accumulator"
     },
-    "lastSyncedAt": "2026-09-29T14:14:52.613859+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:32.394861+00:00",
     "liveMarketData": {
-      "livePrice": 131.22,
+      "livePrice": 132.6,
       "currency": "EUR",
-      "previousClose": 131.26,
-      "dayChange": -0.04,
-      "dayChangePercent": -0.03,
-      "fiftyTwoWeekHigh": 131.81,
+      "previousClose": 131.335,
+      "dayChange": 1.265,
+      "dayChangePercent": 0.96,
+      "fiftyTwoWeekHigh": 133.17,
       "fiftyTwoWeekLow": 106.82,
-      "regularMarketDayHigh": 131.305,
-      "regularMarketDayLow": 130.775,
-      "regularMarketVolume": 10253,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:20.049294+00:00"
+      "marketTime": "2026-10-03T19:54:32.394835+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:32.394835+00:00"
     },
-    "currentPriceEUR": 131.22,
-    "dayChangePercent": -0.03,
-    "fiftyTwoWeekHigh": 131.81,
+    "currentPriceEUR": 132.6,
+    "dayChangePercent": 0.96,
+    "fiftyTwoWeekHigh": 133.17,
     "fiftyTwoWeekLow": 106.82
   },
   {
@@ -845,7 +844,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.18,
     "trackingDifference5Y": 0.08,
     "trackingDifference1Y": 0.05,
-    "aumMillionsEUR": 40069.0,
+    "aumMillionsEUR": 39624.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -1019,25 +1018,23 @@ window.APEX_DATA_STORE = {
       "brokerScore": 97,
       "bogleheadsRating": "Best Emerging Market UCITS Engine (Includes Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:53.073986+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:33.195679+00:00",
     "liveMarketData": {
-      "livePrice": 48.595,
+      "livePrice": 49.055,
       "currency": "EUR",
-      "previousClose": 48.84,
-      "dayChange": -0.245,
-      "dayChangePercent": -0.5,
+      "previousClose": 48.345,
+      "dayChange": 0.71,
+      "dayChangePercent": 1.47,
       "fiftyTwoWeekHigh": 51.03,
-      "fiftyTwoWeekLow": 36.72,
-      "regularMarketDayHigh": 48.65,
-      "regularMarketDayLow": 48.335,
-      "regularMarketVolume": 32552,
+      "fiftyTwoWeekLow": 36.74,
       "exchange": "Euronext Amsterdam",
-      "lastPriceUpdated": "2026-09-29T13:29:20.699111+00:00"
+      "marketTime": "2026-10-03T19:54:33.195651+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:33.195651+00:00"
     },
-    "currentPriceEUR": 48.595,
-    "dayChangePercent": -0.5,
+    "currentPriceEUR": 49.055,
+    "dayChangePercent": 1.47,
     "fiftyTwoWeekHigh": 51.03,
-    "fiftyTwoWeekLow": 36.72
+    "fiftyTwoWeekLow": 36.74
   },
   {
     "ticker": "MEUD",
@@ -1056,7 +1053,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.02,
     "trackingDifference1Y": -0.01,
-    "aumMillionsEUR": 20925.0,
+    "aumMillionsEUR": 20860.0,
     "domicile": "Luxembourg",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -1229,25 +1226,23 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "European Home-Bias / Tilt Core"
     },
-    "lastSyncedAt": "2026-09-29T14:14:53.576599+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:34.034133+00:00",
     "liveMarketData": {
-      "livePrice": 316.1,
+      "livePrice": 311.65,
       "currency": "EUR",
-      "previousClose": 315.85,
-      "dayChange": 0.25,
-      "dayChangePercent": 0.08,
+      "previousClose": 309.35,
+      "dayChange": 2.3,
+      "dayChangePercent": 0.74,
       "fiftyTwoWeekHigh": 326.7,
-      "fiftyTwoWeekLow": 265.67,
-      "regularMarketDayHigh": 317.2,
-      "regularMarketDayLow": 315.8,
-      "regularMarketVolume": 41008,
+      "fiftyTwoWeekLow": 267.86,
       "exchange": "Euronext Paris",
-      "lastPriceUpdated": "2026-09-29T13:29:21.228257+00:00"
+      "marketTime": "2026-10-03T19:54:34.034092+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:34.034092+00:00"
     },
-    "currentPriceEUR": 316.1,
-    "dayChangePercent": 0.08,
+    "currentPriceEUR": 311.65,
+    "dayChangePercent": 0.74,
     "fiftyTwoWeekHigh": 326.7,
-    "fiftyTwoWeekLow": 265.67
+    "fiftyTwoWeekLow": 267.86
   },
   {
     "ticker": "QDVE",
@@ -1265,7 +1260,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.15,
     "trackingDifference5Y": -0.12,
     "trackingDifference1Y": -0.15,
-    "aumMillionsEUR": 18119.0,
+    "aumMillionsEUR": 18152.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -1419,24 +1414,22 @@ window.APEX_DATA_STORE = {
       "brokerScore": 97,
       "bogleheadsRating": "Satellite High-Growth Tilt (Warning: Top 3 stocks = 62.4% portfolio concentration!)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:54.000449+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:34.979941+00:00",
     "liveMarketData": {
-      "livePrice": 47.29,
+      "livePrice": 48.505,
       "currency": "EUR",
-      "previousClose": 46.9,
-      "dayChange": 0.39,
-      "dayChangePercent": 0.83,
-      "fiftyTwoWeekHigh": 47.35,
+      "previousClose": 47.76,
+      "dayChange": 0.745,
+      "dayChangePercent": 1.56,
+      "fiftyTwoWeekHigh": 48.83,
       "fiftyTwoWeekLow": 31.88,
-      "regularMarketDayHigh": 47.35,
-      "regularMarketDayLow": 47.06,
-      "regularMarketVolume": 56867,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:22.057776+00:00"
+      "marketTime": "2026-10-03T19:54:34.979907+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:34.979907+00:00"
     },
-    "currentPriceEUR": 47.29,
-    "dayChangePercent": 0.83,
-    "fiftyTwoWeekHigh": 47.35,
+    "currentPriceEUR": 48.505,
+    "dayChangePercent": 1.56,
+    "fiftyTwoWeekHigh": 48.83,
     "fiftyTwoWeekLow": 31.88
   },
   {
@@ -1456,7 +1449,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.1,
     "trackingDifference5Y": 0.05,
     "trackingDifference1Y": 0.04,
-    "aumMillionsEUR": 2505.0,
+    "aumMillionsEUR": 2514.0,
     "domicile": "Ireland",
     "replication": "Physical (Sampling)",
     "securitiesLending": true,
@@ -1622,25 +1615,23 @@ window.APEX_DATA_STORE = {
       "brokerScore": 97,
       "bogleheadsRating": "Core Fixed-Income Anchor (Bogleheads 80/20 or 60/40 component)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:54.422276+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:35.811566+00:00",
     "liveMarketData": {
-      "livePrice": 5.723,
+      "livePrice": 5.725,
       "currency": "USD",
-      "previousClose": 5.764,
-      "dayChange": -0.041,
-      "dayChangePercent": -0.71,
+      "previousClose": 5.72,
+      "dayChange": 0.005,
+      "dayChangePercent": 0.09,
       "fiftyTwoWeekHigh": 6.15,
-      "fiftyTwoWeekLow": 5.71,
-      "regularMarketDayHigh": 5.728,
-      "regularMarketDayLow": 5.71,
-      "regularMarketVolume": 25612,
+      "fiftyTwoWeekLow": 5.69,
       "exchange": "London Stock Exchange",
-      "lastPriceUpdated": "2026-09-29T13:29:22.733553+00:00"
+      "marketTime": "2026-10-03T19:54:35.811532+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:35.811532+00:00"
     },
-    "currentPriceEUR": 5.723,
-    "dayChangePercent": -0.71,
+    "currentPriceEUR": 5.725,
+    "dayChangePercent": 0.09,
     "fiftyTwoWeekHigh": 6.15,
-    "fiftyTwoWeekLow": 5.71
+    "fiftyTwoWeekLow": 5.69
   },
   {
     "ticker": "IUSN",
@@ -1658,7 +1649,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.35,
     "trackingDifference5Y": 0.08,
     "trackingDifference1Y": 0.06,
-    "aumMillionsEUR": 4800,
+    "aumMillionsEUR": 7764.0,
     "domicile": "Ireland",
     "replication": "Physical (Sampling)",
     "securitiesLending": true,
@@ -1830,23 +1821,21 @@ window.APEX_DATA_STORE = {
       "brokerScore": 95,
       "bogleheadsRating": "Size Factor Diversifier (Completes World Large/Mid with Small Caps)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:55.074980+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:36.718704+00:00",
     "liveMarketData": {
-      "livePrice": 9.002,
+      "livePrice": 9.076,
       "currency": "EUR",
-      "previousClose": 9.078,
-      "dayChange": -0.076,
-      "dayChangePercent": -0.84,
+      "previousClose": 8.957,
+      "dayChange": 0.119,
+      "dayChangePercent": 1.33,
       "fiftyTwoWeekHigh": 9.36,
       "fiftyTwoWeekLow": 7.26,
-      "regularMarketDayHigh": 9.014,
-      "regularMarketDayLow": 8.964,
-      "regularMarketVolume": 118318,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:23.532353+00:00"
+      "marketTime": "2026-10-03T19:54:36.718478+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:36.718478+00:00"
     },
-    "currentPriceEUR": 9.002,
-    "dayChangePercent": -0.84,
+    "currentPriceEUR": 9.076,
+    "dayChangePercent": 1.33,
     "fiftyTwoWeekHigh": 9.36,
     "fiftyTwoWeekLow": 7.26
   },
@@ -1867,7 +1856,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.07,
     "trackingDifference5Y": -0.19,
     "trackingDifference1Y": -0.2,
-    "aumMillionsEUR": 46776.0,
+    "aumMillionsEUR": 46355.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -2006,24 +1995,22 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Distributing Benchmark (Compounding penalty vs Accumulating VUAA/SXR8)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:55.548004+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:37.572125+00:00",
     "liveMarketData": {
-      "livePrice": 128.491,
+      "livePrice": 129.853,
       "currency": "EUR",
-      "previousClose": 128.373,
-      "dayChange": 0.118,
-      "dayChangePercent": 0.09,
-      "fiftyTwoWeekHigh": 129.09,
+      "previousClose": 128.603,
+      "dayChange": 1.25,
+      "dayChangePercent": 0.97,
+      "fiftyTwoWeekHigh": 130.5,
       "fiftyTwoWeekLow": 105.03,
-      "regularMarketDayHigh": 128.6,
-      "regularMarketDayLow": 128.042,
-      "regularMarketVolume": 25382,
       "exchange": "Euronext Amsterdam",
-      "lastPriceUpdated": "2026-09-29T13:29:24.428494+00:00"
+      "marketTime": "2026-10-03T19:54:37.572087+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:37.572087+00:00"
     },
-    "currentPriceEUR": 128.491,
-    "dayChangePercent": 0.09,
-    "fiftyTwoWeekHigh": 129.09,
+    "currentPriceEUR": 129.853,
+    "dayChangePercent": 0.97,
+    "fiftyTwoWeekHigh": 130.5,
     "fiftyTwoWeekLow": 105.03
   },
   {
@@ -2042,7 +2029,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.38,
     "trackingDifference5Y": 0.05,
     "trackingDifference1Y": 0.03,
-    "aumMillionsEUR": 658.0,
+    "aumMillionsEUR": 655.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -2208,23 +2195,21 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Quality Factor Engine (High ROE & Sustainable Dividend Growth)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:55.943982+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:38.492025+00:00",
     "liveMarketData": {
-      "livePrice": 49.17,
+      "livePrice": 48.645,
       "currency": "USD",
-      "previousClose": 49.49,
-      "dayChange": -0.32,
-      "dayChangePercent": -0.65,
+      "previousClose": 48.18,
+      "dayChange": 0.465,
+      "dayChangePercent": 0.97,
       "fiftyTwoWeekHigh": 51.34,
       "fiftyTwoWeekLow": 42.78,
-      "regularMarketDayHigh": 49.21,
-      "regularMarketDayLow": 49.0,
-      "regularMarketVolume": 13726,
       "exchange": "London Stock Exchange",
-      "lastPriceUpdated": "2026-09-29T13:29:25.110397+00:00"
+      "marketTime": "2026-10-03T19:54:38.490660+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:38.490660+00:00"
     },
-    "currentPriceEUR": 49.17,
-    "dayChangePercent": -0.65,
+    "currentPriceEUR": 48.645,
+    "dayChangePercent": 0.97,
     "fiftyTwoWeekHigh": 51.34,
     "fiftyTwoWeekLow": 42.78
   },
@@ -2418,24 +2403,22 @@ window.APEX_DATA_STORE = {
       "brokerScore": 96,
       "bogleheadsRating": "Low-Cost Vanguard Competitor (0.15% TER Core Alternative)"
     },
-    "lastSyncedAt": "2026-09-29T14:14:56.333052+00:00",
+    "lastSyncedAt": "2026-10-03T19:54:39.374706+00:00",
     "liveMarketData": {
-      "livePrice": 8.361,
+      "livePrice": 8.421,
       "currency": "EUR",
-      "previousClose": 8.385,
-      "dayChange": -0.024,
-      "dayChangePercent": -0.29,
-      "fiftyTwoWeekHigh": 8.41,
+      "previousClose": 8.34,
+      "dayChange": 0.081,
+      "dayChangePercent": 0.97,
+      "fiftyTwoWeekHigh": 8.45,
       "fiftyTwoWeekLow": 6.8,
-      "regularMarketDayHigh": 8.372,
-      "regularMarketDayLow": 8.339,
-      "regularMarketVolume": 51831,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:25.721115+00:00"
+      "marketTime": "2026-10-03T19:54:39.374679+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:39.374679+00:00"
     },
-    "currentPriceEUR": 8.361,
-    "dayChangePercent": -0.29,
-    "fiftyTwoWeekHigh": 8.41,
+    "currentPriceEUR": 8.421,
+    "dayChangePercent": 0.97,
+    "fiftyTwoWeekHigh": 8.45,
     "fiftyTwoWeekLow": 6.8
   },
   {
@@ -2455,7 +2438,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.49,
     "trackingDifference5Y": 0.12,
     "trackingDifference1Y": 0.08,
-    "aumMillionsEUR": 660.0,
+    "aumMillionsEUR": 654.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -2620,24 +2603,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Thematic Satellite Tilt (Battery Transition & Storage)"
     },
     "liveMarketData": {
-      "livePrice": 25.85,
+      "livePrice": 26.205,
       "currency": "EUR",
-      "previousClose": 26.755,
-      "dayChange": -0.905,
-      "dayChangePercent": -3.38,
+      "previousClose": 25.655,
+      "dayChange": 0.55,
+      "dayChangePercent": 2.14,
       "fiftyTwoWeekHigh": 35.52,
-      "fiftyTwoWeekLow": 20.61,
-      "regularMarketDayHigh": 25.92,
-      "regularMarketDayLow": 25.685,
-      "regularMarketVolume": 4565,
+      "fiftyTwoWeekLow": 21.64,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:26.347088+00:00"
+      "marketTime": "2026-10-03T19:54:40.216258+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:40.216258+00:00"
     },
-    "currentPriceEUR": 25.85,
-    "dayChangePercent": -3.38,
+    "currentPriceEUR": 26.205,
+    "dayChangePercent": 2.14,
     "fiftyTwoWeekHigh": 35.52,
-    "fiftyTwoWeekLow": 20.61,
-    "lastSyncedAt": "2026-09-29T14:14:56.923397+00:00"
+    "fiftyTwoWeekLow": 21.64,
+    "lastSyncedAt": "2026-10-03T19:54:40.216297+00:00"
   },
   {
     "ticker": "RARE",
@@ -2655,7 +2636,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.5,
     "trackingDifference5Y": 0.15,
     "trackingDifference1Y": 0.1,
-    "aumMillionsEUR": 762.0,
+    "aumMillionsEUR": 717.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -2819,24 +2800,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Thematic Resource Hedge (High Volatility Geopolitical Play)"
     },
     "liveMarketData": {
-      "livePrice": 52.06,
+      "livePrice": 51.25,
       "currency": "USD",
-      "previousClose": 54.72,
-      "dayChange": -2.66,
-      "dayChangePercent": -4.86,
+      "previousClose": 50.31,
+      "dayChange": 0.94,
+      "dayChangePercent": 1.87,
       "fiftyTwoWeekHigh": 70.6,
       "fiftyTwoWeekLow": 42.09,
-      "regularMarketDayHigh": 52.38,
-      "regularMarketDayLow": 51.78,
-      "regularMarketVolume": 1085,
       "exchange": "London Stock Exchange",
-      "lastPriceUpdated": "2026-09-29T13:29:27.060816+00:00"
+      "marketTime": "2026-10-03T19:54:41.077259+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:41.077259+00:00"
     },
-    "currentPriceEUR": 52.06,
-    "dayChangePercent": -4.86,
+    "currentPriceEUR": 51.25,
+    "dayChangePercent": 1.87,
     "fiftyTwoWeekHigh": 70.6,
     "fiftyTwoWeekLow": 42.09,
-    "lastSyncedAt": "2026-09-29T14:14:57.444236+00:00"
+    "lastSyncedAt": "2026-10-03T19:54:41.077289+00:00"
   },
   {
     "ticker": "IUSQ",
@@ -2855,7 +2834,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.2,
     "trackingDifference5Y": -0.04,
     "trackingDifference1Y": -0.02,
-    "aumMillionsEUR": 32474.0,
+    "aumMillionsEUR": 32309.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -3031,24 +3010,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Prime Global One-Stop Core (MSCI Alternative to VWCE)"
     },
     "liveMarketData": {
-      "livePrice": 108.78,
+      "livePrice": 109.58,
       "currency": "EUR",
-      "previousClose": 109.18,
-      "dayChange": -0.4,
-      "dayChangePercent": -0.37,
-      "fiftyTwoWeekHigh": 109.5,
+      "previousClose": 108.46,
+      "dayChange": 1.12,
+      "dayChangePercent": 1.03,
+      "fiftyTwoWeekHigh": 110.0,
       "fiftyTwoWeekLow": 88.46,
-      "regularMarketDayHigh": 108.96,
-      "regularMarketDayLow": 108.48,
-      "regularMarketVolume": 46741,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:27.671814+00:00"
+      "marketTime": "2026-10-03T19:54:41.903021+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:41.903021+00:00"
     },
-    "currentPriceEUR": 108.78,
-    "dayChangePercent": -0.37,
-    "fiftyTwoWeekHigh": 109.5,
+    "currentPriceEUR": 109.58,
+    "dayChangePercent": 1.03,
+    "fiftyTwoWeekHigh": 110.0,
     "fiftyTwoWeekLow": 88.46,
-    "lastSyncedAt": "2026-09-29T14:14:57.883950+00:00"
+    "lastSyncedAt": "2026-10-03T19:54:41.903064+00:00"
   },
   {
     "ticker": "IMAE",
@@ -3067,7 +3044,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.12,
     "trackingDifference5Y": -0.06,
     "trackingDifference1Y": -0.03,
-    "aumMillionsEUR": 15830.0,
+    "aumMillionsEUR": 15726.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": true,
@@ -3241,24 +3218,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Low-Cost European Regional Pillar (0.12% TER)"
     },
     "liveMarketData": {
-      "livePrice": 104.24,
+      "livePrice": 102.68,
       "currency": "EUR",
-      "previousClose": 104.0,
-      "dayChange": 0.24,
-      "dayChangePercent": 0.23,
+      "previousClose": 101.92,
+      "dayChange": 0.76,
+      "dayChangePercent": 0.75,
       "fiftyTwoWeekHigh": 107.56,
-      "fiftyTwoWeekLow": 87.61,
-      "regularMarketDayHigh": 104.545,
-      "regularMarketDayLow": 104.04,
-      "regularMarketVolume": 100861,
+      "fiftyTwoWeekLow": 88.39,
       "exchange": "Euronext Amsterdam",
-      "lastPriceUpdated": "2026-09-29T13:29:28.321424+00:00"
+      "marketTime": "2026-10-03T19:54:43.120535+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:43.120535+00:00"
     },
-    "currentPriceEUR": 104.24,
-    "dayChangePercent": 0.23,
+    "currentPriceEUR": 102.68,
+    "dayChangePercent": 0.75,
     "fiftyTwoWeekHigh": 107.56,
-    "fiftyTwoWeekLow": 87.61,
-    "lastSyncedAt": "2026-09-29T14:14:58.377468+00:00"
+    "fiftyTwoWeekLow": 88.39,
+    "lastSyncedAt": "2026-10-03T19:54:43.120571+00:00"
   },
   {
     "ticker": "XCS6",
@@ -3277,7 +3252,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.5,
     "trackingDifference5Y": -0.15,
     "trackingDifference1Y": -0.08,
-    "aumMillionsEUR": 1758.0,
+    "aumMillionsEUR": 1737.0,
     "domicile": "Luxembourg",
     "replication": "Synthetic (Unfunded swap)",
     "securitiesLending": false,
@@ -3440,24 +3415,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Single-Country Emerging Satellite (Synthetic Chinese A-Shares)"
     },
     "liveMarketData": {
-      "livePrice": 11.08,
+      "livePrice": 11.138,
       "currency": "EUR",
-      "previousClose": 11.572,
-      "dayChange": -0.492,
-      "dayChangePercent": -4.25,
+      "previousClose": 11.124,
+      "dayChange": 0.014,
+      "dayChangePercent": 0.13,
       "fiftyTwoWeekHigh": 12.71,
       "fiftyTwoWeekLow": 10.47,
-      "regularMarketDayHigh": 11.138,
-      "regularMarketDayLow": 11.06,
-      "regularMarketVolume": 1771,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:29.026300+00:00"
+      "marketTime": "2026-10-03T19:54:44.069561+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:44.069561+00:00"
     },
-    "currentPriceEUR": 11.08,
-    "dayChangePercent": -4.25,
+    "currentPriceEUR": 11.138,
+    "dayChangePercent": 0.13,
     "fiftyTwoWeekHigh": 12.71,
     "fiftyTwoWeekLow": 10.47,
-    "lastSyncedAt": "2026-09-29T14:14:58.892245+00:00"
+    "lastSyncedAt": "2026-10-03T19:54:44.069589+00:00"
   },
   {
     "ticker": "XEON",
@@ -3475,7 +3448,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.1,
     "trackingDifference5Y": -0.02,
     "trackingDifference1Y": -0.01,
-    "aumMillionsEUR": 22939.0,
+    "aumMillionsEUR": 22981.0,
     "domicile": "Luxembourg",
     "replication": "Synthetic (Unfunded swap backed by European sovereign collateral)",
     "securitiesLending": false,
@@ -3586,24 +3559,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Ultimate Retail Cash Anchor (Earns ECB \u20acSTR with Zero Bank Default Risk)"
     },
     "liveMarketData": {
-      "livePrice": 150.355,
+      "livePrice": 150.386,
       "currency": "EUR",
-      "previousClose": 150.252,
-      "dayChange": 0.103,
-      "dayChangePercent": 0.07,
-      "fiftyTwoWeekHigh": 150.36,
-      "fiftyTwoWeekLow": 147.29,
-      "regularMarketDayHigh": 150.358,
-      "regularMarketDayLow": 150.33,
-      "regularMarketVolume": 131927,
+      "previousClose": 150.37,
+      "dayChange": 0.016,
+      "dayChangePercent": 0.01,
+      "fiftyTwoWeekHigh": 150.4,
+      "fiftyTwoWeekLow": 147.34,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:29.694170+00:00"
+      "marketTime": "2026-10-03T19:54:45.148949+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:45.148949+00:00"
     },
-    "currentPriceEUR": 150.355,
-    "dayChangePercent": 0.07,
-    "fiftyTwoWeekHigh": 150.36,
-    "fiftyTwoWeekLow": 147.29,
-    "lastSyncedAt": "2026-09-29T14:14:59.396268+00:00"
+    "currentPriceEUR": 150.386,
+    "dayChangePercent": 0.01,
+    "fiftyTwoWeekHigh": 150.4,
+    "fiftyTwoWeekLow": 147.34,
+    "lastSyncedAt": "2026-10-03T19:54:45.148994+00:00"
   },
   {
     "ticker": "VHYL",
@@ -3622,7 +3593,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.29,
     "trackingDifference5Y": 0.05,
     "trackingDifference1Y": 0.02,
-    "aumMillionsEUR": 9930.0,
+    "aumMillionsEUR": 9849.0,
     "domicile": "Ireland",
     "replication": "Physical (Optimised sampling)",
     "securitiesLending": true,
@@ -3796,24 +3767,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Dividend Income Satellite (Note: Distributing drag applies)"
     },
     "liveMarketData": {
-      "livePrice": 80.52,
+      "livePrice": 80.14,
       "currency": "EUR",
-      "previousClose": 80.96,
-      "dayChange": -0.44,
-      "dayChangePercent": -0.54,
+      "previousClose": 79.7,
+      "dayChange": 0.44,
+      "dayChangePercent": 0.55,
       "fiftyTwoWeekHigh": 82.28,
       "fiftyTwoWeekLow": 66.0,
-      "regularMarketDayHigh": 80.66,
-      "regularMarketDayLow": 80.42,
-      "regularMarketVolume": 45788,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:30.385528+00:00"
+      "marketTime": "2026-10-03T19:54:46.016766+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:46.016766+00:00"
     },
-    "currentPriceEUR": 80.52,
-    "dayChangePercent": -0.54,
+    "currentPriceEUR": 80.14,
+    "dayChangePercent": 0.55,
     "fiftyTwoWeekHigh": 82.28,
     "fiftyTwoWeekLow": 66.0,
-    "lastSyncedAt": "2026-09-29T14:14:59.786916+00:00"
+    "lastSyncedAt": "2026-10-03T19:54:46.016812+00:00"
   },
   {
     "ticker": "AII",
@@ -3831,7 +3800,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.35,
     "trackingDifference5Y": 0.08,
     "trackingDifference1Y": 0.05,
-    "aumMillionsEUR": 1253.0,
+    "aumMillionsEUR": 1263.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -3995,24 +3964,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Targeted AI Enabler Tilt (Data Centers, Power & Cooling Infrastructure)"
     },
     "liveMarketData": {
-      "livePrice": 10.332,
+      "livePrice": 10.706,
       "currency": "EUR",
-      "previousClose": 10.292,
-      "dayChange": 0.04,
-      "dayChangePercent": 0.39,
-      "fiftyTwoWeekHigh": 10.44,
-      "fiftyTwoWeekLow": 5.61,
-      "regularMarketDayHigh": 10.346,
-      "regularMarketDayLow": 10.248,
-      "regularMarketVolume": 17298,
+      "previousClose": 10.452,
+      "dayChange": 0.254,
+      "dayChangePercent": 2.43,
+      "fiftyTwoWeekHigh": 10.77,
+      "fiftyTwoWeekLow": 5.75,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:31.090594+00:00"
+      "marketTime": "2026-10-03T19:54:47.024910+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:47.024910+00:00"
     },
-    "currentPriceEUR": 10.332,
-    "dayChangePercent": 0.39,
-    "fiftyTwoWeekHigh": 10.44,
-    "fiftyTwoWeekLow": 5.61,
-    "lastSyncedAt": "2026-09-29T14:15:00.192394+00:00"
+    "currentPriceEUR": 10.706,
+    "dayChangePercent": 2.43,
+    "fiftyTwoWeekHigh": 10.77,
+    "fiftyTwoWeekLow": 5.75,
+    "lastSyncedAt": "2026-10-03T19:54:47.024949+00:00"
   },
   {
     "ticker": "WTAI",
@@ -4030,7 +3997,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.4,
     "trackingDifference5Y": 0.06,
     "trackingDifference1Y": 0.04,
-    "aumMillionsEUR": 1344.0,
+    "aumMillionsEUR": 1336.0,
     "domicile": "Ireland",
     "replication": "Physical (Full replication)",
     "securitiesLending": false,
@@ -4192,24 +4159,22 @@ window.APEX_DATA_STORE = {
       "bogleheadsRating": "Pioneering Pure-Play AI Satellite (Broader Equal-Weight CTA Methodology)"
     },
     "liveMarketData": {
-      "livePrice": 19.29,
+      "livePrice": 20.09,
       "currency": "EUR",
-      "previousClose": 19.172,
-      "dayChange": 0.118,
-      "dayChangePercent": 0.62,
-      "fiftyTwoWeekHigh": 19.42,
+      "previousClose": 19.56,
+      "dayChange": 0.53,
+      "dayChangePercent": 2.71,
+      "fiftyTwoWeekHigh": 20.16,
       "fiftyTwoWeekLow": 12.83,
-      "regularMarketDayHigh": 19.324,
-      "regularMarketDayLow": 19.162,
-      "regularMarketVolume": 51042,
       "exchange": "XETRA (Frankfurt)",
-      "lastPriceUpdated": "2026-09-29T13:29:31.718803+00:00"
+      "marketTime": "2026-10-03T19:54:47.899514+00:00",
+      "lastPriceUpdated": "2026-10-03T19:54:47.899514+00:00"
     },
-    "currentPriceEUR": 19.29,
-    "dayChangePercent": 0.62,
-    "fiftyTwoWeekHigh": 19.42,
+    "currentPriceEUR": 20.09,
+    "dayChangePercent": 2.71,
+    "fiftyTwoWeekHigh": 20.16,
     "fiftyTwoWeekLow": 12.83,
-    "lastSyncedAt": "2026-09-29T14:15:00.702558+00:00"
+    "lastSyncedAt": "2026-10-03T19:54:47.899545+00:00"
   },
   {
     "ticker": "SGLD",
@@ -4228,7 +4193,7 @@ window.APEX_DATA_STORE = {
     "ter": 0.12,
     "trackingDifference5Y": -0.05,
     "trackingDifference1Y": -0.02,
-    "aumMillionsEUR": 17450.0,
+    "aumMillionsEUR": 25960.0,
     "domicile": "Ireland",
     "replication": "Physical (Allocated gold bullion)",
     "securitiesLending": false,
@@ -4469,12 +4434,12 @@ window.APEX_DATA_STORE = {
 },
   news: [
   {
-    "id": "mw-56221780",
-    "title": "\ud83c\udf10 MarketWatch: The 15 worst-performing S&P 500 stocks during a dismal September",
-    "summary": "The S&P 500 has gained slightly in September, but three-quarters of its components have declined.",
-    "date": "Wed, 30 Sep 2026 21:22:00 GMT",
+    "id": "mw-86385900",
+    "title": "\ud83c\udf10 MarketWatch: \u2018I don\u2019t want to die on the sales floor\u2019: I\u2019m 67 and earn $19.50 an hour at a big-box store. When can I finally retire?",
+    "summary": "\u201cI started taking Social Security at 66 and receive $2,410 a month. I have $214,000 in my 401(k).\u201d",
+    "date": "Sat, 03 Oct 2026 19:30:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/the-15-worst-performing-s-p-500-stocks-during-a-dismal-september-991f8a07?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/i-dont-want-to-die-on-the-sales-floor-im-67-and-earn-19-50-an-hour-at-a-big-box-store-when-can-i-finally-retire-369abcf9?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",
@@ -4508,12 +4473,12 @@ window.APEX_DATA_STORE = {
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-26179853",
-    "title": "\ud83c\udf10 MarketWatch: Trump touts economic wins in battleground states \u2014 like a $54 billion Alaskan pipeline \u2014 as the midterms draw closer",
-    "summary": "President Donald Trump is spending time this week talking up big job-creating projects in battleground states.",
-    "date": "Wed, 30 Sep 2026 21:16:00 GMT",
+    "id": "mw-23685892",
+    "title": "\ud83c\udf10 MarketWatch: These bond strategies can help you get a safe 5% return on your cash",
+    "summary": "With U.S. Treasury yields on the rise, financial planners say they\u2019re seeing a growing interest in bonds, especially among investors looking to secure fixed income in retirement.",
+    "date": "Sat, 03 Oct 2026 18:49:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/trump-touts-economic-wins-in-battleground-states-like-a-54-billion-alaskan-pipeline-as-the-midterms-draw-closer-46db0149?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/these-bond-strategies-can-help-you-get-a-safe-5-return-on-your-cash-5fa45ccd?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Watch / Neutral",
@@ -4547,12 +4512,129 @@ window.APEX_DATA_STORE = {
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-60435306",
-    "title": "\ud83c\udf10 MarketWatch: How the \u2018AI Put\u2019 has become the only thing that matters for stocks",
-    "summary": "While investors worry a spike in global bond yields will trigger a selloff in U.S. equities, strategists at BofA Global Research say the real threat lies elsewhere.",
-    "date": "Wed, 30 Sep 2026 20:59:00 GMT",
+    "id": "mw-29165561",
+    "title": "\ud83c\udf10 MarketWatch: \u2018I want to make her proud\u2019: My mother, a divorc\u00e9e, died and I\u2019m her executor. Do I need to file for probate?",
+    "summary": "\u201cThe only debts were utility and credit-card bills, which we will pay off.\u201d",
+    "date": "Sat, 03 Oct 2026 18:30:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/this-is-the-big-risk-that-stock-investors-should-be-watching-as-rising-bond-yields-menace-markets-904cae0a?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/i-want-to-make-her-proud-my-mother-a-divorcee-died-and-im-her-executor-do-i-need-to-file-for-probate-a39b1123?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-62162479",
+    "title": "\ud83c\udf10 MarketWatch: A tough job market is pushing more young Americans to make a big bet: on themselves",
+    "summary": "There has been a rise in entrepreneurship among young Americans as the entry-level labor market has become tougher to join.",
+    "date": "Sat, 03 Oct 2026 17:24:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/a-tough-job-market-is-pushing-more-young-americans-to-make-a-big-bet-on-themselves-1aaddeca?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-25346973",
+    "title": "\ud83c\udf10 MarketWatch: Switching jobs to get higher pay works best in these industries",
+    "summary": "Finding a new job is one way to get a pay increase at a time when inflation has been outpacing wage growth.",
+    "date": "Sat, 03 Oct 2026 16:42:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/the-best-industry-to-change-jobs-to-get-paid-more-money-and-the-worst-ae33a3a7?mod=mw_rss_topstories",
+    "isLiveStream": true,
+    "signal": {
+      "bias": "Watch / Neutral",
+      "biasColor": "var(--accent-amber)",
+      "impact": "Moderate Impact",
+      "impactBadge": "medium",
+      "timeframe": "Tactical (1\u20134 Weeks)"
+    },
+    "relatedEtfs": [
+      {
+        "ticker": "SXR8",
+        "issuer": "BlackRock / iShares",
+        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
+      },
+      {
+        "ticker": "VWCE",
+        "issuer": "Vanguard",
+        "relation": "Global equities absorb headline volatility across international trading sessions"
+      },
+      {
+        "ticker": "QDVE",
+        "issuer": "BlackRock / iShares",
+        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
+      },
+      {
+        "ticker": "IUSQ",
+        "issuer": "BlackRock / iShares",
+        "relation": "All-world diversified equities capture aggregate global earnings momentum"
+      }
+    ],
+    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
+  },
+  {
+    "id": "mw-30703392",
+    "title": "\ud83c\udf10 MarketWatch: My wife never went back to work after raising our kids. Do I have to share my retirement savings 50/50?",
+    "summary": "\u201cFor 14 years I have gotten up every morning and gone to work while she has been free to pursue whatever interested her.\u201d",
+    "date": "Sat, 03 Oct 2026 16:30:00 GMT",
+    "source": "MarketWatch Wire Service",
+    "sourceUrl": "https://www.marketwatch.com/story/my-wife-never-went-back-to-work-after-raising-our-kids-do-i-have-to-share-my-retirement-savings-50-50-f0727f82?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
       "bias": "Bullish Sentiment",
@@ -4586,133 +4668,16 @@ window.APEX_DATA_STORE = {
     "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
   },
   {
-    "id": "mw-11359324",
-    "title": "\ud83c\udf10 MarketWatch: A brutal September for bonds points to an even darker October",
-    "summary": "September has been a brutal month for the bond market. If history is any guide, October might be even worse.",
-    "date": "Wed, 30 Sep 2026 20:56:00 GMT",
+    "id": "mw-59905270",
+    "title": "\ud83c\udf10 MarketWatch: \u2018I have $400,000 in equity\u2019: I\u2019m 80. Should I sell my house because of dangerous stairs \u2014 or spend thousands renovating?",
+    "summary": "\u201cGenerally, the advice I\u2019ve read says not to sell because I have a low-interest-rate mortgage.\u201d",
+    "date": "Sat, 03 Oct 2026 16:00:00 GMT",
     "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/a-brutal-september-for-bonds-points-to-an-even-darker-october-239d0fb5?mod=mw_rss_topstories",
+    "sourceUrl": "https://www.marketwatch.com/story/i-have-a-low-interest-rate-im-80-years-old-should-i-move-out-of-my-house-because-of-dangerous-stairs-389c3c7b?mod=mw_rss_topstories",
     "isLiveStream": true,
     "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-91652095",
-    "title": "\ud83c\udf10 MarketWatch: I\u2019m 71 and still working. I earn $108,000 a year. Am I doing the right thing?",
-    "summary": "\u201cI have $152,000 in my IRA and Roth accounts.\u201d",
-    "date": "Wed, 30 Sep 2026 20:45:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/im-71-and-still-working-i-earn-108-000-a-year-am-i-doing-the-right-thing-aaedcaa4?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-31688037",
-    "title": "\ud83c\udf10 MarketWatch: U.S. bond yields post biggest jump in a generation as global rout rattles investors",
-    "summary": "Yields in the global bond market have risen with startling speed over the past few months, and the more than $30 trillion market for U.S. government debt certainly hasn\u2019t been immune.",
-    "date": "Wed, 30 Sep 2026 20:32:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/u-s-bond-yields-head-for-biggest-jump-in-a-generation-as-global-rout-rattles-investors-7dede2f2?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
-      "impact": "Moderate Impact",
-      "impactBadge": "medium",
-      "timeframe": "Tactical (1\u20134 Weeks)"
-    },
-    "relatedEtfs": [
-      {
-        "ticker": "SXR8",
-        "issuer": "BlackRock / iShares",
-        "relation": "US large caps reflect broader market sentiment and quarterly earnings reports"
-      },
-      {
-        "ticker": "VWCE",
-        "issuer": "Vanguard",
-        "relation": "Global equities absorb headline volatility across international trading sessions"
-      },
-      {
-        "ticker": "QDVE",
-        "issuer": "BlackRock / iShares",
-        "relation": "US tech valuations respond with high beta to market sentiment and rate shifts"
-      },
-      {
-        "ticker": "IUSQ",
-        "issuer": "BlackRock / iShares",
-        "relation": "All-world diversified equities capture aggregate global earnings momentum"
-      }
-    ],
-    "retailAction": "Market noise is the enemy of compounding. Avoid buying into momentum sector spikes or panic-selling during pullbacks. Maintain total market diversification."
-  },
-  {
-    "id": "mw-70983891",
-    "title": "\ud83c\udf10 MarketWatch: Paramount\u2019s mega debt sale reveals how higher bond yields are squeezing corporate America",
-    "summary": "\u2018Over the near term, we expect supply to fall off, unless someone has to borrow,\u2019 says Invesco\u2019s Matt Brill",
-    "date": "Wed, 30 Sep 2026 19:42:00 GMT",
-    "source": "MarketWatch Wire Service",
-    "sourceUrl": "https://www.marketwatch.com/story/paramounts-mega-debt-sale-reveals-how-higher-bond-yields-are-squeezing-corporate-america-e9694ec3?mod=mw_rss_topstories",
-    "isLiveStream": true,
-    "signal": {
-      "bias": "Watch / Neutral",
-      "biasColor": "var(--accent-amber)",
+      "bias": "Bullish Sentiment",
+      "biasColor": "var(--accent-emerald)",
       "impact": "Moderate Impact",
       "impactBadge": "medium",
       "timeframe": "Tactical (1\u20134 Weeks)"
