@@ -789,11 +789,20 @@ window.UI = (function () {
     return "amber";
   }
 
+  /**
+   * When an ETF's quote was fetched (ISO string), or null if it has none. The bundled dataset names
+   * this `lastPriceUpdated`; the live sync engine writes the same instant as `marketTime`.
+   */
+  function quoteTime(etf) {
+    const live = etf && etf.liveMarketData;
+    return (live && (live.lastPriceUpdated || live.marketTime)) || null;
+  }
+
   return {
     locale: LOCALE,
     esc, safeUrl, link,
     fmt, icon,
-    prefersReducedMotion, debounce, copy, whenTabActive, signalTone,
+    prefersReducedMotion, debounce, copy, whenTabActive, signalTone, quoteTime,
     toast, dialog, color, chart,
   };
 })();

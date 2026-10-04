@@ -248,7 +248,7 @@ window.ComparisonMatrixModule = (function () {
         const cur = m.currency === "EUR" ? "€" : m.currency === "USD" ? "$" : `${m.currency} `;
         return `<strong class="cell-big">${esc(cur)}${esc(m.livePrice)}</strong>
                 <div class="${chg >= 0 ? "val-positive" : "val-negative"} text-xs fw-700"><span aria-hidden="true">${chg >= 0 ? "▲" : "▼"}</span> ${esc(fmt.pct(Math.abs(chg), 2))} on the day</div>
-                ${m.lastPriceUpdated ? `<div class="text-muted text-xs">${esc(fmt.relative(m.lastPriceUpdated))}</div>` : ""}`;
+                ${UI.quoteTime(e) ? `<div class="text-muted text-xs">${esc(fmt.relative(UI.quoteTime(e)))}</div>` : ""}`;
       }),
       row("52-week range", "Highest and lowest traded prices over the past rolling 52 weeks.", (e) => {
         const m = e.liveMarketData || {};

@@ -316,7 +316,7 @@ window.ScreenerModule = (function () {
 
   function newestQuote() {
     const stamps = allEtfs
-      .map((e) => e.liveMarketData?.lastPriceUpdated)
+      .map((e) => UI.quoteTime(e))
       .filter(Boolean)
       .map((s) => new Date(s).getTime())
       .filter(Number.isFinite);
@@ -450,7 +450,8 @@ window.ScreenerModule = (function () {
     const td = Number(etf.trackingDifference5Y);
     const tier = aumTier(etf.aumMillionsEUR);
     const comparing = !!window.ComparisonMatrixModule?.isComparing(etf.ticker);
-    const quoteTime = live && live.lastPriceUpdated ? new Date(live.lastPriceUpdated).getTime() : NaN;
+    const quotedAt = live ? UI.quoteTime(etf) : null;
+    const quoteTime = quotedAt ? new Date(quotedAt).getTime() : NaN;
     const liveFresh = Number.isFinite(quoteTime) && (Date.now() - quoteTime) / 36e5 <= 36;
 
     const holdings = (etf.topHoldings || []).slice(0, 10).map((h) => [h.name, h.weight, h.symbol]);
@@ -485,7 +486,7 @@ window.ScreenerModule = (function () {
         <div class="live-card-inner">
           <div class="row-between">
             <strong><span class="status-dot is-inline" data-state="${liveFresh ? "fresh" : "aging"}"></span>${liveFresh ? "Live quote" : "Last quote"} · ${esc(live.exchange || "Exchange")}</strong>
-            ${live.lastPriceUpdated ? `<span class="text-muted text-xs" data-tip="${esc(fmt.dateTimeUtc(live.lastPriceUpdated))}">updated ${esc(fmt.relative(live.lastPriceUpdated))}</span>` : ""}
+            ${quotedAt ? `<span class="text-muted text-xs" data-tip="${esc(fmt.dateTimeUtc(quotedAt))}">updated ${esc(fmt.relative(quotedAt))}</span>` : ""}
           </div>
           <div class="grid-4 mt-3">
             <div><div class="text-muted text-xs">Traded price</div><strong class="live-figure">${esc(money(live.livePrice, live.currency))}</strong></div>

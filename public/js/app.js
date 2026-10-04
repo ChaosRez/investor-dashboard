@@ -63,6 +63,7 @@ window.App = (function () {
   let newsData = [];
   let educationData = null;
   let currentTab = null;
+  let lastSyncAttempt = null; // { at, summary } for the freshness tooltip; session only
 
   const $ = (id) => document.getElementById(id);
   const smooth = () => (UI.prefersReducedMotion() ? "auto" : "smooth");
@@ -88,6 +89,10 @@ window.App = (function () {
     });
 
     hydrateFromApi();
+
+    // "Prices updated 14 seconds ago" must not still be on screen twenty minutes later.
+    setInterval(updateFreshness, 60000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) updateFreshness(); });
   }
 
   /* ----------------------------------------------------------------- theme */
@@ -308,27 +313,48 @@ window.App = (function () {
       btn.classList.add("is-loading");
       btn.setAttribute("aria-busy", "true");
       label.textContent = "Syncing…";
-      UI.toast("Syncing prices, fund sizes and news — this can take up to a minute.", { type: "info", timeout: 5000 });
+      const progress = UI.toast("Syncing prices, fund sizes and news — this can take up to a minute.", { type: "info", timeout: 0 });
 
+      const syncedBefore = new Map(etfsData.map((e) => [e.ticker, e.lastSyncedAt]));
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 180000);
       try {
         const res = await fetch("/api/sync", { method: "POST", signal: ctrl.signal });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        let payload = null;
+        try { payload = await res.json(); } catch (e) { /* not JSON, e.g. a static server's error page */ }
+        // The ApexETF server always answers JSON. Anything else (a static server's 501 page, a proxy
+        // error) means there is no sync API behind this origin.
+        if (!payload) throw new Error(`HTTP ${res.status}`);
+        if (payload.error || !res.ok) {
+          const reason = payload.error || `HTTP ${res.status}`;
+          throw Object.assign(new Error(reason), { serverMessage: reason });
+        }
+
         await hydrateFromApi({ force: true });
-        label.textContent = "Synced";
-        UI.toast(`Live data synced — ${etfsData.length} ETFs, ${newsData.length} news items.`, { type: "success" });
+        const outcome = describeSync(payload, syncedBefore);
+        lastSyncAttempt = { at: Date.now(), summary: outcome.summary };
+        updateFreshness();
+        label.textContent = outcome.label;
+        UI.toast(outcome.message, { type: outcome.type, timeout: outcome.type === "success" ? 4500 : 12000 });
       } catch (err) {
         label.textContent = "Sync failed";
-        const timedOut = err && err.name === "AbortError";
-        UI.toast(
-          timedOut
-            ? "Sync timed out. The server may still be working — reload in a minute."
-            : "Couldn't reach the sync endpoint. Start the local server with “uv run apex-etf” (Live Sync is unavailable when index.html is opened directly).",
-          { type: "error", timeout: 7000 }
-        );
+        let message, short;
+        if (err && err.name === "AbortError") {
+          message = "Sync timed out. The server may still be working — reload in a minute.";
+          short = "timed out.";
+        } else if (err && err.serverMessage) {
+          message = `Sync failed on the server: ${err.serverMessage}`;
+          short = `server error (${err.serverMessage}).`;
+        } else {
+          message = "Couldn't reach the sync endpoint. Start the local server with “uv run apex-etf” (Live Sync is unavailable when index.html is opened directly).";
+          short = "server unreachable.";
+        }
+        lastSyncAttempt = { at: Date.now(), summary: `failed — ${short}` };
+        updateFreshness();
+        UI.toast(message, { type: "error", timeout: 8000 });
       } finally {
         clearTimeout(timer);
+        progress.dismiss(); // the result toast replaces it; never show both
         btn.classList.remove("is-loading");
         btn.removeAttribute("aria-busy");
         setTimeout(() => {
@@ -337,6 +363,43 @@ window.App = (function () {
         }, 1800);
       }
     });
+  }
+
+  /**
+   * Turn a /api/sync payload into an honest outcome. The server reports what each source delivered;
+   * an older server only says how many ETFs it processed, so fall back to which quotes actually changed.
+   */
+  function describeSync(payload, syncedBefore) {
+    const skipped = Array.isArray(payload.quotesSkipped) ? payload.quotesSkipped.length : 0;
+    const targets = Math.max(etfsData.length - skipped, 0);
+    const refreshed = Number.isFinite(payload.quotesUpdated)
+      ? payload.quotesUpdated
+      : etfsData.filter((e) => e.lastSyncedAt && e.lastSyncedAt !== syncedBefore.get(e.ticker)).length;
+    const headlines = Number.isFinite(payload.liveNewsItemsFetched) ? payload.liveNewsItemsFetched : 0;
+    const warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
+
+    const hasAccounting = Number.isFinite(payload.quotesUpdated);
+    const nothing = payload.status === "failed" || (refreshed === 0 && headlines === 0);
+    const problems = warnings.length > 0 || payload.status === "partial" || (!hasAccounting && refreshed < targets);
+    const prices = `${refreshed} of ${targets} prices`;
+    const live = `${headlines} live headline${headlines === 1 ? "" : "s"}`;
+
+    if (nothing) {
+      return {
+        type: "error", label: "Sync failed", summary: `nothing refreshed. ${warnings.join(" ")}`.trim(),
+        message: `Sync ran but nothing could be refreshed. ${warnings.join(" ")}`.trim(),
+      };
+    }
+    if (problems) {
+      return {
+        type: "warning", label: "Partly synced", summary: `${prices} updated, ${live}. ${warnings.join(" ")}`.trim(),
+        message: `Sync finished with problems — ${prices} updated, ${live}. ${warnings.join(" ")}`.trim(),
+      };
+    }
+    return {
+      type: "success", label: "Synced", summary: `${prices} updated, ${live}.`,
+      message: `Live data synced — ${prices} updated, ${live}.`,
+    };
   }
 
   function bindMenus() {
@@ -469,32 +532,39 @@ window.App = (function () {
     const text = $("freshness-text");
     if (!chip || !dot || !text) return;
 
-    const newest = (values) => {
-      const t = values.filter(Boolean).map((s) => new Date(s).getTime()).filter(Number.isFinite);
-      return t.length ? Math.max(...t) : null;
-    };
+    const stamps = (values) => values.filter(Boolean).map((s) => new Date(s).getTime()).filter(Number.isFinite);
+    const iso = (ms) => new Date(ms).toISOString();
     // Freshness is judged on the QUOTE time. A sync can run today and still store
     // an older exchange timestamp (market closed), so sync time is shown separately.
-    const quoteAt = newest(etfsData.map((e) => e.liveMarketData && e.liveMarketData.lastPriceUpdated));
-    const syncAt = newest(etfsData.map((e) => e.lastSyncedAt));
+    const quotes = stamps(etfsData.map((e) => UI.quoteTime(e)));
+    const quoteNewest = quotes.length ? Math.max(...quotes) : null;
+    const quoteOldest = quotes.length ? Math.min(...quotes) : null;
+    const syncs = stamps(etfsData.map((e) => e.lastSyncedAt));
+    const syncAt = syncs.length ? Math.max(...syncs) : null;
 
-    if (quoteAt === null && syncAt === null) {
+    if (quoteOldest === null && syncAt === null) {
       dot.dataset.state = "unknown";
       text.textContent = "Static data snapshot";
       chip.setAttribute("data-tip", "No timestamps in the dataset. Use Live Sync (needs the local server) to fetch fresh prices.");
       return;
     }
 
-    const basis = quoteAt ?? syncAt;
-    const iso = new Date(basis).toISOString();
+    // Judge the table by its weakest link: after a partial sync the newest quote alone would
+    // make prices that are days old look fresh.
+    const basis = quoteOldest ?? syncAt;
     const ageHours = (Date.now() - basis) / 36e5;
     const state = ageHours <= 36 ? "fresh" : ageHours <= 24 * 5 ? "aging" : "stale";
     dot.dataset.state = state;
-    text.textContent = `${quoteAt === null ? "Synced" : state === "fresh" ? "Prices updated" : "Prices from"} ${UI.fmt.relative(iso)}`;
+    text.textContent = `${quoteOldest === null ? "Synced" : state === "fresh" ? "Prices updated" : "Prices from"} ${UI.fmt.relative(iso(basis))}`;
 
     const parts = [];
-    if (quoteAt !== null) parts.push(`Newest quote: ${UI.fmt.dateTimeUtc(new Date(quoteAt).toISOString())}.`);
-    if (syncAt !== null) parts.push(`Last sync: ${UI.fmt.dateTimeUtc(new Date(syncAt).toISOString())}.`);
+    if (quoteOldest !== null) {
+      parts.push(quoteNewest - quoteOldest > 6 * 36e5
+        ? `Quotes range from ${UI.fmt.dateTimeUtc(iso(quoteOldest))} to ${UI.fmt.dateTimeUtc(iso(quoteNewest))}.`
+        : `Quotes fetched ${UI.fmt.dateTimeUtc(iso(quoteNewest))}.`);
+    }
+    if (syncAt !== null) parts.push(`Last successful sync: ${UI.fmt.dateTimeUtc(iso(syncAt))}.`);
+    if (lastSyncAttempt) parts.push(`Last Live Sync attempt (${UI.fmt.dateTimeUtc(iso(lastSyncAttempt.at))}): ${lastSyncAttempt.summary}`);
     if (state !== "fresh") parts.push("Run Live Sync (needs the local server) to refresh.");
     chip.setAttribute("data-tip", parts.join(" "));
   }
