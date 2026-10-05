@@ -1,0 +1,391 @@
+{
+  "version": 1,
+  "asOf": "2026-10-05",
+  "currency": "EUR",
+  "benchmark": "VWCE",
+  "cashInstrument": "CASH",
+  "purpose": "Facts and arithmetic for a short-horizon plan. The planner never proposes instruments or amounts; every amount comes from the person using it. Not investment or tax advice.",
+  "defaultPortfolio": {
+    "note": "Starting point of the planner (what you told us you hold). Edit it in the planner; your edits are remembered in this browser only.",
+    "today": { "CASH": 15000, "BTC": 250 },
+    "candidates": ["AII", "BATT", "WGLD", "BTC"]
+  },
+  "episodeLabels": {
+    "2020-02": "2020 COVID crash",
+    "2022-01": "2022 rate-hike sell-off",
+    "2025-02": "2025 tariff shock"
+  },
+  "groups": [
+    { "id": "stable", "label": "Capital-stable" },
+    { "id": "gold", "label": "Gold" },
+    { "id": "crypto", "label": "Crypto" },
+    { "id": "theme", "label": "Thematic and sector equity" },
+    { "id": "broad", "label": "Broad equity (reference)" }
+  ],
+  "instruments": [
+    {
+      "id": "CASH",
+      "name": "Instant-access savings account (Tagesgeld)",
+      "shortName": "Cash account",
+      "kind": "cash",
+      "group": "stable",
+      "interestRate": 2.5,
+      "summary": "Your bank account. The balance does not move with markets; the rate is variable. Deposits are protected by the EU statutory deposit guarantee up to €100,000 per person and bank.",
+      "taxClass": "interest",
+      "tradeRepublic": { "savingsPlan": null, "note": "Not a security. Trade Republic also pays 2.50% p.a. on uninvested cash since 16 Sep 2026 (variable, follows the ECB deposit rate)." },
+      "sources": [
+        { "label": "Directive 2014/49/EU on deposit guarantee schemes (€100,000)", "url": "https://eur-lex.europa.eu/eli/dir/2014/49/oj" }
+      ]
+    },
+    {
+      "id": "XEON",
+      "name": "Xtrackers II EUR Overnight Rate Swap UCITS ETF 1C",
+      "shortName": "€STR money-market ETF",
+      "kind": "money-market",
+      "group": "stable",
+      "isin": "LU0290358497",
+      "wkn": "DBX0AN",
+      "yahooSymbol": "XEON.DE",
+      "underlying": "Solactive €STR +8.5 Daily (euro overnight rate)",
+      "inception": "2007-05-25",
+      "domicile": "Luxembourg",
+      "accumulating": true,
+      "replication": "Synthetic (swap)",
+      "ter": 0.10,
+      "aumMillionsEUR": 22997,
+      "summary": "Earns roughly the euro overnight rate minus costs; the price creeps up almost daily. A fund, so it is not covered by deposit insurance; its assets are kept separate from the issuer's.",
+      "taxClass": "fund-other",
+      "tradeRepublic": { "savingsPlan": null, "note": "Savings-plan availability not confirmed by justETF; check in the app." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=LU0290358497" }
+      ]
+    },
+    {
+      "id": "DBXP",
+      "name": "Xtrackers II Eurozone Government Bond 1-3 UCITS ETF 1C",
+      "shortName": "Euro government bonds 1–3y",
+      "kind": "bond",
+      "group": "stable",
+      "isin": "LU0290356871",
+      "wkn": "DBX0AD",
+      "yahooSymbol": "DBXP.DE",
+      "underlying": "iBoxx EUR Eurozone 1-3 (euro-area government bonds, 1–3 years to maturity)",
+      "inception": "2007-05-25",
+      "domicile": "Luxembourg",
+      "accumulating": true,
+      "replication": "Physical (sampling)",
+      "ter": 0.10,
+      "aumMillionsEUR": 3493,
+      "summary": "Short-dated euro government bonds. Small price swings when interest rates move (prices fall when rates rise).",
+      "taxClass": "fund-other",
+      "tradeRepublic": { "savingsPlan": null, "note": "Savings-plan availability not confirmed by justETF; check in the app." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=LU0290356871" }
+      ]
+    },
+    {
+      "id": "WGLD",
+      "name": "WisdomTree Core Physical Gold",
+      "shortName": "Gold (WisdomTree Core)",
+      "kind": "gold",
+      "group": "gold",
+      "isin": "JE00BN2CJ301",
+      "yahooSymbol": "WGLD.MI",
+      "priceNote": "Prices from the Borsa Italiana EUR line (Yahoo carries no Xetra line); every line tracks the same gold holdings.",
+      "underlying": "Physical gold (LBMA), priced in USD",
+      "inception": "2020-11-30",
+      "domicile": "Jersey",
+      "accumulating": true,
+      "replication": "Physically backed, with a delivery option",
+      "ter": 0.12,
+      "aumMillionsEUR": 1843,
+      "summary": "Exchange-traded commodity backed by vaulted gold. Gold is priced in US dollars, so a weaker dollar lowers the euro value.",
+      "episodeProxy": "SGLD",
+      "taxClass": "etc-delivery",
+      "taxNote": "Listed by extraETF (Feb 2026) among gold ETCs with a delivery right, which German tax law treats like physical gold.",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan listed for Trade Republic on justETF." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=JE00BN2CJ301" },
+        { "label": "extraETF: taxation of gold ETCs (updated 17 Feb 2026)", "url": "https://extraetf.com/de/wissen/besteuerung-von-gold-etc" }
+      ]
+    },
+    {
+      "id": "SGLD",
+      "name": "Invesco Physical Gold ETC",
+      "shortName": "Gold (Invesco)",
+      "kind": "gold",
+      "group": "gold",
+      "isin": "IE00B579F325",
+      "wkn": "A1AA5X",
+      "yahooSymbol": "8PSG.DE",
+      "underlying": "Physical gold, priced in USD",
+      "inception": "2009-06-25",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physically backed",
+      "ter": 0.12,
+      "aumMillionsEUR": 25960,
+      "summary": "The largest physical-gold ETC in Europe. Same gold exposure as WGLD, different German tax treatment.",
+      "taxClass": "etc-taxable",
+      "taxNote": "Listed by extraETF (Feb 2026) among gold ETCs without a delivery right, taxed with the flat capital-gains tax.",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan listed for Trade Republic on justETF." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00B579F325" },
+        { "label": "extraETF: taxation of gold ETCs (updated 17 Feb 2026)", "url": "https://extraetf.com/de/wissen/besteuerung-von-gold-etc" }
+      ]
+    },
+    {
+      "id": "BTC",
+      "name": "Bitcoin (held directly)",
+      "shortName": "Bitcoin",
+      "kind": "crypto",
+      "group": "crypto",
+      "yahooSymbol": "BTC-EUR",
+      "underlying": "Bitcoin, priced in EUR",
+      "summary": "Bought directly in the Trade Republic app; custody by BitGo Deutschland GmbH. Trades around the clock.",
+      "costNote": "€1 per order plus a spread of about 0.5% for Bitcoin; savings plans have no order fee (spread still applies).",
+      "taxClass": "crypto-direct",
+      "taxNote": "Under current law (§ 23 EStG) gains are tax-free after 12 months. The federal cabinet's 2027 budget (6 Jul 2026) plans to abolish that exemption; no bill had been published as of September 2026.",
+      "tradeRepublic": { "savingsPlan": true, "note": "Crypto savings plans: €10 to €10,000 per execution, no order fee (price list v11.2025)." },
+      "sources": [
+        { "label": "extraETF: Trade Republic crypto test (14 Nov 2025)", "url": "https://extraetf.com/de/krypto-broker/trade-republic-krypto-broker-im-test" },
+        { "label": "Trade Republic price list v11.2025", "url": "https://assets.traderepublic.com/documents/DE/FURTHER_INFORMATION_PRICE_LIST_20251125091224.pdf" },
+        { "label": "neuebanken.de: planned end of the crypto holding period", "url": "https://www.neuebanken.de/krypto-haltefrist-abschaffung/" }
+      ]
+    },
+    {
+      "id": "AII",
+      "name": "iShares AI Infrastructure UCITS ETF USD (Acc)",
+      "shortName": "AI infrastructure",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "IE000X59ZHE2",
+      "wkn": "A40H8L",
+      "yahooSymbol": "AIFS.DE",
+      "underlying": "STOXX Global AI Infrastructure index — 52 stocks",
+      "inception": "2024-12-05",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (full replication)",
+      "ter": 0.35,
+      "aumMillionsEUR": 1316,
+      "exposure": "USA 79%, Taiwan 9%, South Korea 4%, Netherlands 4%; technology 88% of the fund",
+      "summary": "Concentrated in US technology. Launched December 2024, so its own history covers one large market fall (February–April 2025).",
+      "taxClass": "fund-equity",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan listed for Trade Republic on justETF." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=IE000X59ZHE2" }
+      ]
+    },
+    {
+      "id": "BATT",
+      "name": "L&G Battery Value-Chain UCITS ETF",
+      "shortName": "Battery value chain",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "IE00BF0M2Z96",
+      "wkn": "A2H5GK",
+      "yahooSymbol": "BATE.DE",
+      "underlying": "Solactive Battery Value-Chain index — 46 stocks (miners, cell makers, technology)",
+      "inception": "2018-01-23",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (full replication)",
+      "ter": 0.49,
+      "aumMillionsEUR": 663,
+      "exposure": "USA 19%, Japan 17%, China 15%, Germany 9%",
+      "summary": "Battery makers, technology firms and raw-material miners.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan listed for Trade Republic on justETF." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00BF0M2Z96" }
+      ]
+    },
+    {
+      "id": "BRIJ",
+      "name": "Global X European Infrastructure Development UCITS ETF EUR Acc",
+      "shortName": "European infrastructure",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "IE000PS0J481",
+      "yahooSymbol": "B41J.DE",
+      "underlying": "Mirae Asset European Infrastructure Development index",
+      "inception": "2024-09-03",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (full replication)",
+      "ter": 0.47,
+      "aumMillionsEUR": 542,
+      "summary": "European companies in construction, engineering and infrastructure materials. Launched September 2024.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan listed for Trade Republic on justETF." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=IE000PS0J481" },
+        { "label": "Global X fund page", "url": "https://globalxetfs.eu/funds/brij" }
+      ]
+    },
+    {
+      "id": "EXH9",
+      "name": "iShares STOXX Europe 600 Utilities UCITS ETF (DE)",
+      "shortName": "European utilities",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "DE000A0Q4R02",
+      "yahooSymbol": "EXH9.DE",
+      "underlying": "STOXX Europe 600 Utilities index — 28 stocks (power and gas suppliers, grid operators)",
+      "inception": "2002-07-08",
+      "domicile": "Germany",
+      "accumulating": false,
+      "distribution": "Distributes at least annually",
+      "replication": "Physical (full replication)",
+      "ter": 0.47,
+      "aumMillionsEUR": 786,
+      "summary": "European energy providers and grid operators. Pays out dividends, which are taxed in the year they are paid.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan listed for Trade Republic on justETF." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=DE000A0Q4R02" }
+      ]
+    },
+    {
+      "id": "VWCE",
+      "name": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating",
+      "shortName": "World equity (benchmark)",
+      "kind": "equity",
+      "group": "broad",
+      "role": "benchmark",
+      "isin": "IE00BK5BQT80",
+      "wkn": "A2PKXG",
+      "yahooSymbol": "VWCE.DE",
+      "underlying": "FTSE All-World index — about 3,700 large and mid-sized companies worldwide",
+      "inception": "2019-07-23",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (sampling)",
+      "ter": 0.14,
+      "aumMillionsEUR": 53011,
+      "exposure": "USA about 63%",
+      "summary": "The world stock market in one fund, and the planner's yardstick: \"the market falls 10%\" means this fund falls 10%.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan available at Trade Republic (dataset)." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00BK5BQT80" }
+      ]
+    },
+    {
+      "id": "IMAE",
+      "name": "iShares Core MSCI Europe UCITS ETF EUR (Acc)",
+      "shortName": "Europe equity",
+      "kind": "equity",
+      "group": "broad",
+      "isin": "IE00B4K48X80",
+      "yahooSymbol": "IMAE.AS",
+      "underlying": "MSCI Europe index — about 420 large and mid-sized European companies",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical",
+      "ter": 0.12,
+      "aumMillionsEUR": 15726,
+      "summary": "Broad European stock market without US companies.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": { "savingsPlan": true, "note": "Savings plan available at Trade Republic (dataset)." },
+      "sources": [
+        { "label": "justETF profile", "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00B4K48X80" }
+      ]
+    }
+  ],
+  "broker": {
+    "name": "Trade Republic",
+    "orderFee": 1.0,
+    "orderFeeLabel": "Bestpreis order (venue picked automatically)",
+    "orderFeeVenueChoice": 2.0,
+    "orderFeeVenueChoiceLabel": "Direktpreis order (you pick the venue, e.g. Xetra)",
+    "feeModelSince": "2026-07-01",
+    "savingsPlanFee": 0,
+    "savingsPlanMin": 10,
+    "savingsPlanMax": 10000,
+    "savingsPlanSchedule": "Savings plans start on the 2nd or 16th of a month and run weekly (2nd, 9th, 16th, 23rd), twice a month (2nd and 16th), monthly or quarterly.",
+    "cashInterestRate": 2.5,
+    "cashInterestSince": "2026-09-16",
+    "spreadEstimates": { "BTC": 0.5 },
+    "notes": [
+        "Partial fills of one order on the same trading day are charged once.",
+        "Deposits by SEPA transfer are free; card, Apple Pay or Google Pay deposits cost 1%.",
+        "Crypto custody and crypto transfers are free (network fees apply to transfers)."
+    ],
+    "sources": [
+      { "label": "Trade Republic price list v11.2025", "url": "https://assets.traderepublic.com/documents/DE/FURTHER_INFORMATION_PRICE_LIST_20251125091224.pdf" },
+      { "label": "startbase.de: Trade Republic after the PFOF ban (Bestpreis €1 / Direktpreis €2, from 1 Jul 2026)", "url": "https://www.startbase.de/news/trade-republic-reagiert-auf-das-pfof-aus-und-erfindet-sich-neu/" },
+      { "label": "extraETF: Trade Republic savings-plan test (execution days)", "url": "https://extraetf.com/at/etf-sparplan/trade-republic-etf-sparplan-test" },
+      { "label": "neuebanken.de: Trade Republic pays 2.50% from 16 Sep 2026", "url": "https://www.neuebanken.de/trade-republic-zinsen-2-50-prozent/" }
+    ]
+  },
+  "tax": {
+    "country": "Germany",
+    "flatRate": 26.375,
+    "flatRateNote": "25% flat capital-income tax plus 5.5% solidarity surcharge on it; no church tax.",
+    "saversAllowance": 1000,
+    "equityFundPartialExemption": 30,
+    "vorabpauschaleFactor": 0.7,
+    "basiszins": { "2024": 2.29, "2025": 2.53, "2026": 3.20 },
+    "privateSales": { "holdingMonths": 12, "exemptionLimit": 1000 },
+    "notes": [
+      "The saver's allowance (Sparerpauschbetrag) is €1,000 a year for a single person, shared across all banks and brokers via exemption orders (Freistellungsaufträge).",
+      "Accumulating funds pay a yearly advance tax (Vorabpauschale): fund value at the start of the year × 70% of the Basiszins (3.20% for 2026), capped at the fund's actual gain that year. In the year of purchase it shrinks by one twelfth for every full month before the purchase month. It is deducted in January of the following year and credited when you sell.",
+      "Private-sale rules (directly held crypto, gold ETCs with a delivery right): gains are tax-free after 12 months. Sold sooner, gains are taxed at your personal income-tax rate, but only if all private-sale gains of the year reach €1,000 (an exemption limit, not an allowance).",
+      "Losses on shares/funds can only offset gains in the same category; your broker keeps loss pots automatically.",
+      "Simplified overview, not tax advice."
+    ],
+    "sources": [
+      { "label": "finanzfluss: Freistellungsauftrag (€1,000 since 2023)", "url": "https://www.finanzfluss.de/geldanlage/freistellungsauftrag/" },
+      { "label": "BVI: Basiszins 2026 (3.20%, BMF letter of 13 Jan 2026)", "url": "https://direkt.bvi.de/fileadmin/user_upload/letter/2026/COO.7005.100.4.13897455.pdf" },
+      { "label": "Blockpit: crypto tax in Germany 2026 (§ 23 EStG, €1,000 exemption limit)", "url": "https://www.blockpit.io/de-de/steuer-guides/krypto-steuer-deutschland" },
+      { "label": "extraETF: taxation of gold ETCs (updated 17 Feb 2026)", "url": "https://extraetf.com/de/wissen/besteuerung-von-gold-etc" }
+    ]
+  },
+  "marketContext": [
+    {
+      "label": "ECB deposit rate",
+      "value": "2.50%",
+      "detail": "Raised twice in 2026 (17 June and 16 September). Next decision 29 October 2026.",
+      "source": { "label": "ECB key interest rates", "url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/key_ecb_interest_rates/html/index.en.html" }
+    },
+    {
+      "label": "Euro-area inflation (ECB projection)",
+      "value": "3.0% in 2026",
+      "detail": "September 2026 staff projections: 3.0% in 2026, 2.5% in 2027, 2.1% in 2028. A 2.5% account rate is below that.",
+      "source": { "label": "ECB decision of 10 Sep 2026 (summary)", "url": "https://forexfundamentals.com/economic-calendar/ecb/2026-09-10" }
+    },
+    {
+      "label": "US valuation (S&P 500 Shiller CAPE)",
+      "value": "≈ 40.6",
+      "detail": "September 2026: second-highest reading since 1881; the record was 44.2 in December 1999. The long-run average is about 17.",
+      "source": { "label": "TheStreet: S&P 500 CAPE second-highest ever", "url": "https://www.thestreet.com/investing/sp-500-shiller-cape-ratio-dot-com-warning-2026" }
+    },
+    {
+      "label": "German infrastructure fund",
+      "value": "€500 bn",
+      "detail": "Special fund for infrastructure and climate neutrality, created by a constitutional amendment in March 2025 and financed by borrowing.",
+      "source": { "label": "Bundesregierung: Sondervermögen", "url": "https://www.bundesregierung.de/breg-de/aktuelles/sondervermoegen-2356240" }
+    },
+    {
+      "label": "Crypto tax exemption",
+      "value": "Under review",
+      "detail": "The cabinet's 2027 budget (6 Jul 2026) plans to end the 12-month exemption for crypto gains. Not law; no bill published as of September 2026.",
+      "source": { "label": "anwalt.de: crypto taxes 2026", "url": "https://www.anwalt.de/rechtstipps/krypto-steuern-2026-ende-der-haltefrist-so-reagieren-anleger-jetzt-278155.html" }
+    }
+  ],
+  "education": [
+    {
+      "id": "lump-vs-phased",
+      "title": "All at once or in steps?",
+      "text": "Vanguard compared investing a lump sum at once with spreading it over 12 months (MSCI World, 1976–2022): the lump sum came out ahead in about 68% of rolling one-year periods, because markets rose more often than they fell. Spreading the purchases mainly reduces the damage, and the regret, if prices fall soon after you buy.",
+      "source": { "label": "Vanguard: Cost averaging — invest now or temporarily hold your cash?", "url": "https://corporate.vanguard.com/content/dam/corp/research/pdf/cost_averaging_invest_now_or_temporarily_hold_your_cash.pdf" }
+    },
+    {
+      "id": "beta",
+      "title": "What the stress test measures",
+      "text": "Beta is how much an instrument has tended to move for each 1% move of the world index (weekly returns, last 3 years). The episode columns repeat what each instrument actually did during the real falls of the world index, scaled to your scenario. Neither is a forecast: the next fall can hit an instrument harder than any of these."
+    }
+  ]
+}

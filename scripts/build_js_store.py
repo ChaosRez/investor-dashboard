@@ -1,32 +1,11 @@
-# Generate public/js/data-store.js
-import json
+# Generate public/js/data-store.js (the offline mirror of public/data/*.json).
+# Delegates to the same function Live Sync uses, so the two can never produce different stores.
+import os
+import sys
 
-with open("public/data/etfs.json", "r") as f:
-    etfs = json.load(f)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
 
-with open("public/data/correlations.json", "r") as f:
-    correlations = json.load(f)
+from apex_etf.sync import build_js_store  # noqa: E402
 
-with open("public/data/news.json", "r") as f:
-    news = json.load(f)
-
-with open("public/data/education.json", "r") as f:
-    education = json.load(f)
-
-js_content = f"""/**
- * ApexETF Real Data Store
- * Grounded verified data from justETF, extraETF, Curvo, Portfolio Visualizer, Morningstar, Trackinsight, and official KIDs.
- */
-
-window.APEX_DATA_STORE = {{
-  etfs: {json.dumps(etfs, indent=2)},
-  correlations: {json.dumps(correlations, indent=2)},
-  news: {json.dumps(news, indent=2)},
-  education: {json.dumps(education, indent=2)}
-}};
-"""
-
-with open("public/js/data-store.js", "w") as f:
-    f.write(js_content)
-
+build_js_store()
 print("Generated public/js/data-store.js successfully.")

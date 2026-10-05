@@ -175,6 +175,40 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertEqual(ctx.exception.code, 500)
         self.assertEqual(json.loads(ctx.exception.read().decode("utf-8")), {"error": "etfs.json not found"})
 
+    def test_get_planner_dataset_and_risk(self):
+        data = self.get_json("/api/planner")
+        ids = [i["id"] for i in data["dataset"]["instruments"]]
+        self.assertIn("CASH", ids)
+        self.assertIn("AII", ids)
+        self.assertIn("AII", data["risk"]["instruments"])
+        self.assertTrue(data["risk"]["episodes"])
+
+    def test_post_planner_analyze(self):
+        payload = {"holdings": {"CASH": 15000, "BTC": 250}, "targets": {"AII": 1000},
+                   "scenario": {"benchmarkMove": -10}, "execution": {"strategy": "tranches", "tranches": 2}}
+        data = self.post_json("/api/planner/analyze", payload)
+        self.assertEqual(data["total"], 15250)
+        self.assertLess(data["stress"]["totals"]["beta"], 0)
+        self.assertEqual(data["execution"]["summary"]["orderCount"], 2)
+
+    def test_post_planner_analyze_explains_a_bad_request_with_400(self):
+        req = urllib.request.Request(f"{self.base_url}/api/planner/analyze", method="POST",
+                                     data=json.dumps({"holdings": {"CASH": 100}, "targets": {"AII": 500}}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(req, timeout=3.0)
+        self.assertEqual(ctx.exception.code, 400)
+        self.assertIn("more than everything you hold", json.loads(ctx.exception.read().decode("utf-8"))["error"])
+
+    def test_post_planner_refresh_reports_a_running_refresh_with_409(self):
+        from apex_etf.planner import RiskRefreshInProgress
+        with mock.patch("apex_etf.server.refresh_planner_risk", side_effect=RiskRefreshInProgress("busy")):
+            req = urllib.request.Request(f"{self.base_url}/api/planner/refresh-risk", data=b"{}", method="POST",
+                                         headers={"Content-Type": "application/json"})
+            with self.assertRaises(urllib.error.HTTPError) as ctx:
+                urllib.request.urlopen(req, timeout=3.0)
+        self.assertEqual(ctx.exception.code, 409)
+
 class TestServerStaysResponsiveDuringSync(unittest.TestCase):
     """A Live Sync takes ~15 s. On the old single-threaded server it froze every other request."""
 

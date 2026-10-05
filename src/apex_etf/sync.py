@@ -416,17 +416,19 @@ def _write_json_atomic(path: str, data: Any) -> None:
 def build_js_store() -> None:
     """Generates public/js/data-store.js from current JSON files to ensure offline standalone execution."""
     try:
-        def read_j(name: str):
+        def read_j(name: str, default: Any = None):
             p = os.path.join(DATA_DIR, name)
             if os.path.exists(p):
                 with open(p, "r", encoding="utf-8") as f:
                     return json.load(f)
-            return []
+            return [] if default is None else default
 
         etfs = read_j("etfs.json")
         corr = read_j("correlations.json")
         news = read_j("news.json")
         edu = read_j("education.json")
+        planner = read_j("planner.json", {})
+        planner_risk = read_j("planner-risk.json", {})
 
         js_content = f"""/**
  * ApexETF Grounded Data Store
@@ -444,7 +446,9 @@ window.APEX_DATA_STORE = {{
   etfs: {json.dumps(etfs, indent=2)},
   correlations: {json.dumps(corr, indent=2)},
   news: {json.dumps(news, indent=2)},
-  education: {json.dumps(edu, indent=2)}
+  education: {json.dumps(edu, indent=2)},
+  planner: {json.dumps(planner, indent=2)},
+  plannerRisk: {json.dumps(planner_risk, indent=2)}
 }};
 """
         store_path = os.path.join(BASE_DIR, "public", "js", "data-store.js")

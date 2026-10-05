@@ -11,7 +11,7 @@
 window.App = (function () {
   const THEME_KEY = "etf_dashboard_theme";
 
-  const TABS = ["screener", "comparison", "overlap", "curvo", "parity", "pv", "news", "verification", "academy"];
+  const TABS = ["screener", "comparison", "planner", "overlap", "curvo", "parity", "pv", "news", "verification", "academy"];
 
   const STAGES = {
     screener: {
@@ -495,6 +495,7 @@ window.App = (function () {
       ["Market News", "news", () => window.NewsSignalsModule?.init(newsData)],
       ["Factsheets & KIDs", "verification", () => window.VerificationDocsModule?.init(etfsData)],
       ["Academy", "academy", () => window.BogleheadsAcademyModule?.init(educationData)],
+      ["Planner", "planner", () => window.PlannerModule?.init(window.APEX_DATA_STORE?.planner, window.APEX_DATA_STORE?.plannerRisk)],
     ];
 
     for (const [name, tab, run] of views) {

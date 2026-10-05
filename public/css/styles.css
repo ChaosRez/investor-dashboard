@@ -2428,6 +2428,46 @@
   .metric-box.tone-amber { border-color: color-mix(in srgb, var(--accent-amber) 50%, var(--border-color)); }
   .metric-box.tone-rose { border-color: color-mix(in srgb, var(--accent-rose) 50%, var(--border-color)); }
   .accent-amber { color: var(--accent-amber); }
+
+  /* --- Planner ---------------------------------------------------------------------------------- */
+  .planner-context { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: var(--space-3); }
+  .planner-context .metric-value { font-size: var(--fs-lg); }
+  .planner-context .metric-sub { line-height: 1.45; }
+  .planner-tiles .metric-value { font-variant-numeric: tabular-nums; }
+  .planner-compare tbody th { min-width: 220px; }
+  .planner-compare thead th { white-space: normal; vertical-align: bottom; }
+  .planner-compare thead th.num { min-width: 78px; }
+  .planner-badges { --gap: 6px; margin-top: 3px; }
+  .planner-summary { display: block; max-width: 420px; margin-top: 2px; line-height: 1.4; }
+  .planner-group-row th {
+    padding: 8px 14px;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+  }
+  .data-table tbody tr.planner-group-row:hover th { background: var(--bg-secondary); }
+  .planner-editor .planner-amount { width: 120px; margin-left: auto; text-align: right; font-variant-numeric: tabular-nums; }
+  .planner-cash-target { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .planner-basis {
+    display: inline-block;
+    padding: 0 5px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--accent-amber);
+    border: 1px solid color-mix(in srgb, var(--accent-amber) 45%, var(--border-color));
+    border-radius: 4px;
+  }
+  .planner-orders { max-height: 420px; overflow-y: auto; }
+  .planner-howto > summary { cursor: pointer; }
+  .planner-howto[open] > summary { margin-bottom: var(--space-3); }
+  .planner-sources { columns: 2 320px; display: block; }
+  .planner-sources li { break-inside: avoid; margin-bottom: 6px; }
+  @media (max-width: 640px) {
+    .planner-editor .planner-amount { width: 96px; }
+  }
 }
 
 /* ==========================================================================

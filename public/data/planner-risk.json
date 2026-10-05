@@ -1,0 +1,612 @@
+{
+  "generatedAt": "2026-10-05T06:57:18.745252+00:00",
+  "asOf": "2026-10-02",
+  "benchmark": "VWCE",
+  "benchmarkName": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating",
+  "source": "Yahoo Finance daily adjusted closes in EUR",
+  "method": {
+    "betaWindowYears": 3,
+    "riskWindowYears": 5,
+    "episodeThreshold": 10.0,
+    "minWeeks": 26,
+    "notes": [
+      "Volatility, beta and correlation use Friday-to-Friday returns over the last 3 years, or since launch if shorter.",
+      "Maximum drawdown and the worst 12-month return cover the last 5 years, or since launch if shorter.",
+      "Episodes are every fall of the benchmark of at least 10% from a peak to its lowest close before that peak was regained.",
+      "An instrument that did not exist during an episode has no measured move there. If it has a proxy with the same underlying, the proxy's move is shown and labelled."
+    ]
+  },
+  "episodes": [
+    {
+      "id": "2020-02",
+      "label": "2020 COVID crash",
+      "peak": "2020-02-19",
+      "trough": "2020-03-23",
+      "recovered": "2021-01-06",
+      "benchmarkMove": -33.4
+    },
+    {
+      "id": "2022-01",
+      "label": "2022 rate-hike sell-off",
+      "peak": "2022-01-04",
+      "trough": "2022-06-16",
+      "recovered": "2023-12-08",
+      "benchmarkMove": -16.1
+    },
+    {
+      "id": "2025-02",
+      "label": "2025 tariff shock",
+      "peak": "2025-02-19",
+      "trough": "2025-04-09",
+      "recovered": "2025-10-01",
+      "benchmarkMove": -21.1
+    }
+  ],
+  "instruments": {
+    "XEON": {
+      "symbol": "XEON.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 150.386,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 0.2,
+      "beta": 0.0,
+      "downBeta": -0.02,
+      "correlation": 0.0,
+      "maxDrawdown": {
+        "value": -0.5,
+        "peak": "2021-10-04",
+        "trough": "2022-08-04",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -0.5,
+        "from": "2021-10-05",
+        "to": "2022-10-05",
+        "windows": 1018
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -0.2,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -0.3,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": 0.4,
+          "basis": "actual"
+        }
+      }
+    },
+    "DBXP": {
+      "symbol": "DBXP.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 173.74,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 1.3,
+      "beta": 0.02,
+      "downBeta": -0.01,
+      "correlation": 0.15,
+      "maxDrawdown": {
+        "value": -5.5,
+        "peak": "2021-11-19",
+        "trough": "2023-03-06",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -5.1,
+        "from": "2022-03-04",
+        "to": "2023-03-06",
+        "windows": 1018
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -1.7,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -3.2,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": 0.9,
+          "basis": "actual"
+        }
+      }
+    },
+    "WGLD": {
+      "symbol": "WGLD.MI",
+      "firstDate": "2020-11-30",
+      "lastDate": "2026-10-02",
+      "lastPrice": 365.21,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 17.2,
+      "beta": 0.19,
+      "downBeta": 0.08,
+      "correlation": 0.14,
+      "maxDrawdown": {
+        "value": -22.8,
+        "peak": "2026-03-02",
+        "trough": "2026-07-16",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -8.9,
+        "from": "2022-03-08",
+        "to": "2023-03-08",
+        "windows": 1013
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -3.3,
+          "basis": "proxy",
+          "proxy": "SGLD"
+        },
+        "2022-01": {
+          "move": 9.1,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -0.9,
+          "basis": "actual"
+        }
+      }
+    },
+    "SGLD": {
+      "symbol": "8PSG.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 354.14,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 20.8,
+      "beta": 0.23,
+      "downBeta": 0.14,
+      "correlation": 0.14,
+      "maxDrawdown": {
+        "value": -22.6,
+        "peak": "2026-03-02",
+        "trough": "2026-07-17",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -8.8,
+        "from": "2022-03-08",
+        "to": "2023-03-08",
+        "windows": 1017
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -3.3,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": 7.6,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -0.8,
+          "basis": "actual"
+        }
+      }
+    },
+    "BTC": {
+      "symbol": "BTC-EUR",
+      "firstDate": "2016-10-05",
+      "lastDate": "2026-10-05",
+      "lastPrice": 77067.3203,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 46.0,
+      "beta": 0.79,
+      "downBeta": 0.35,
+      "correlation": 0.22,
+      "maxDrawdown": {
+        "value": -73.6,
+        "peak": "2021-11-08",
+        "trough": "2022-11-21",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -72.6,
+        "from": "2021-11-09",
+        "to": "2022-11-09",
+        "windows": 1464
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -33.1,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -52.5,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -18.7,
+          "basis": "actual"
+        }
+      }
+    },
+    "AII": {
+      "symbol": "AIFS.DE",
+      "firstDate": "2024-12-09",
+      "lastDate": "2026-10-02",
+      "lastPrice": 10.706,
+      "statsFrom": "2024-12-13",
+      "weeks": 94,
+      "volatility": 27.1,
+      "beta": 1.7,
+      "downBeta": 1.49,
+      "correlation": 0.85,
+      "maxDrawdown": {
+        "value": -31.1,
+        "peak": "2025-02-19",
+        "trough": "2025-04-09",
+        "windowStart": "2024-12-09"
+      },
+      "worst12m": {
+        "value": 19.3,
+        "from": "2024-12-17",
+        "to": "2025-12-17",
+        "windows": 205
+      },
+      "episodes": {
+        "2020-02": {
+          "move": null,
+          "basis": "none"
+        },
+        "2022-01": {
+          "move": null,
+          "basis": "none"
+        },
+        "2025-02": {
+          "move": -31.1,
+          "basis": "actual"
+        }
+      }
+    },
+    "BATT": {
+      "symbol": "BATE.DE",
+      "firstDate": "2018-02-07",
+      "lastDate": "2026-10-02",
+      "lastPrice": 26.205,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 25.5,
+      "beta": 1.46,
+      "downBeta": 1.54,
+      "correlation": 0.72,
+      "maxDrawdown": {
+        "value": -34.0,
+        "peak": "2023-07-03",
+        "trough": "2025-04-09",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -25.6,
+        "from": "2024-04-09",
+        "to": "2025-04-09",
+        "windows": 1016
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -35.9,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -16.7,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -27.4,
+          "basis": "actual"
+        }
+      }
+    },
+    "BRIJ": {
+      "symbol": "B41J.DE",
+      "firstDate": "2024-09-09",
+      "lastDate": "2026-10-02",
+      "lastPrice": 18.536,
+      "statsFrom": "2024-09-13",
+      "weeks": 107,
+      "volatility": 14.9,
+      "beta": 0.49,
+      "downBeta": 0.39,
+      "correlation": 0.43,
+      "maxDrawdown": {
+        "value": -13.2,
+        "peak": "2026-02-27",
+        "trough": "2026-10-01",
+        "windowStart": "2024-09-09"
+      },
+      "worst12m": {
+        "value": -1.5,
+        "from": "2025-10-01",
+        "to": "2026-10-01",
+        "windows": 270
+      },
+      "episodes": {
+        "2020-02": {
+          "move": null,
+          "basis": "none"
+        },
+        "2022-01": {
+          "move": null,
+          "basis": "none"
+        },
+        "2025-02": {
+          "move": -4.7,
+          "basis": "actual"
+        }
+      }
+    },
+    "EXH9": {
+      "symbol": "EXH9.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 55.27,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 15.4,
+      "beta": 0.24,
+      "downBeta": 0.1,
+      "correlation": 0.19,
+      "maxDrawdown": {
+        "value": -22.7,
+        "peak": "2022-05-23",
+        "trough": "2022-10-12",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -13.7,
+        "from": "2021-10-21",
+        "to": "2022-10-21",
+        "windows": 1017
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -33.2,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -10.8,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": 2.7,
+          "basis": "actual"
+        }
+      }
+    },
+    "VWCE": {
+      "symbol": "VWCE.DE",
+      "firstDate": "2019-07-29",
+      "lastDate": "2026-10-02",
+      "lastPrice": 171.14,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 12.6,
+      "beta": 1.0,
+      "downBeta": 1.0,
+      "correlation": 1.0,
+      "maxDrawdown": {
+        "value": -21.1,
+        "peak": "2025-02-19",
+        "trough": "2025-04-09",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -13.7,
+        "from": "2021-12-28",
+        "to": "2022-12-28",
+        "windows": 1016
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -33.4,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -16.1,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -21.1,
+          "basis": "actual"
+        }
+      }
+    },
+    "IMAE": {
+      "symbol": "IMAE.AS",
+      "firstDate": "2016-10-03",
+      "lastDate": "2026-10-02",
+      "lastPrice": 102.68,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 12.6,
+      "beta": 0.75,
+      "downBeta": 0.76,
+      "correlation": 0.75,
+      "maxDrawdown": {
+        "value": -19.4,
+        "peak": "2022-01-05",
+        "trough": "2022-09-29",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -12.3,
+        "from": "2021-10-14",
+        "to": "2022-10-14",
+        "windows": 1022
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -34.9,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -15.6,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -14.7,
+          "basis": "actual"
+        }
+      }
+    }
+  },
+  "correlations": {
+    "XEON": {
+      "XEON": 1.0,
+      "DBXP": 0.163,
+      "WGLD": 0.089,
+      "SGLD": 0.046,
+      "BTC": 0.185,
+      "AII": -0.023,
+      "BATT": -0.025,
+      "BRIJ": -0.021,
+      "EXH9": -0.005,
+      "VWCE": 0.002,
+      "IMAE": 0.001
+    },
+    "DBXP": {
+      "DBXP": 1.0,
+      "XEON": 0.163,
+      "WGLD": 0.271,
+      "SGLD": 0.131,
+      "BTC": -0.015,
+      "AII": 0.081,
+      "BATT": 0.114,
+      "BRIJ": 0.299,
+      "EXH9": 0.383,
+      "VWCE": 0.147,
+      "IMAE": 0.211
+    },
+    "WGLD": {
+      "WGLD": 1.0,
+      "XEON": 0.089,
+      "DBXP": 0.271,
+      "SGLD": 0.777,
+      "BTC": 0.055,
+      "AII": 0.119,
+      "BATT": 0.256,
+      "BRIJ": 0.211,
+      "EXH9": 0.212,
+      "VWCE": 0.141,
+      "IMAE": 0.16
+    },
+    "SGLD": {
+      "SGLD": 1.0,
+      "XEON": 0.046,
+      "DBXP": 0.131,
+      "WGLD": 0.777,
+      "BTC": 0.11,
+      "AII": 0.063,
+      "BATT": 0.211,
+      "BRIJ": 0.221,
+      "EXH9": 0.106,
+      "VWCE": 0.142,
+      "IMAE": 0.172
+    },
+    "BTC": {
+      "BTC": 1.0,
+      "XEON": 0.185,
+      "DBXP": -0.015,
+      "WGLD": 0.055,
+      "SGLD": 0.11,
+      "AII": 0.351,
+      "BATT": 0.18,
+      "BRIJ": 0.052,
+      "EXH9": -0.045,
+      "VWCE": 0.217,
+      "IMAE": 0.116
+    },
+    "AII": {
+      "AII": 1.0,
+      "XEON": -0.023,
+      "DBXP": 0.081,
+      "WGLD": 0.119,
+      "SGLD": 0.063,
+      "BTC": 0.351,
+      "BATT": 0.694,
+      "BRIJ": 0.228,
+      "EXH9": -0.007,
+      "VWCE": 0.846,
+      "IMAE": 0.481
+    },
+    "BATT": {
+      "BATT": 1.0,
+      "XEON": -0.025,
+      "DBXP": 0.114,
+      "WGLD": 0.256,
+      "SGLD": 0.211,
+      "BTC": 0.18,
+      "AII": 0.694,
+      "BRIJ": 0.449,
+      "EXH9": 0.215,
+      "VWCE": 0.722,
+      "IMAE": 0.681
+    },
+    "BRIJ": {
+      "BRIJ": 1.0,
+      "XEON": -0.021,
+      "DBXP": 0.299,
+      "WGLD": 0.211,
+      "SGLD": 0.221,
+      "BTC": 0.052,
+      "AII": 0.228,
+      "BATT": 0.449,
+      "EXH9": 0.571,
+      "VWCE": 0.429,
+      "IMAE": 0.784
+    },
+    "EXH9": {
+      "EXH9": 1.0,
+      "XEON": -0.005,
+      "DBXP": 0.383,
+      "WGLD": 0.212,
+      "SGLD": 0.106,
+      "BTC": -0.045,
+      "AII": -0.007,
+      "BATT": 0.215,
+      "BRIJ": 0.571,
+      "VWCE": 0.192,
+      "IMAE": 0.461
+    },
+    "VWCE": {
+      "VWCE": 1.0,
+      "XEON": 0.002,
+      "DBXP": 0.147,
+      "WGLD": 0.141,
+      "SGLD": 0.142,
+      "BTC": 0.217,
+      "AII": 0.846,
+      "BATT": 0.722,
+      "BRIJ": 0.429,
+      "EXH9": 0.192,
+      "IMAE": 0.752
+    },
+    "IMAE": {
+      "IMAE": 1.0,
+      "XEON": 0.001,
+      "DBXP": 0.211,
+      "WGLD": 0.16,
+      "SGLD": 0.172,
+      "BTC": 0.116,
+      "AII": 0.481,
+      "BATT": 0.681,
+      "BRIJ": 0.784,
+      "EXH9": 0.461,
+      "VWCE": 0.752
+    }
+  },
+  "warnings": []
+}

@@ -35,7 +35,13 @@ uv run apex-etf platforms
 # 8. Check installation status & dataset integrity
 uv run apex-etf status
 
-# 9. Run the complete automated test suite (89 tests across 6 test modules)
+# 9. Short-horizon plan: stress test, one-year risk, orders & fees, tax notes for amounts YOU choose
+uv run apex-etf plan AII:1500 WGLD:1500 --hold CASH:15000 --hold BTC:250 --drop -10 --strategy tranches
+
+# 10. Recompute the planner's risk statistics from fresh daily prices (~5 s)
+uv run apex-etf planner-risk
+
+# 11. Run the complete automated test suite (142 tests across 7 test modules)
 uv run pytest tests
 ```
 
@@ -154,6 +160,16 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
 * **Domicile Deep-Dive**: Explains why **Ireland (IE)** is the gold standard for non-US investors (15% US treaty rate, 0% Irish WHT, and complete shielding from the 40% US Estate Tax trap on US-domiciled ETFs like VOO or VTI).
 * **Step-by-Step Investor Roadmap**: Educational guide helping beginners navigate Portfolio Setup, Optimization, Verification, and Maintenance.
 
+### 9. 🧭 Short-Horizon Planner (tab "Planner")
+For money you may need again within a few years. It does the arithmetic of **your own** choices and never proposes instruments or amounts.
+* **Compare the candidates:** cash account, €STR money-market and 1–3y government-bond ETFs, two gold ETCs, Bitcoin, AI-infrastructure, battery, European-infrastructure and utilities ETFs, plus world and Europe equity as references. Costs, German tax treatment and Trade Republic savings-plan availability are sourced (justETF, extraETF, the broker's price list); **volatility, beta, worst 12-month return, maximum fall and the move in every real fall of world equity of 10% or more** (2020, 2022, 2025) are computed from Yahoo Finance daily prices, never typed in.
+* **Your split:** what you hold today and what you want to hold; cash absorbs the difference.
+* **What if the market drops X%?** Per holding and in total: a beta estimate plus each past fall *scaled to your scenario*, full replays of those falls, a comparison with "everything in cash" (months of interest the loss would cost), an optional personal loss limit, and the one-year volatility / 1-in-20 loss from measured correlations. Instruments that did not exist during a fall are labelled (β estimate or same-underlying proxy).
+* **Order plan at Trade Republic:** all at once, in tranches, or as savings plans on the broker's real execution days (2nd/9th/16th/23rd); fees (€1 Bestpreis / €2 Direktpreis since 1 Jul 2026; savings plans free, €10–€10,000 per execution), estimated crypto spread, interest earned on money still waiting, and how much a fall would cost after each purchase date.
+* **Taxes (Germany, simplified):** saver's allowance vs the interest it must cover, per-instrument treatment (30% partial exemption for equity funds, 12-month rule for direct crypto and gold ETCs with a delivery right), and an upper bound for the Vorabpauschale (Basiszins 3.20% for 2026).
+* **Market context with sources:** ECB deposit rate, euro-area inflation projection, S&P 500 Shiller CAPE, Germany's €500 bn infrastructure fund, the pending crypto-tax reform.
+* Facts render offline from the bundled store; the calculations need the local server (`POST /api/planner/analyze`). "Refresh risk data" (or `uv run apex-etf planner-risk`) re-downloads prices and recomputes `public/data/planner-risk.json`. Inputs are remembered in your browser only.
+
 ---
 
 ## 🏗️ Architecture & Project Layout
@@ -173,14 +189,16 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
 │       ├── server.py           # HTTP server, static asset handling, /api/* REST endpoints
 │       ├── sync.py             # Live data ingestion engine (Yahoo Finance, justETF, ECB RSS)
 │       ├── analysis.py         # Overlap math, HRP, ERC, Mean-CVaR, Ledoit-Wolf, QuantStats teardown
+│       ├── planner.py          # Short-horizon planner: risk stats from price history, stress test, orders, tax
 │       └── macro_news.py       # Macro events, transmission mechanisms, and Boglehead rules
 ├── tests/
 │   ├── __init__.py
 │   ├── test_advanced_analysis.py # 11 tests: HRP, ERC, Mean-CVaR, Shrinkage, Stress-test, QuantStats
 │   ├── test_analysis.py          # 6 tests: overlap math, weighted TER, Curvo DCA compounding
 │   ├── test_cli.py               # 6 tests: CLI subcommands (audit, optimize, stress-test, teardown, platforms)
+│   ├── test_planner.py           # 49 tests: price-history statistics, episodes, stress test, orders, savings-plan calendar, tax, risk refresh
 │   ├── test_data_integrity.py    # 4 tests: ETF schema, sector sums, holdings sums, correlation matrix
-│   ├── test_server.py            # 18 tests: HTTP REST endpoints on ephemeral port, sync errors, responsiveness during a sync
+│   ├── test_server.py            # 22 tests: HTTP REST endpoints on ephemeral port, sync errors, responsiveness during a sync, planner API
 │   └── test_sync.py              # 44 tests: fetch errors and CA fallback, daily change, justETF parsing, sync reporting, headline retention, atomic writes, quote-symbol coverage
 ├── scripts/                      # Data maintenance and store generation scripts
 │   ├── build_etf_data.py
@@ -189,7 +207,7 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
 └── public/                       # Frontend client (zero framework, vanilla modern JS/CSS)
     ├── index.html                # App shell: app bar, ARIA tab bar (doubles as the 7-stage roadmap), dialogs, SVG icon sprite
     ├── css/styles.css            # Design system: tokens, cascade layers, dark/light themes, components, views
-    ├── data/                     # Verified JSON datasets (etfs.json, news.json, correlations.json)
+    ├── data/                     # Verified JSON datasets (etfs.json, news.json, correlations.json, planner.json) + computed planner-risk.json
     └── js/                       # Classic scripts (no bundler) so file:// keeps working
         ├── ui.js                 # Shared toolkit: HTML escaping, formatting, dialogs, tooltips, toasts, chart helpers
         ├── app.js                # Controller: theme, tab routing, roadmap context bar, Live Sync, data hydration
@@ -201,6 +219,7 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
         ├── curvo-engine.js       # DCA / inflation projection chart (crosshair, keyboard, table view)
         ├── regime-risk-parity.js # 3-step decision workflow, risk-decomposition chart & dendrogram
         ├── pv-engine.js
+        ├── planner.js            # Short-horizon planner: comparison, split editor, stress test, order plan, tax
         ├── news-signals.js
         ├── verification-docs.js
         └── bogleheads-academy.js
@@ -226,11 +245,15 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
 
 Every ETF in `etfs.json` needs an entry in `ETF_MARKET_MAP` (Yahoo symbol, exchange, ISIN) or it never gets a live quote; a test fails if one is missing or its ISIN disagrees with the dataset. A ticker without an entry is reported as *skipped*, not failed.
 
+| Warning | Cause | Fix |
+|---|---|---|
+| Planner: `No risk statistics for …` | The instrument has no price symbol or too little history (fewer than 26 weeks). | Add `yahooSymbol` in `planner.json` and run `uv run apex-etf planner-risk`. |
+
 ---
 
 ## 🧪 Running Automated Tests
 
-Run the comprehensive test suite (89 unit and integration tests across 6 test modules):
+Run the comprehensive test suite (142 unit and integration tests across 7 test modules):
 
 ```bash
 # Using pytest (Recommended):

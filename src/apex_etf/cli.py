@@ -25,6 +25,7 @@ from .analysis import (
     calculate_quantstats_downside_tear_sheet,
     get_platforms_metadata,
 )
+from .planner import analyze_plan, load_planner_dataset, load_planner_risk, refresh_planner_risk
 
 def cmd_serve(args: argparse.Namespace) -> None:
     """Run HTTP dashboard server."""
@@ -299,6 +300,91 @@ def cmd_teardown(args: argparse.Namespace) -> None:
     print(f" • Longest Underwater Period:  {m.get('longestUnderwaterMonths', 0)} months")
     print("=" * 70)
 
+def _parse_amounts(items: List[str], flag: str) -> Dict[str, float]:
+    out: Dict[str, float] = {}
+    for item in items or []:
+        if ":" not in item:
+            print(f"❌ {flag} expects ID:EUR pairs such as AII:1500 (got '{item}').")
+            sys.exit(2)
+        key, value = item.split(":", 1)
+        try:
+            out[key.strip().upper()] = float(value)
+        except ValueError:
+            print(f"❌ '{value}' in {item} is not an amount in euro.")
+            sys.exit(2)
+    return out
+
+def cmd_plan(args: argparse.Namespace) -> None:
+    """Stress test, one-year risk, order plan and tax notes for amounts you choose."""
+    dataset, risk = load_planner_dataset(), load_planner_risk()
+    holdings = _parse_amounts(args.hold, "--hold") or dict((dataset.get("defaultPortfolio") or {}).get("today") or {})
+    request = {
+        "holdings": holdings,
+        "targets": _parse_amounts(args.targets, "targets"),
+        "scenario": {"benchmarkMove": args.drop},
+        "horizonMonths": args.horizon,
+        "execution": {"strategy": args.strategy, "tranches": args.tranches, "intervalWeeks": args.interval,
+                      "frequency": args.frequency, "executions": args.executions, "orderFee": args.fee},
+        "tax": {"allowanceUsedElsewhere": args.allowance_used},
+    }
+    if args.rate is not None:
+        request["cashRate"] = args.rate
+    res = analyze_plan(request, dataset, risk)
+    if "error" in res:
+        print(f"❌ {res['error']}")
+        sys.exit(1)
+
+    eur = lambda x: f"{'-' if x < 0 else ''}€{abs(x):,.2f}"
+    print("=" * 78)
+    print(f"🧭 Short-horizon plan | {eur(res['total'])} in total, {res['riskyPercent']:.1f}% outside the cash account")
+    print(f"   Risk data as of {res['riskDataAsOf']} (refresh: apex-etf planner-risk). Facts and arithmetic, not advice.")
+    print("=" * 78)
+    print(f"{'Instrument':<46} {'Today':>10} {'Target':>10} {'Share':>7}")
+    for row in res["allocation"]:
+        print(f"{row['name'][:46]:<46} {row['today']:>10,.0f} {row['target']:>10,.0f} {row['targetPercent']:>6.1f}%")
+
+    s = res["stress"]
+    labels = {e["id"]: e.get("label") or e["id"] for e in s["episodes"]}
+    print(f"\n📉 If {dataset.get('benchmark')} (world equity) falls {abs(s['benchmarkMove']):g}%:")
+    print(f" • Beta estimate:                {eur(s['totals']['beta'])} ({s['totals']['betaPercent']:+.2f}%)")
+    for eid, change in s["totals"]["scaled"].items():
+        print(f" • Same pattern as {labels[eid][:40]:<40} {eur(change)}")
+    print(f" • Worst of these: {eur(s['totals']['worst'])} = {s['monthsOfInterestToRecoverWorst']:g} months of interest on everything in cash")
+    if s["lossLimit"] is not None:
+        print(f" • Your loss limit {eur(s['lossLimit'])}: {'within' if s['withinLossLimit'] else 'EXCEEDED'}")
+    print("\n⏪ If a past fall repeated in full:")
+    for e in s["episodes"]:
+        print(f" • {labels[e['id']][:40]:<40} world {e['benchmarkMove']:+.1f}% → you {eur(s['totals']['replay'][e['id']])} ({s['totals']['replayPercent'][e['id']]:+.1f}%)")
+
+    h = res["horizon"]
+    print(f"\n📆 {h['months']}-month risk: volatility {h['horizonVolatility']:.2f}%, a 1-in-20 loss of about {eur(h['loss95'])}"
+          f" | cash interest on the rest {eur(h['cashInterest'])}")
+
+    ex = res["execution"]
+    sm = ex["summary"]
+    print(f"\n🧾 Orders ({ex['settings']['strategy']}): {sm['orderCount']} orders + {sm['savingsPlanExecutions']} savings-plan executions,"
+          f" fees {eur(sm['fees'])} ({sm['feePercentOfBuys']:.3f}% of buys), fully invested {sm['fullyInvestedOn'] or '—'}")
+    for o in ex["orders"]:
+        print(f"   {o['date']}  {o['side']:<4} {o['id']:<5} {o['amount']:>10,.2f}  fee {o['fee']:.2f}  ({o['type']})")
+
+    t = res["tax"]
+    print(f"\n🧮 Cash interest over {t['cashInterestMonths']} months {eur(t['cashInterest'])}; allowance left {eur(t['allowanceLeft'])};"
+          f" tax on interest {eur(t['taxOnInterest'])}")
+    for w in res["warnings"]:
+        print(f"⚠️  {w}")
+    print("=" * 78)
+
+def cmd_planner_risk(args: argparse.Namespace) -> None:
+    """Recompute the planner's risk statistics from fresh Yahoo Finance price history."""
+    print("🔄 Downloading price history and recomputing planner risk statistics…")
+    res = refresh_planner_risk()
+    if res.get("status") == "failed":
+        print(f"❌ {res.get('error')}")
+        sys.exit(1)
+    print(f"✅ {res['status']}: {res['instrumentsUpdated']} instruments, {res['episodes']} market falls of 10%+, data as of {res['asOf']}")
+    for w in res.get("warnings", []):
+        print(f"⚠️  {w}")
+
 def cmd_platforms(args: argparse.Namespace) -> None:
     """List open-source quant libraries and no-code interactive web platforms."""
     platforms = get_platforms_metadata()
@@ -353,6 +439,24 @@ def main() -> None:
     # Command: platforms
     subparsers.add_parser("platforms", help="Display comparative guide for PyPortfolioOpt, Riskfolio, QuantStats, Portfolio Visualizer, Testfol.io, Portfolio Charts")
 
+    # Command: plan
+    plan_parser = subparsers.add_parser("plan", help="Stress-test a short-horizon plan, list its orders and fees (amounts you choose)")
+    plan_parser.add_argument("targets", nargs="*", help="Target amounts in EUR, e.g. AII:1500 WGLD:1500 (cash absorbs the difference)")
+    plan_parser.add_argument("--hold", action="append", default=[], help="What you hold today, e.g. --hold CASH:15000 --hold BTC:250 (default: planner.json)")
+    plan_parser.add_argument("--drop", type=float, default=-10.0, help="World-equity fall to test in percent (default: -10)")
+    plan_parser.add_argument("--horizon", type=int, default=12, help="Horizon in months (default: 12)")
+    plan_parser.add_argument("--rate", type=float, default=None, help="Cash account interest in percent (default: planner.json)")
+    plan_parser.add_argument("--strategy", choices=["lump", "tranches", "savings"], default="lump", help="All at once, in tranches, or as savings plans")
+    plan_parser.add_argument("--tranches", type=int, default=3, help="Number of tranches (default: 3)")
+    plan_parser.add_argument("--interval", type=int, default=4, help="Weeks between tranches (default: 4)")
+    plan_parser.add_argument("--frequency", choices=["weekly", "biweekly", "monthly", "quarterly"], default="monthly", help="Savings-plan frequency")
+    plan_parser.add_argument("--executions", type=int, default=3, help="Savings-plan executions per instrument (default: 3)")
+    plan_parser.add_argument("--fee", type=float, default=None, help="Fee per order in EUR (default: the broker's, €1)")
+    plan_parser.add_argument("--allowance-used", type=float, default=0.0, help="Saver's allowance already used elsewhere this year, EUR")
+
+    # Command: planner-risk
+    subparsers.add_parser("planner-risk", help="Recompute the planner's risk statistics from fresh price history")
+
     args = parser.parse_args()
 
     if args.command == "serve":
@@ -371,6 +475,10 @@ def main() -> None:
         cmd_teardown(args)
     elif args.command == "platforms":
         cmd_platforms(args)
+    elif args.command == "plan":
+        cmd_plan(args)
+    elif args.command == "planner-risk":
+        cmd_planner_risk(args)
     else:
         # Default behavior: run server
         cmd_serve(argparse.Namespace(port=DEFAULT_PORT, host=DEFAULT_HOST))

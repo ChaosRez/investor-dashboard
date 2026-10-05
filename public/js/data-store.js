@@ -2,12 +2,12 @@
  * ApexETF Grounded Data Store
  * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
  * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
- * Last Synced: 2026-10-03T19:54:49.623924+00:00
+ * Last Synced: 2026-10-05T15:03:44.977038+00:00
  */
 
 window.APEX_DATA_STORE = {
   syncMeta: {
-    lastSyncedAt: "2026-10-03T19:54:49.623948+00:00",
+    lastSyncedAt: "2026-10-05T15:03:44.977420+00:00",
     isLiveDynamic: true,
     sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
   },
@@ -5117,5 +5117,1169 @@ window.APEX_DATA_STORE = {
     "dimensions": "Market Capitalization (Large, Mid, Small) x Investment Style (Value, Blend, Growth)",
     "guide": "Core portfolios (VWCE, IWDA, SXR8) occupy 'Large Blend', giving balanced exposure to all macro conditions. QDVE is 'Large Growth' (high valuation, momentum-driven). ZPRV is 'Small Value' (Fama-French factor premium)."
   }
+},
+  planner: {
+  "version": 1,
+  "asOf": "2026-10-05",
+  "currency": "EUR",
+  "benchmark": "VWCE",
+  "cashInstrument": "CASH",
+  "purpose": "Facts and arithmetic for a short-horizon plan. The planner never proposes instruments or amounts; every amount comes from the person using it. Not investment or tax advice.",
+  "defaultPortfolio": {
+    "note": "Starting point of the planner (what you told us you hold). Edit it in the planner; your edits are remembered in this browser only.",
+    "today": {
+      "CASH": 15000,
+      "BTC": 250
+    },
+    "candidates": [
+      "AII",
+      "BATT",
+      "WGLD",
+      "BTC"
+    ]
+  },
+  "episodeLabels": {
+    "2020-02": "2020 COVID crash",
+    "2022-01": "2022 rate-hike sell-off",
+    "2025-02": "2025 tariff shock"
+  },
+  "groups": [
+    {
+      "id": "stable",
+      "label": "Capital-stable"
+    },
+    {
+      "id": "gold",
+      "label": "Gold"
+    },
+    {
+      "id": "crypto",
+      "label": "Crypto"
+    },
+    {
+      "id": "theme",
+      "label": "Thematic and sector equity"
+    },
+    {
+      "id": "broad",
+      "label": "Broad equity (reference)"
+    }
+  ],
+  "instruments": [
+    {
+      "id": "CASH",
+      "name": "Instant-access savings account (Tagesgeld)",
+      "shortName": "Cash account",
+      "kind": "cash",
+      "group": "stable",
+      "interestRate": 2.5,
+      "summary": "Your bank account. The balance does not move with markets; the rate is variable. Deposits are protected by the EU statutory deposit guarantee up to \u20ac100,000 per person and bank.",
+      "taxClass": "interest",
+      "tradeRepublic": {
+        "savingsPlan": null,
+        "note": "Not a security. Trade Republic also pays 2.50% p.a. on uninvested cash since 16 Sep 2026 (variable, follows the ECB deposit rate)."
+      },
+      "sources": [
+        {
+          "label": "Directive 2014/49/EU on deposit guarantee schemes (\u20ac100,000)",
+          "url": "https://eur-lex.europa.eu/eli/dir/2014/49/oj"
+        }
+      ]
+    },
+    {
+      "id": "XEON",
+      "name": "Xtrackers II EUR Overnight Rate Swap UCITS ETF 1C",
+      "shortName": "\u20acSTR money-market ETF",
+      "kind": "money-market",
+      "group": "stable",
+      "isin": "LU0290358497",
+      "wkn": "DBX0AN",
+      "yahooSymbol": "XEON.DE",
+      "underlying": "Solactive \u20acSTR +8.5 Daily (euro overnight rate)",
+      "inception": "2007-05-25",
+      "domicile": "Luxembourg",
+      "accumulating": true,
+      "replication": "Synthetic (swap)",
+      "ter": 0.1,
+      "aumMillionsEUR": 22997,
+      "summary": "Earns roughly the euro overnight rate minus costs; the price creeps up almost daily. A fund, so it is not covered by deposit insurance; its assets are kept separate from the issuer's.",
+      "taxClass": "fund-other",
+      "tradeRepublic": {
+        "savingsPlan": null,
+        "note": "Savings-plan availability not confirmed by justETF; check in the app."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=LU0290358497"
+        }
+      ]
+    },
+    {
+      "id": "DBXP",
+      "name": "Xtrackers II Eurozone Government Bond 1-3 UCITS ETF 1C",
+      "shortName": "Euro government bonds 1\u20133y",
+      "kind": "bond",
+      "group": "stable",
+      "isin": "LU0290356871",
+      "wkn": "DBX0AD",
+      "yahooSymbol": "DBXP.DE",
+      "underlying": "iBoxx EUR Eurozone 1-3 (euro-area government bonds, 1\u20133 years to maturity)",
+      "inception": "2007-05-25",
+      "domicile": "Luxembourg",
+      "accumulating": true,
+      "replication": "Physical (sampling)",
+      "ter": 0.1,
+      "aumMillionsEUR": 3493,
+      "summary": "Short-dated euro government bonds. Small price swings when interest rates move (prices fall when rates rise).",
+      "taxClass": "fund-other",
+      "tradeRepublic": {
+        "savingsPlan": null,
+        "note": "Savings-plan availability not confirmed by justETF; check in the app."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=LU0290356871"
+        }
+      ]
+    },
+    {
+      "id": "WGLD",
+      "name": "WisdomTree Core Physical Gold",
+      "shortName": "Gold (WisdomTree Core)",
+      "kind": "gold",
+      "group": "gold",
+      "isin": "JE00BN2CJ301",
+      "yahooSymbol": "WGLD.MI",
+      "priceNote": "Prices from the Borsa Italiana EUR line (Yahoo carries no Xetra line); every line tracks the same gold holdings.",
+      "underlying": "Physical gold (LBMA), priced in USD",
+      "inception": "2020-11-30",
+      "domicile": "Jersey",
+      "accumulating": true,
+      "replication": "Physically backed, with a delivery option",
+      "ter": 0.12,
+      "aumMillionsEUR": 1843,
+      "summary": "Exchange-traded commodity backed by vaulted gold. Gold is priced in US dollars, so a weaker dollar lowers the euro value.",
+      "episodeProxy": "SGLD",
+      "taxClass": "etc-delivery",
+      "taxNote": "Listed by extraETF (Feb 2026) among gold ETCs with a delivery right, which German tax law treats like physical gold.",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan listed for Trade Republic on justETF."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=JE00BN2CJ301"
+        },
+        {
+          "label": "extraETF: taxation of gold ETCs (updated 17 Feb 2026)",
+          "url": "https://extraetf.com/de/wissen/besteuerung-von-gold-etc"
+        }
+      ]
+    },
+    {
+      "id": "SGLD",
+      "name": "Invesco Physical Gold ETC",
+      "shortName": "Gold (Invesco)",
+      "kind": "gold",
+      "group": "gold",
+      "isin": "IE00B579F325",
+      "wkn": "A1AA5X",
+      "yahooSymbol": "8PSG.DE",
+      "underlying": "Physical gold, priced in USD",
+      "inception": "2009-06-25",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physically backed",
+      "ter": 0.12,
+      "aumMillionsEUR": 25960,
+      "summary": "The largest physical-gold ETC in Europe. Same gold exposure as WGLD, different German tax treatment.",
+      "taxClass": "etc-taxable",
+      "taxNote": "Listed by extraETF (Feb 2026) among gold ETCs without a delivery right, taxed with the flat capital-gains tax.",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan listed for Trade Republic on justETF."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00B579F325"
+        },
+        {
+          "label": "extraETF: taxation of gold ETCs (updated 17 Feb 2026)",
+          "url": "https://extraetf.com/de/wissen/besteuerung-von-gold-etc"
+        }
+      ]
+    },
+    {
+      "id": "BTC",
+      "name": "Bitcoin (held directly)",
+      "shortName": "Bitcoin",
+      "kind": "crypto",
+      "group": "crypto",
+      "yahooSymbol": "BTC-EUR",
+      "underlying": "Bitcoin, priced in EUR",
+      "summary": "Bought directly in the Trade Republic app; custody by BitGo Deutschland GmbH. Trades around the clock.",
+      "costNote": "\u20ac1 per order plus a spread of about 0.5% for Bitcoin; savings plans have no order fee (spread still applies).",
+      "taxClass": "crypto-direct",
+      "taxNote": "Under current law (\u00a7 23 EStG) gains are tax-free after 12 months. The federal cabinet's 2027 budget (6 Jul 2026) plans to abolish that exemption; no bill had been published as of September 2026.",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Crypto savings plans: \u20ac10 to \u20ac10,000 per execution, no order fee (price list v11.2025)."
+      },
+      "sources": [
+        {
+          "label": "extraETF: Trade Republic crypto test (14 Nov 2025)",
+          "url": "https://extraetf.com/de/krypto-broker/trade-republic-krypto-broker-im-test"
+        },
+        {
+          "label": "Trade Republic price list v11.2025",
+          "url": "https://assets.traderepublic.com/documents/DE/FURTHER_INFORMATION_PRICE_LIST_20251125091224.pdf"
+        },
+        {
+          "label": "neuebanken.de: planned end of the crypto holding period",
+          "url": "https://www.neuebanken.de/krypto-haltefrist-abschaffung/"
+        }
+      ]
+    },
+    {
+      "id": "AII",
+      "name": "iShares AI Infrastructure UCITS ETF USD (Acc)",
+      "shortName": "AI infrastructure",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "IE000X59ZHE2",
+      "wkn": "A40H8L",
+      "yahooSymbol": "AIFS.DE",
+      "underlying": "STOXX Global AI Infrastructure index \u2014 52 stocks",
+      "inception": "2024-12-05",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (full replication)",
+      "ter": 0.35,
+      "aumMillionsEUR": 1316,
+      "exposure": "USA 79%, Taiwan 9%, South Korea 4%, Netherlands 4%; technology 88% of the fund",
+      "summary": "Concentrated in US technology. Launched December 2024, so its own history covers one large market fall (February\u2013April 2025).",
+      "taxClass": "fund-equity",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan listed for Trade Republic on justETF."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=IE000X59ZHE2"
+        }
+      ]
+    },
+    {
+      "id": "BATT",
+      "name": "L&G Battery Value-Chain UCITS ETF",
+      "shortName": "Battery value chain",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "IE00BF0M2Z96",
+      "wkn": "A2H5GK",
+      "yahooSymbol": "BATE.DE",
+      "underlying": "Solactive Battery Value-Chain index \u2014 46 stocks (miners, cell makers, technology)",
+      "inception": "2018-01-23",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (full replication)",
+      "ter": 0.49,
+      "aumMillionsEUR": 663,
+      "exposure": "USA 19%, Japan 17%, China 15%, Germany 9%",
+      "summary": "Battery makers, technology firms and raw-material miners.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan listed for Trade Republic on justETF."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00BF0M2Z96"
+        }
+      ]
+    },
+    {
+      "id": "BRIJ",
+      "name": "Global X European Infrastructure Development UCITS ETF EUR Acc",
+      "shortName": "European infrastructure",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "IE000PS0J481",
+      "yahooSymbol": "B41J.DE",
+      "underlying": "Mirae Asset European Infrastructure Development index",
+      "inception": "2024-09-03",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (full replication)",
+      "ter": 0.47,
+      "aumMillionsEUR": 542,
+      "summary": "European companies in construction, engineering and infrastructure materials. Launched September 2024.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan listed for Trade Republic on justETF."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=IE000PS0J481"
+        },
+        {
+          "label": "Global X fund page",
+          "url": "https://globalxetfs.eu/funds/brij"
+        }
+      ]
+    },
+    {
+      "id": "EXH9",
+      "name": "iShares STOXX Europe 600 Utilities UCITS ETF (DE)",
+      "shortName": "European utilities",
+      "kind": "equity",
+      "group": "theme",
+      "isin": "DE000A0Q4R02",
+      "yahooSymbol": "EXH9.DE",
+      "underlying": "STOXX Europe 600 Utilities index \u2014 28 stocks (power and gas suppliers, grid operators)",
+      "inception": "2002-07-08",
+      "domicile": "Germany",
+      "accumulating": false,
+      "distribution": "Distributes at least annually",
+      "replication": "Physical (full replication)",
+      "ter": 0.47,
+      "aumMillionsEUR": 786,
+      "summary": "European energy providers and grid operators. Pays out dividends, which are taxed in the year they are paid.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan listed for Trade Republic on justETF."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=DE000A0Q4R02"
+        }
+      ]
+    },
+    {
+      "id": "VWCE",
+      "name": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating",
+      "shortName": "World equity (benchmark)",
+      "kind": "equity",
+      "group": "broad",
+      "role": "benchmark",
+      "isin": "IE00BK5BQT80",
+      "wkn": "A2PKXG",
+      "yahooSymbol": "VWCE.DE",
+      "underlying": "FTSE All-World index \u2014 about 3,700 large and mid-sized companies worldwide",
+      "inception": "2019-07-23",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical (sampling)",
+      "ter": 0.14,
+      "aumMillionsEUR": 53011,
+      "exposure": "USA about 63%",
+      "summary": "The world stock market in one fund, and the planner's yardstick: \"the market falls 10%\" means this fund falls 10%.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan available at Trade Republic (dataset)."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00BK5BQT80"
+        }
+      ]
+    },
+    {
+      "id": "IMAE",
+      "name": "iShares Core MSCI Europe UCITS ETF EUR (Acc)",
+      "shortName": "Europe equity",
+      "kind": "equity",
+      "group": "broad",
+      "isin": "IE00B4K48X80",
+      "yahooSymbol": "IMAE.AS",
+      "underlying": "MSCI Europe index \u2014 about 420 large and mid-sized European companies",
+      "domicile": "Ireland",
+      "accumulating": true,
+      "replication": "Physical",
+      "ter": 0.12,
+      "aumMillionsEUR": 15726,
+      "summary": "Broad European stock market without US companies.",
+      "taxClass": "fund-equity",
+      "tradeRepublic": {
+        "savingsPlan": true,
+        "note": "Savings plan available at Trade Republic (dataset)."
+      },
+      "sources": [
+        {
+          "label": "justETF profile",
+          "url": "https://www.justetf.com/de/etf-profile.html?isin=IE00B4K48X80"
+        }
+      ]
+    }
+  ],
+  "broker": {
+    "name": "Trade Republic",
+    "orderFee": 1.0,
+    "orderFeeLabel": "Bestpreis order (venue picked automatically)",
+    "orderFeeVenueChoice": 2.0,
+    "orderFeeVenueChoiceLabel": "Direktpreis order (you pick the venue, e.g. Xetra)",
+    "feeModelSince": "2026-07-01",
+    "savingsPlanFee": 0,
+    "savingsPlanMin": 10,
+    "savingsPlanMax": 10000,
+    "savingsPlanSchedule": "Savings plans start on the 2nd or 16th of a month and run weekly (2nd, 9th, 16th, 23rd), twice a month (2nd and 16th), monthly or quarterly.",
+    "cashInterestRate": 2.5,
+    "cashInterestSince": "2026-09-16",
+    "spreadEstimates": {
+      "BTC": 0.5
+    },
+    "notes": [
+      "Partial fills of one order on the same trading day are charged once.",
+      "Deposits by SEPA transfer are free; card, Apple Pay or Google Pay deposits cost 1%.",
+      "Crypto custody and crypto transfers are free (network fees apply to transfers)."
+    ],
+    "sources": [
+      {
+        "label": "Trade Republic price list v11.2025",
+        "url": "https://assets.traderepublic.com/documents/DE/FURTHER_INFORMATION_PRICE_LIST_20251125091224.pdf"
+      },
+      {
+        "label": "startbase.de: Trade Republic after the PFOF ban (Bestpreis \u20ac1 / Direktpreis \u20ac2, from 1 Jul 2026)",
+        "url": "https://www.startbase.de/news/trade-republic-reagiert-auf-das-pfof-aus-und-erfindet-sich-neu/"
+      },
+      {
+        "label": "extraETF: Trade Republic savings-plan test (execution days)",
+        "url": "https://extraetf.com/at/etf-sparplan/trade-republic-etf-sparplan-test"
+      },
+      {
+        "label": "neuebanken.de: Trade Republic pays 2.50% from 16 Sep 2026",
+        "url": "https://www.neuebanken.de/trade-republic-zinsen-2-50-prozent/"
+      }
+    ]
+  },
+  "tax": {
+    "country": "Germany",
+    "flatRate": 26.375,
+    "flatRateNote": "25% flat capital-income tax plus 5.5% solidarity surcharge on it; no church tax.",
+    "saversAllowance": 1000,
+    "equityFundPartialExemption": 30,
+    "vorabpauschaleFactor": 0.7,
+    "basiszins": {
+      "2024": 2.29,
+      "2025": 2.53,
+      "2026": 3.2
+    },
+    "privateSales": {
+      "holdingMonths": 12,
+      "exemptionLimit": 1000
+    },
+    "notes": [
+      "The saver's allowance (Sparerpauschbetrag) is \u20ac1,000 a year for a single person, shared across all banks and brokers via exemption orders (Freistellungsauftr\u00e4ge).",
+      "Accumulating funds pay a yearly advance tax (Vorabpauschale): fund value at the start of the year \u00d7 70% of the Basiszins (3.20% for 2026), capped at the fund's actual gain that year. In the year of purchase it shrinks by one twelfth for every full month before the purchase month. It is deducted in January of the following year and credited when you sell.",
+      "Private-sale rules (directly held crypto, gold ETCs with a delivery right): gains are tax-free after 12 months. Sold sooner, gains are taxed at your personal income-tax rate, but only if all private-sale gains of the year reach \u20ac1,000 (an exemption limit, not an allowance).",
+      "Losses on shares/funds can only offset gains in the same category; your broker keeps loss pots automatically.",
+      "Simplified overview, not tax advice."
+    ],
+    "sources": [
+      {
+        "label": "finanzfluss: Freistellungsauftrag (\u20ac1,000 since 2023)",
+        "url": "https://www.finanzfluss.de/geldanlage/freistellungsauftrag/"
+      },
+      {
+        "label": "BVI: Basiszins 2026 (3.20%, BMF letter of 13 Jan 2026)",
+        "url": "https://direkt.bvi.de/fileadmin/user_upload/letter/2026/COO.7005.100.4.13897455.pdf"
+      },
+      {
+        "label": "Blockpit: crypto tax in Germany 2026 (\u00a7 23 EStG, \u20ac1,000 exemption limit)",
+        "url": "https://www.blockpit.io/de-de/steuer-guides/krypto-steuer-deutschland"
+      },
+      {
+        "label": "extraETF: taxation of gold ETCs (updated 17 Feb 2026)",
+        "url": "https://extraetf.com/de/wissen/besteuerung-von-gold-etc"
+      }
+    ]
+  },
+  "marketContext": [
+    {
+      "label": "ECB deposit rate",
+      "value": "2.50%",
+      "detail": "Raised twice in 2026 (17 June and 16 September). Next decision 29 October 2026.",
+      "source": {
+        "label": "ECB key interest rates",
+        "url": "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/key_ecb_interest_rates/html/index.en.html"
+      }
+    },
+    {
+      "label": "Euro-area inflation (ECB projection)",
+      "value": "3.0% in 2026",
+      "detail": "September 2026 staff projections: 3.0% in 2026, 2.5% in 2027, 2.1% in 2028. A 2.5% account rate is below that.",
+      "source": {
+        "label": "ECB decision of 10 Sep 2026 (summary)",
+        "url": "https://forexfundamentals.com/economic-calendar/ecb/2026-09-10"
+      }
+    },
+    {
+      "label": "US valuation (S&P 500 Shiller CAPE)",
+      "value": "\u2248 40.6",
+      "detail": "September 2026: second-highest reading since 1881; the record was 44.2 in December 1999. The long-run average is about 17.",
+      "source": {
+        "label": "TheStreet: S&P 500 CAPE second-highest ever",
+        "url": "https://www.thestreet.com/investing/sp-500-shiller-cape-ratio-dot-com-warning-2026"
+      }
+    },
+    {
+      "label": "German infrastructure fund",
+      "value": "\u20ac500 bn",
+      "detail": "Special fund for infrastructure and climate neutrality, created by a constitutional amendment in March 2025 and financed by borrowing.",
+      "source": {
+        "label": "Bundesregierung: Sonderverm\u00f6gen",
+        "url": "https://www.bundesregierung.de/breg-de/aktuelles/sondervermoegen-2356240"
+      }
+    },
+    {
+      "label": "Crypto tax exemption",
+      "value": "Under review",
+      "detail": "The cabinet's 2027 budget (6 Jul 2026) plans to end the 12-month exemption for crypto gains. Not law; no bill published as of September 2026.",
+      "source": {
+        "label": "anwalt.de: crypto taxes 2026",
+        "url": "https://www.anwalt.de/rechtstipps/krypto-steuern-2026-ende-der-haltefrist-so-reagieren-anleger-jetzt-278155.html"
+      }
+    }
+  ],
+  "education": [
+    {
+      "id": "lump-vs-phased",
+      "title": "All at once or in steps?",
+      "text": "Vanguard compared investing a lump sum at once with spreading it over 12 months (MSCI World, 1976\u20132022): the lump sum came out ahead in about 68% of rolling one-year periods, because markets rose more often than they fell. Spreading the purchases mainly reduces the damage, and the regret, if prices fall soon after you buy.",
+      "source": {
+        "label": "Vanguard: Cost averaging \u2014 invest now or temporarily hold your cash?",
+        "url": "https://corporate.vanguard.com/content/dam/corp/research/pdf/cost_averaging_invest_now_or_temporarily_hold_your_cash.pdf"
+      }
+    },
+    {
+      "id": "beta",
+      "title": "What the stress test measures",
+      "text": "Beta is how much an instrument has tended to move for each 1% move of the world index (weekly returns, last 3 years). The episode columns repeat what each instrument actually did during the real falls of the world index, scaled to your scenario. Neither is a forecast: the next fall can hit an instrument harder than any of these."
+    }
+  ]
+},
+  plannerRisk: {
+  "generatedAt": "2026-10-05T06:57:18.745252+00:00",
+  "asOf": "2026-10-02",
+  "benchmark": "VWCE",
+  "benchmarkName": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating",
+  "source": "Yahoo Finance daily adjusted closes in EUR",
+  "method": {
+    "betaWindowYears": 3,
+    "riskWindowYears": 5,
+    "episodeThreshold": 10.0,
+    "minWeeks": 26,
+    "notes": [
+      "Volatility, beta and correlation use Friday-to-Friday returns over the last 3 years, or since launch if shorter.",
+      "Maximum drawdown and the worst 12-month return cover the last 5 years, or since launch if shorter.",
+      "Episodes are every fall of the benchmark of at least 10% from a peak to its lowest close before that peak was regained.",
+      "An instrument that did not exist during an episode has no measured move there. If it has a proxy with the same underlying, the proxy's move is shown and labelled."
+    ]
+  },
+  "episodes": [
+    {
+      "id": "2020-02",
+      "label": "2020 COVID crash",
+      "peak": "2020-02-19",
+      "trough": "2020-03-23",
+      "recovered": "2021-01-06",
+      "benchmarkMove": -33.4
+    },
+    {
+      "id": "2022-01",
+      "label": "2022 rate-hike sell-off",
+      "peak": "2022-01-04",
+      "trough": "2022-06-16",
+      "recovered": "2023-12-08",
+      "benchmarkMove": -16.1
+    },
+    {
+      "id": "2025-02",
+      "label": "2025 tariff shock",
+      "peak": "2025-02-19",
+      "trough": "2025-04-09",
+      "recovered": "2025-10-01",
+      "benchmarkMove": -21.1
+    }
+  ],
+  "instruments": {
+    "XEON": {
+      "symbol": "XEON.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 150.386,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 0.2,
+      "beta": 0.0,
+      "downBeta": -0.02,
+      "correlation": 0.0,
+      "maxDrawdown": {
+        "value": -0.5,
+        "peak": "2021-10-04",
+        "trough": "2022-08-04",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -0.5,
+        "from": "2021-10-05",
+        "to": "2022-10-05",
+        "windows": 1018
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -0.2,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -0.3,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": 0.4,
+          "basis": "actual"
+        }
+      }
+    },
+    "DBXP": {
+      "symbol": "DBXP.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 173.74,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 1.3,
+      "beta": 0.02,
+      "downBeta": -0.01,
+      "correlation": 0.15,
+      "maxDrawdown": {
+        "value": -5.5,
+        "peak": "2021-11-19",
+        "trough": "2023-03-06",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -5.1,
+        "from": "2022-03-04",
+        "to": "2023-03-06",
+        "windows": 1018
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -1.7,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -3.2,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": 0.9,
+          "basis": "actual"
+        }
+      }
+    },
+    "WGLD": {
+      "symbol": "WGLD.MI",
+      "firstDate": "2020-11-30",
+      "lastDate": "2026-10-02",
+      "lastPrice": 365.21,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 17.2,
+      "beta": 0.19,
+      "downBeta": 0.08,
+      "correlation": 0.14,
+      "maxDrawdown": {
+        "value": -22.8,
+        "peak": "2026-03-02",
+        "trough": "2026-07-16",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -8.9,
+        "from": "2022-03-08",
+        "to": "2023-03-08",
+        "windows": 1013
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -3.3,
+          "basis": "proxy",
+          "proxy": "SGLD"
+        },
+        "2022-01": {
+          "move": 9.1,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -0.9,
+          "basis": "actual"
+        }
+      }
+    },
+    "SGLD": {
+      "symbol": "8PSG.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 354.14,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 20.8,
+      "beta": 0.23,
+      "downBeta": 0.14,
+      "correlation": 0.14,
+      "maxDrawdown": {
+        "value": -22.6,
+        "peak": "2026-03-02",
+        "trough": "2026-07-17",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -8.8,
+        "from": "2022-03-08",
+        "to": "2023-03-08",
+        "windows": 1017
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -3.3,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": 7.6,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -0.8,
+          "basis": "actual"
+        }
+      }
+    },
+    "BTC": {
+      "symbol": "BTC-EUR",
+      "firstDate": "2016-10-05",
+      "lastDate": "2026-10-05",
+      "lastPrice": 77067.3203,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 46.0,
+      "beta": 0.79,
+      "downBeta": 0.35,
+      "correlation": 0.22,
+      "maxDrawdown": {
+        "value": -73.6,
+        "peak": "2021-11-08",
+        "trough": "2022-11-21",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -72.6,
+        "from": "2021-11-09",
+        "to": "2022-11-09",
+        "windows": 1464
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -33.1,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -52.5,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -18.7,
+          "basis": "actual"
+        }
+      }
+    },
+    "AII": {
+      "symbol": "AIFS.DE",
+      "firstDate": "2024-12-09",
+      "lastDate": "2026-10-02",
+      "lastPrice": 10.706,
+      "statsFrom": "2024-12-13",
+      "weeks": 94,
+      "volatility": 27.1,
+      "beta": 1.7,
+      "downBeta": 1.49,
+      "correlation": 0.85,
+      "maxDrawdown": {
+        "value": -31.1,
+        "peak": "2025-02-19",
+        "trough": "2025-04-09",
+        "windowStart": "2024-12-09"
+      },
+      "worst12m": {
+        "value": 19.3,
+        "from": "2024-12-17",
+        "to": "2025-12-17",
+        "windows": 205
+      },
+      "episodes": {
+        "2020-02": {
+          "move": null,
+          "basis": "none"
+        },
+        "2022-01": {
+          "move": null,
+          "basis": "none"
+        },
+        "2025-02": {
+          "move": -31.1,
+          "basis": "actual"
+        }
+      }
+    },
+    "BATT": {
+      "symbol": "BATE.DE",
+      "firstDate": "2018-02-07",
+      "lastDate": "2026-10-02",
+      "lastPrice": 26.205,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 25.5,
+      "beta": 1.46,
+      "downBeta": 1.54,
+      "correlation": 0.72,
+      "maxDrawdown": {
+        "value": -34.0,
+        "peak": "2023-07-03",
+        "trough": "2025-04-09",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -25.6,
+        "from": "2024-04-09",
+        "to": "2025-04-09",
+        "windows": 1016
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -35.9,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -16.7,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -27.4,
+          "basis": "actual"
+        }
+      }
+    },
+    "BRIJ": {
+      "symbol": "B41J.DE",
+      "firstDate": "2024-09-09",
+      "lastDate": "2026-10-02",
+      "lastPrice": 18.536,
+      "statsFrom": "2024-09-13",
+      "weeks": 107,
+      "volatility": 14.9,
+      "beta": 0.49,
+      "downBeta": 0.39,
+      "correlation": 0.43,
+      "maxDrawdown": {
+        "value": -13.2,
+        "peak": "2026-02-27",
+        "trough": "2026-10-01",
+        "windowStart": "2024-09-09"
+      },
+      "worst12m": {
+        "value": -1.5,
+        "from": "2025-10-01",
+        "to": "2026-10-01",
+        "windows": 270
+      },
+      "episodes": {
+        "2020-02": {
+          "move": null,
+          "basis": "none"
+        },
+        "2022-01": {
+          "move": null,
+          "basis": "none"
+        },
+        "2025-02": {
+          "move": -4.7,
+          "basis": "actual"
+        }
+      }
+    },
+    "EXH9": {
+      "symbol": "EXH9.DE",
+      "firstDate": "2016-10-04",
+      "lastDate": "2026-10-02",
+      "lastPrice": 55.27,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 15.4,
+      "beta": 0.24,
+      "downBeta": 0.1,
+      "correlation": 0.19,
+      "maxDrawdown": {
+        "value": -22.7,
+        "peak": "2022-05-23",
+        "trough": "2022-10-12",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -13.7,
+        "from": "2021-10-21",
+        "to": "2022-10-21",
+        "windows": 1017
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -33.2,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -10.8,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": 2.7,
+          "basis": "actual"
+        }
+      }
+    },
+    "VWCE": {
+      "symbol": "VWCE.DE",
+      "firstDate": "2019-07-29",
+      "lastDate": "2026-10-02",
+      "lastPrice": 171.14,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 12.6,
+      "beta": 1.0,
+      "downBeta": 1.0,
+      "correlation": 1.0,
+      "maxDrawdown": {
+        "value": -21.1,
+        "peak": "2025-02-19",
+        "trough": "2025-04-09",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -13.7,
+        "from": "2021-12-28",
+        "to": "2022-12-28",
+        "windows": 1016
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -33.4,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -16.1,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -21.1,
+          "basis": "actual"
+        }
+      }
+    },
+    "IMAE": {
+      "symbol": "IMAE.AS",
+      "firstDate": "2016-10-03",
+      "lastDate": "2026-10-02",
+      "lastPrice": 102.68,
+      "statsFrom": "2023-10-06",
+      "weeks": 156,
+      "volatility": 12.6,
+      "beta": 0.75,
+      "downBeta": 0.76,
+      "correlation": 0.75,
+      "maxDrawdown": {
+        "value": -19.4,
+        "peak": "2022-01-05",
+        "trough": "2022-09-29",
+        "windowStart": "2021-10-02"
+      },
+      "worst12m": {
+        "value": -12.3,
+        "from": "2021-10-14",
+        "to": "2022-10-14",
+        "windows": 1022
+      },
+      "episodes": {
+        "2020-02": {
+          "move": -34.9,
+          "basis": "actual"
+        },
+        "2022-01": {
+          "move": -15.6,
+          "basis": "actual"
+        },
+        "2025-02": {
+          "move": -14.7,
+          "basis": "actual"
+        }
+      }
+    }
+  },
+  "correlations": {
+    "XEON": {
+      "XEON": 1.0,
+      "DBXP": 0.163,
+      "WGLD": 0.089,
+      "SGLD": 0.046,
+      "BTC": 0.185,
+      "AII": -0.023,
+      "BATT": -0.025,
+      "BRIJ": -0.021,
+      "EXH9": -0.005,
+      "VWCE": 0.002,
+      "IMAE": 0.001
+    },
+    "DBXP": {
+      "DBXP": 1.0,
+      "XEON": 0.163,
+      "WGLD": 0.271,
+      "SGLD": 0.131,
+      "BTC": -0.015,
+      "AII": 0.081,
+      "BATT": 0.114,
+      "BRIJ": 0.299,
+      "EXH9": 0.383,
+      "VWCE": 0.147,
+      "IMAE": 0.211
+    },
+    "WGLD": {
+      "WGLD": 1.0,
+      "XEON": 0.089,
+      "DBXP": 0.271,
+      "SGLD": 0.777,
+      "BTC": 0.055,
+      "AII": 0.119,
+      "BATT": 0.256,
+      "BRIJ": 0.211,
+      "EXH9": 0.212,
+      "VWCE": 0.141,
+      "IMAE": 0.16
+    },
+    "SGLD": {
+      "SGLD": 1.0,
+      "XEON": 0.046,
+      "DBXP": 0.131,
+      "WGLD": 0.777,
+      "BTC": 0.11,
+      "AII": 0.063,
+      "BATT": 0.211,
+      "BRIJ": 0.221,
+      "EXH9": 0.106,
+      "VWCE": 0.142,
+      "IMAE": 0.172
+    },
+    "BTC": {
+      "BTC": 1.0,
+      "XEON": 0.185,
+      "DBXP": -0.015,
+      "WGLD": 0.055,
+      "SGLD": 0.11,
+      "AII": 0.351,
+      "BATT": 0.18,
+      "BRIJ": 0.052,
+      "EXH9": -0.045,
+      "VWCE": 0.217,
+      "IMAE": 0.116
+    },
+    "AII": {
+      "AII": 1.0,
+      "XEON": -0.023,
+      "DBXP": 0.081,
+      "WGLD": 0.119,
+      "SGLD": 0.063,
+      "BTC": 0.351,
+      "BATT": 0.694,
+      "BRIJ": 0.228,
+      "EXH9": -0.007,
+      "VWCE": 0.846,
+      "IMAE": 0.481
+    },
+    "BATT": {
+      "BATT": 1.0,
+      "XEON": -0.025,
+      "DBXP": 0.114,
+      "WGLD": 0.256,
+      "SGLD": 0.211,
+      "BTC": 0.18,
+      "AII": 0.694,
+      "BRIJ": 0.449,
+      "EXH9": 0.215,
+      "VWCE": 0.722,
+      "IMAE": 0.681
+    },
+    "BRIJ": {
+      "BRIJ": 1.0,
+      "XEON": -0.021,
+      "DBXP": 0.299,
+      "WGLD": 0.211,
+      "SGLD": 0.221,
+      "BTC": 0.052,
+      "AII": 0.228,
+      "BATT": 0.449,
+      "EXH9": 0.571,
+      "VWCE": 0.429,
+      "IMAE": 0.784
+    },
+    "EXH9": {
+      "EXH9": 1.0,
+      "XEON": -0.005,
+      "DBXP": 0.383,
+      "WGLD": 0.212,
+      "SGLD": 0.106,
+      "BTC": -0.045,
+      "AII": -0.007,
+      "BATT": 0.215,
+      "BRIJ": 0.571,
+      "VWCE": 0.192,
+      "IMAE": 0.461
+    },
+    "VWCE": {
+      "VWCE": 1.0,
+      "XEON": 0.002,
+      "DBXP": 0.147,
+      "WGLD": 0.141,
+      "SGLD": 0.142,
+      "BTC": 0.217,
+      "AII": 0.846,
+      "BATT": 0.722,
+      "BRIJ": 0.429,
+      "EXH9": 0.192,
+      "IMAE": 0.752
+    },
+    "IMAE": {
+      "IMAE": 1.0,
+      "XEON": 0.001,
+      "DBXP": 0.211,
+      "WGLD": 0.16,
+      "SGLD": 0.172,
+      "BTC": 0.116,
+      "AII": 0.481,
+      "BATT": 0.681,
+      "BRIJ": 0.784,
+      "EXH9": 0.461,
+      "VWCE": 0.752
+    }
+  },
+  "warnings": []
 }
 };

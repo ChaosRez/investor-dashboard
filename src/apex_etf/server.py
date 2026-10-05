@@ -28,13 +28,14 @@ from .analysis import (
     HISTORICAL_CRISES,
 )
 from .sync import SyncInProgress, run_full_sync
+from .planner import RiskRefreshInProgress, analyze_plan, refresh_planner_risk
 
-def load_json(rel_path: str):
+def load_json(rel_path: str, default: Any = None):
     path = os.path.join(DATA_DIR, rel_path)
     if os.path.exists(path):
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
-    return []
+    return [] if default is None else default
 
 # In-memory datasets
 ETFS_DATA = load_json("etfs.json")
@@ -42,17 +43,22 @@ CORRELATIONS_DATA = load_json("correlations.json")
 NEWS_DATA = load_json("news.json")
 EDUCATION_DATA = load_json("education.json")
 ETFS_BY_TICKER = {etf["ticker"].upper(): etf for etf in ETFS_DATA}
+PLANNER_DATA = load_json("planner.json", {})
+PLANNER_RISK = load_json("planner-risk.json", {})
 
 def reload_datasets():
-    global ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER
+    global ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER, PLANNER_DATA, PLANNER_RISK
     # The server is threaded: load everything first, then swap, so a request running in parallel
     # never sees half of the new datasets next to half of the old ones.
     etfs = load_json("etfs.json")
     correlations = load_json("correlations.json")
     news = load_json("news.json")
     education = load_json("education.json")
+    planner_data = load_json("planner.json", {})
+    planner_risk = load_json("planner-risk.json", {})
     by_ticker = {etf["ticker"].upper(): etf for etf in etfs}
-    ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER = etfs, correlations, news, education, by_ticker
+    (ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER, PLANNER_DATA, PLANNER_RISK) = (
+        etfs, correlations, news, education, by_ticker, planner_data, planner_risk)
 
 class ETFHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -131,6 +137,10 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json({
                 "crises": HISTORICAL_CRISES
             })
+            return
+
+        elif path == "/api/planner":
+            self.send_json({"dataset": PLANNER_DATA, "risk": PLANNER_RISK})
             return
 
         elif path == "/api/market-status":
@@ -250,6 +260,24 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json(result)
             return
 
+        elif path == "/api/planner/analyze":
+            reload_datasets()
+            result = analyze_plan(body if isinstance(body, dict) else {}, PLANNER_DATA, PLANNER_RISK)
+            # A request the planner cannot analyse is the client's to fix: 400 with the reason.
+            self.send_json(result, status=400 if "error" in result else 200)
+            return
+
+        elif path == "/api/planner/refresh-risk":
+            try:
+                result = refresh_planner_risk()
+                reload_datasets()
+                self.send_json(result, status=200 if result.get("status") != "failed" else 502)
+            except RiskRefreshInProgress as e:
+                self.send_json({"error": str(e), "code": "refresh_in_progress"}, status=409)
+            except Exception as e:
+                self.send_json({"error": f"Risk refresh failed: {str(e)}"}, status=500)
+            return
+
         self.send_json({"error": "Endpoint not found"}, status=404)
 
     def send_json(self, data: Any, status: int = 200):
@@ -272,7 +300,7 @@ def run_server(port: int = DEFAULT_PORT, host: str = DEFAULT_HOST):
     with create_server(port, host) as httpd:
         print(f"🚀 ApexETF Dashboard Server active at http://localhost:{port}")
         print(f"📊 Serving verified datasets from: {DATA_DIR}")
-        print(f"🌐 REST APIs: /api/etfs, /api/news, /api/correlations, /api/overlap, /api/portfolio/backtest, /api/sync")
+        print(f"🌐 REST APIs: /api/etfs, /api/news, /api/correlations, /api/overlap, /api/portfolio/backtest, /api/planner, /api/sync")
         print("Press Ctrl+C to terminate.")
         try:
             httpd.serve_forever()
