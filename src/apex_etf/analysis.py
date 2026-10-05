@@ -14,6 +14,9 @@ import urllib.parse
 from typing import Dict, Any, List, Optional, Tuple
 
 from .config import DATA_DIR
+from .planner import history_points, load_history
+
+WEEKS_PER_YEAR = 365.25 / 7
 
 def calculate_portfolio_overlap(
     portfolio_weights: Dict[str, float],
@@ -189,22 +192,26 @@ def calculate_curvo_portfolio_simulation(
     total_weight = sum(weights.values()) if weights else 1.0
     norm_w = {k.upper(): v / total_weight for k, v in weights.items()}
 
-    # Compute weighted historical CAGR and volatility from Curvo stats
+    # Weighted long-run statistics from each fund's own dataset entry (historicalStatsCurvo: cagr, stdev,
+    # maxDrawdown). A fund without them is left out and named, never given a made-up default. (This used
+    # to read cagr10Y/volatility10Y, which no entry has, so every portfolio silently projected 8.5%.)
     weighted_cagr = 0.0
     weighted_vol = 0.0
     weighted_max_dd = 0.0
-
+    covered = 0.0
+    missing_stats: List[str] = []
     for ticker, w in norm_w.items():
-        etf = etfs_by_ticker.get(ticker)
-        if etf and "historicalStatsCurvo" in etf:
-            stats = etf["historicalStatsCurvo"]
-            weighted_cagr += stats.get("cagr10Y", 8.5) * w
-            weighted_vol += stats.get("volatility10Y", 14.5) * w
-            weighted_max_dd += stats.get("maxDrawdown", -22.0) * w
-        else:
-            weighted_cagr += 8.0 * w
-            weighted_vol += 15.0 * w
-            weighted_max_dd += -25.0 * w
+        stats = (etfs_by_ticker.get(ticker) or {}).get("historicalStatsCurvo") or {}
+        if stats.get("cagr") is None or stats.get("stdev") is None:
+            missing_stats.append(ticker)
+            continue
+        weighted_cagr += float(stats["cagr"]) * w
+        weighted_vol += float(stats["stdev"]) * w
+        weighted_max_dd += float(stats.get("maxDrawdown") or 0.0) * w
+        covered += w
+    if covered <= 0:
+        return {"error": f"No long-run statistics for {', '.join(missing_stats) or 'this portfolio'}."}
+    weighted_cagr, weighted_vol, weighted_max_dd = (x / covered for x in (weighted_cagr, weighted_vol, weighted_max_dd))
 
     months = years * 12
     monthly_rate = math.pow(1.0 + (weighted_cagr / 100.0), 1.0 / 12.0) - 1.0
@@ -288,8 +295,138 @@ def calculate_curvo_portfolio_simulation(
         "results": summary_dict,
         "timeline": js_timeline,
         "growthTimeline": js_timeline,
-        "curvoVerificationUrl": curvo_url
+        "curvoVerificationUrl": curvo_url,
+        "projectionBasis": "Constant return: the weighted long-run CAGR of the funds (dataset). An illustration, not a forecast.",
+        "missingStats": missing_stats,
+        "historicalBacktest": calculate_dca_backtest(norm_w, initial_sum, monthly_dca, years, inflation_rate * 100),
     }
+
+
+def calculate_dca_backtest(
+    weights: Dict[str, float],
+    initial: float,
+    monthly: float,
+    years: int,
+    inflation_percent: float = 0.0,
+    history: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """What the same plan actually returned over the last `years` (or as long as the shared price history
+    allows): `initial` invested at the first month-end, `monthly` added after every later month-end,
+    rebalanced monthly to the weights, with real weekly prices (distributions reinvested)."""
+    ph = portfolio_history(weights, history, min_points=10)
+    if "values" not in ph:
+        reason = (f"No price history for {', '.join(ph['missing'])}." if ph.get("missing")
+                  else "Too little shared price history.")
+        return {"available": False, "reason": reason}
+
+    month_ends: Dict[Tuple[int, int], Tuple[Any, float]] = {}
+    for d, v in zip(ph["dates"], ph["values"]):
+        month_ends[(d.year, d.month)] = (d, v)
+    points = [month_ends[k] for k in sorted(month_ends)]
+    wanted = max(1, int(years)) * 12
+    if len(points) - 1 > wanted:
+        points = points[-(wanted + 1):]
+    if len(points) < 2:
+        return {"available": False, "reason": "Too little shared price history."}
+
+    start_day = points[0][0]
+    value = deposits = float(initial)
+    infl = max(0.0, float(inflation_percent)) / 100.0
+    rows = [{"date": start_day.isoformat(), "deposits": round(deposits, 2), "value": round(value, 2), "realValue": round(value, 2)}]
+    monthly_returns = []
+    for (d0, v0), (d1, v1) in zip(points, points[1:]):
+        r = v1 / v0 - 1
+        monthly_returns.append(r)
+        value = value * (1 + r) + monthly
+        deposits += monthly
+        t = (d1 - start_day).days / 365.25
+        rows.append({"date": d1.isoformat(), "deposits": round(deposits, 2), "value": round(value, 2),
+                     "realValue": round(value / (1 + infl) ** t, 2)})
+
+    span = (points[-1][0] - start_day).days / 365.25
+    growth = points[-1][1] / points[0][1]
+    window = [v for d, v in zip(ph["dates"], ph["values"]) if d >= start_day]
+    mean = sum(monthly_returns) / len(monthly_returns)
+    vol = math.sqrt(sum((r - mean) ** 2 for r in monthly_returns) / max(1, len(monthly_returns) - 1)) * math.sqrt(12)
+    yearly = [row for i, row in enumerate(rows) if i % 12 == 0 or i == len(rows) - 1]
+    return {
+        "available": True,
+        "from": start_day.isoformat(),
+        "to": points[-1][0].isoformat(),
+        "months": len(points) - 1,
+        "years": round(span, 1),
+        "requestedYears": int(years),
+        "capped": len(points) - 1 < wanted,
+        "deposits": round(deposits, 2),
+        "finalValue": round(value, 2),
+        "gain": round(value - deposits, 2),
+        "realFinalValue": rows[-1]["realValue"],
+        "cagr": round((growth ** (1 / span) - 1) * 100, 2) if span > 0 else None,
+        "volatility": round(vol * 100, 2),
+        "maxDrawdown": round(min(_drawdowns(window)) * 100, 2),
+        "timeline": yearly,
+        "basis": "Month-end prices from Yahoo Finance weekly closes (EUR, distributions reinvested); no fees or taxes.",
+    }
+
+
+# ---------------------------------------------------------------------------
+# REAL PRICE HISTORY HELPERS (history.json: weekly closes, distributions reinvested)
+# ---------------------------------------------------------------------------
+
+def _percentile(values: List[float], q: float) -> float:
+    """Linear-interpolated percentile, q in [0, 100]."""
+    xs = sorted(values)
+    if not xs:
+        return float("nan")
+    k = (len(xs) - 1) * q / 100.0
+    lo, hi = math.floor(k), math.ceil(k)
+    return xs[lo] + (xs[hi] - xs[lo]) * (k - lo)
+
+
+def portfolio_history(weights: Dict[str, float], history: Optional[Dict[str, Any]] = None,
+                      min_points: int = 27) -> Dict[str, Any]:
+    """Weekly value of a portfolio rebalanced every week to `weights`, over the dates all holdings share.
+
+    Returns {"dates", "values" (starting at 1.0), "returns"} or {"missing": [...]} / {"tooShort": True}.
+    Nothing is filled in for a holding without history: the caller says so instead.
+    """
+    history = history if history is not None else load_history()
+    instruments = (history or {}).get("instruments") or {}
+    total = sum(w for w in weights.values() if w and w > 0)
+    norm = {t.upper(): w / total for t, w in weights.items() if w and w > 0} if total > 0 else {}
+    missing = sorted(t for t in norm if t not in instruments)
+    if not norm or missing:
+        return {"missing": missing or ["(empty portfolio)"]}
+    series = {t: dict(history_points(instruments[t])) for t in norm}
+    common = sorted(set.intersection(*(set(s) for s in series.values())))
+    if len(common) < min_points:
+        return {"tooShort": True, "points": len(common)}
+    values, returns = [1.0], []
+    for a, b in zip(common, common[1:]):
+        r = sum(w * (series[t][b] / series[t][a] - 1) for t, w in norm.items())
+        returns.append(r)
+        values.append(values[-1] * (1 + r))
+    return {"dates": common, "values": values, "returns": returns}
+
+
+def _annualised_cash_rate(history: Dict[str, Any], start, end) -> Optional[float]:
+    """Annualised return of the euro overnight-rate ETF (XEON) between two dates: the risk-free rate."""
+    entry = ((history or {}).get("instruments") or {}).get("XEON")
+    if not entry:
+        return None
+    pts = dict(history_points(entry))
+    if start not in pts or end not in pts or end <= start:
+        return None
+    years = (end - start).days / 365.25
+    return (pts[end] / pts[start]) ** (1 / years) - 1
+
+
+def _drawdowns(values: List[float]) -> List[float]:
+    peak, out = values[0], []
+    for v in values:
+        peak = max(peak, v)
+        out.append(v / peak - 1)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -1183,11 +1320,6 @@ def calculate_crisis_stress_test(
         outperf_eq = port_ret - bm_equity
         outperf_60_40 = port_ret - bm_60_40
 
-        # Estimated recovery time
-        depth = abs(min(0.0, port_ret))
-        dur_months = crisis.get("durationMonths", 12)
-        est_recovery = round((depth / 15.0) * dur_months, 1) if depth > 0 else 0
-
         regime_dynamics = ""
         if crisis["id"] == "dot_com_2000":
             regime_dynamics = "Tech valuation contraction (-78%). Bonds and cash provided structural capital preservation."
@@ -1210,7 +1342,7 @@ def calculate_crisis_stress_test(
             "benchmark6040Drawdown": round(bm_60_40, 2),
             "outperformanceVsEquity": round(outperf_eq, 2),
             "outperformanceVs6040": round(outperf_60_40, 2),
-            "estimatedRecoveryMonths": est_recovery,
+            "cashReturn": asset_rets.get("XEON"),
             "regimeDynamics": regime_dynamics,
             # Holdings whose figure for this crisis is not a measured return
             "estimatedFor": [{"ticker": t, "launchYear": FUND_LAUNCH_YEARS[t]} for t in estimated],
@@ -1222,30 +1354,28 @@ def calculate_crisis_stress_test(
             worst_drawdown = port_ret
             worst_crisis_name = crisis["name"]
 
-    # Behavioral Tolerance Guardrail Assessment
+    # Behavioural tolerance guardrail. Mixing a share f of XEON into the portfolio (everything else
+    # scaled down by 1 - f) turns a crisis result R into (1 - f) R + f C, with C the cash return in that
+    # crisis. The smallest f that keeps every crisis at or above the tolerance T is max (T - R) / (C - R).
     tolerance_breached = worst_drawdown < behavioral_tolerance
     breach_gap = round(abs(worst_drawdown - behavioral_tolerance), 2) if tolerance_breached else 0.0
-
-    # Calculate recommended short cash / treasury reallocation
-    recommended_cash_shift = 0.0
-    remedy_advice = ""
+    needed = 0.0
+    for c in crisis_results:
+        r, cash = c["portfolioDrawdown"], c.get("cashReturn")
+        if r < behavioral_tolerance and cash is not None and cash > r:
+            needed = max(needed, (behavioral_tolerance - r) / (cash - r))
+    recommended_cash_shift = float(min(100, math.ceil(needed * 100 - 1e-9))) if tolerance_breached else 0.0
 
     if tolerance_breached:
-        # Each 10% shift into XEON saves ~5% drawdown in equity crashes
-        needed_shift = min(50.0, max(10.0, round((breach_gap / 35.0) * 100, 0)))
-        recommended_cash_shift = needed_shift
         remedy_advice = (
-            f"⚠️ Your worst drawdown of {worst_drawdown:.1f}% during the '{worst_crisis_name}' exceeds "
-            f"your {behavioral_tolerance:.1f}% behavioral tolerance limit by {breach_gap:.1f} percentage points. "
-            f"In live market panics, exceeding your pain tolerance triggers emotional panic-selling at market bottoms. "
-            f"Recommended Adjustment: Reallocate +{int(recommended_cash_shift)}% into ultra-short T-Bills / cash yield "
-            f"(XEON €STR) or increase aggregate bonds (AGGU) to cushion drawdown below your threshold."
+            f"⚠️ Worst crisis result: {worst_drawdown:.1f}% ({worst_crisis_name}), {breach_gap:.1f} points beyond "
+            f"your {behavioral_tolerance:.1f}% limit. With {int(recommended_cash_shift)}% in XEON (€STR cash, the rest "
+            f"scaled down), every crisis in this table would have stayed within it."
         )
     else:
         remedy_advice = (
-            f"✅ Portfolio drawdown profile ({worst_drawdown:.1f}% in worst historical crisis) comfortably satisfies "
-            f"your {behavioral_tolerance:.1f}% behavioral tolerance. The portfolio has sufficient regime resilience "
-            f"to withstand severe macro shocks without panic."
+            f"✅ Worst crisis result: {worst_drawdown:.1f}% ({worst_crisis_name}), within your "
+            f"{behavioral_tolerance:.1f}% limit."
         )
 
     return {
@@ -1266,102 +1396,89 @@ def calculate_crisis_stress_test(
 
 def calculate_quantstats_downside_tear_sheet(
     portfolio_weights: Dict[str, float],
-    etfs_by_ticker: Optional[Dict[str, Dict[str, Any]]] = None
+    etfs_by_ticker: Optional[Dict[str, Dict[str, Any]]] = None,
+    history: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
-    Computes a comprehensive institutional teardown tear-sheet:
-    - CAGR, Volatility, Sharpe, Sortino, Calmar
-    - Tail Ratio (95th / 5th percentile gain-to-loss asymmetry)
-    - Monthly Value at Risk (VaR 95%) and Conditional VaR (CVaR 95%)
-    - Conditional Drawdown at Risk (CDaR 95% - Riskfolio-Lib standard)
-    - Ulcer Index (Penalizing both depth and duration of drawdowns)
-    - Safe Withdrawal Rate (SWR 30-Year - Portfolio Charts model)
+    QuantStats-style downside tear sheet computed from the portfolio's real weekly returns (weekly
+    rebalancing to the target weights, over the dates all holdings share):
+    - CAGR, annualised volatility, Sharpe and Sortino (risk-free rate: XEON over the same window), Calmar
+    - Maximum drawdown, CDaR 95% (average of the worst 5% drawdown readings), Ulcer index, longest time underwater
+    - VaR / CVaR 95% of 4-week returns (historical), tail ratio (95th / |5th| percentile of weekly returns)
+    A safe withdrawal rate needs decades of history, so swr30Y is None. Without history for every
+    holding, every metric is None and `note` says which holding is missing; nothing is estimated.
     """
-    cov_data = build_asset_covariance_matrix(list(portfolio_weights.keys()), etfs_by_ticker)
-    u_tickers = cov_data["tickers"]
-    total_w = sum(portfolio_weights.values())
-    if total_w <= 0:
-        return {"error": "Portfolio total weight must be greater than zero"}
-
-    norm_w = {t: portfolio_weights.get(t, 0.0) / total_w for t in u_tickers}
-
-    # Weighted CAGR and Volatility
-    blended_cagr = 0.0
-    for t in u_tickers:
-        etf = etfs_by_ticker.get(t, {}) if etfs_by_ticker else {}
-        c = etf.get("historicalStatsCurvo", {}).get("cagr", 8.0)
-        blended_cagr += c * norm_w[t]
-
-    cov = cov_data["covarianceMatrix"]
-    w_vec = [norm_w[t] for t in u_tickers]
-    n = len(u_tickers)
-    port_var = sum(w_vec[i] * w_vec[j] * cov[i][j] for i in range(n) for j in range(n))
-    port_vol = math.sqrt(max(0.001, port_var))
-
-    # Sharpe, Sortino, Calmar
-    rf = 2.5
-    sharpe = round((blended_cagr - rf) / port_vol, 2)
-    downside_vol = port_vol * 0.65
-    sortino = round((blended_cagr - rf) / downside_vol, 2)
-
-    # Run crisis stress test to determine max drawdown
-    stress_res = calculate_crisis_stress_test(portfolio_weights, etfs_by_ticker)
-    max_dd = stress_res.get("worstHistoricalDrawdown", -35.0)
-    calmar = round(abs(blended_cagr / max_dd), 2) if max_dd != 0 else 0.0
-
-    # Monthly VaR 95% and CVaR 95%
-    monthly_mean = (blended_cagr / 100.0) / 12.0
-    monthly_sd = (port_vol / 100.0) / math.sqrt(12.0)
-    var_95 = round((-monthly_mean + 1.645 * monthly_sd) * -100.0, 2)
-    cvar_95 = round(var_95 * 1.35, 2)
-
-    # CDaR 95% (Average of worst 5% drawdown periods)
-    cdar_95 = round(max_dd * 0.82, 2)
-
-    # Ulcer Index: sqrt(mean(drawdown^2))
-    # Approximation calibrated across historical crisis depths
-    ulcer_index = round(math.sqrt(abs(max_dd) * 2.8), 2)
-
-    # Tail Ratio: 95th percentile right tail / |5th percentile left tail|
-    # Higher is better (> 1.0 indicates positive skewness)
-    tail_ratio = round(max(0.7, 1.25 - (port_vol / 40.0) + (blended_cagr / 30.0)), 2)
-
-    # Safe Withdrawal Rate (SWR 30-Year) - Portfolio Charts model
-    # Sustainable annual real percentage withdrawable over 30 years without capital depletion
-    swr_30y = round(max(3.2, min(5.5, 3.8 + (blended_cagr - 8.0) * 0.15 - (abs(max_dd) - 25.0) * 0.03)), 2)
-
-    # Longest Underwater Months
-    longest_underwater = round(abs(max_dd) * 1.8)
-
-    # Macro Regime Breadth Score (0-100)
+    history = history if history is not None else load_history()
+    tickers = [t.upper() for t, w in portfolio_weights.items() if w and w > 0]
     regimes_covered = set()
-    for t in u_tickers:
-        for reg_key, reg_info in REGIME_TAXONOMY.items():
+    for t in tickers:
+        for reg_info in REGIME_TAXONOMY.values():
             if t in reg_info["tickers"]:
                 regimes_covered.add(reg_info["name"])
-    breadth_score = min(100, len(regimes_covered) * 20)
+    regime_coverage = {
+        "coveredRegimes": sorted(regimes_covered),
+        "coverageScore": min(100, len(regimes_covered) * 20),
+        "regimeCount": len(regimes_covered),
+    }
+    keys = ["cagr", "annualizedVolatility", "sharpeRatio", "sortinoRatio", "calmarRatio", "maxDrawdown",
+            "tailRatio", "var95Monthly", "cvar95Monthly", "cdar95", "ulcerIndex", "swr30Y", "longestUnderwaterMonths"]
+    if not tickers:
+        return {"error": "Portfolio total weight must be greater than zero"}
 
+    ph = portfolio_history(portfolio_weights, history)
+    if "returns" not in ph:
+        note = (f"No price history for {', '.join(ph['missing'])}; run Live Sync." if ph.get("missing")
+                else f"Only {ph.get('points', 0)} weeks of shared price history; at least half a year is needed.")
+        return {"metrics": {k: None for k in keys}, "note": note, "period": None, "regimeCoverage": regime_coverage}
+
+    dates, values, rets = ph["dates"], ph["values"], ph["returns"]
+    years = (dates[-1] - dates[0]).days / 365.25
+    cagr = values[-1] ** (1 / years) - 1
+    mean = sum(rets) / len(rets)
+    vol = math.sqrt(sum((r - mean) ** 2 for r in rets) / (len(rets) - 1)) * math.sqrt(WEEKS_PER_YEAR)
+    rf = _annualised_cash_rate(history, dates[0], dates[-1])
+    rf_used = rf if rf is not None else 0.0
+    rf_week = (1 + rf_used) ** (1 / WEEKS_PER_YEAR) - 1
+    downside = math.sqrt(sum(min(0.0, r - rf_week) ** 2 for r in rets) / len(rets)) * math.sqrt(WEEKS_PER_YEAR)
+
+    dd = _drawdowns(values)
+    max_dd = min(dd)
+    worst = sorted(dd)[:max(1, round(0.05 * len(dd)))]
+    ulcer = math.sqrt(sum((d * 100) ** 2 for d in dd) / len(dd))
+    longest = run = 0
+    for d in dd:
+        run = run + 1 if d < 0 else 0
+        longest = max(longest, run)
+
+    blocks = [math.prod(1 + r for r in rets[i:i + 4]) - 1 for i in range(0, len(rets) - 3, 4)]
+    var95 = _percentile(blocks, 5)
+    tail = [b for b in blocks if b <= var95]
+    p95, p05 = _percentile(rets, 95), _percentile(rets, 5)
+
+    pct = lambda x: round(x * 100, 2)
+    metrics = {
+        "cagr": pct(cagr),
+        "annualizedVolatility": pct(vol),
+        "sharpeRatio": round((cagr - rf_used) / vol, 2) if vol > 0 else None,
+        "sortinoRatio": round((cagr - rf_used) / downside, 2) if downside > 0 else None,
+        "calmarRatio": round(cagr / abs(max_dd), 2) if max_dd < 0 else None,
+        "maxDrawdown": pct(max_dd),
+        "tailRatio": round(abs(p95) / abs(p05), 2) if p05 < 0 else None,
+        "var95Monthly": pct(var95),
+        "cvar95Monthly": pct(sum(tail) / len(tail)),
+        "cdar95": pct(sum(worst) / len(worst)),
+        "ulcerIndex": round(ulcer, 2),
+        "swr30Y": None,
+        "longestUnderwaterMonths": round(longest * 12 / WEEKS_PER_YEAR, 1),
+    }
     return {
-        "metrics": {
-            "cagr": round(blended_cagr, 2),
-            "annualizedVolatility": round(port_vol, 2),
-            "sharpeRatio": sharpe,
-            "sortinoRatio": sortino,
-            "calmarRatio": calmar,
-            "maxDrawdown": max_dd,
-            "tailRatio": tail_ratio,
-            "var95Monthly": var_95,
-            "cvar95Monthly": cvar_95,
-            "cdar95": cdar_95,
-            "ulcerIndex": ulcer_index,
-            "swr30Y": swr_30y,
-            "longestUnderwaterMonths": longest_underwater
-        },
-        "regimeCoverage": {
-            "coveredRegimes": list(regimes_covered),
-            "coverageScore": breadth_score,
-            "regimeCount": len(regimes_covered)
-        }
+        "metrics": metrics,
+        "period": {"from": dates[0].isoformat(), "to": dates[-1].isoformat(), "weeks": len(rets), "years": round(years, 1)},
+        "riskFreeRate": pct(rf) if rf is not None else None,
+        "basis": "Weekly closes from Yahoo Finance (EUR, distributions reinvested), rebalanced weekly to the target weights. "
+                 "VaR and CVaR use non-overlapping 4-week returns.",
+        "note": None if years >= 3 else f"Only {years:.1f} years of shared history: these figures say little about a full market cycle.",
+        "regimeCoverage": regime_coverage,
     }
 
 # ---------------------------------------------------------------------------
@@ -1370,123 +1487,123 @@ def calculate_quantstats_downside_tear_sheet(
 
 def generate_quant_code_snippets(portfolio_weights: Dict[str, float]) -> Dict[str, str]:
     """
-    Generates ready-to-run copy-pasteable Python code snippets for:
-    1. PyPortfolioOpt (HRPOpt, EfficientCVaR, CovarianceShrinkage)
-    2. Riskfolio-Lib (rp.Portfolio, Equal Risk Contribution, CDaR, Student-t)
-    3. QuantStats (Comprehensive Tear-Sheets and Crisis Breakdown)
+    Ready-to-run Python scripts (tested with yfinance 0.2.6x, PyPortfolioOpt 1.5, Riskfolio-Lib 7,
+    QuantStats 0.0.6x) for the current allocation:
+    1. PyPortfolioOpt: HRP, minimum-CVaR and Ledoit-Wolf shrinkage
+    2. Riskfolio-Lib: equal risk contribution and minimum CDaR
+    3. QuantStats: an HTML tear sheet of the portfolio against VWCE
+    Symbols come from ETF_MARKET_MAP (the EUR listings Live Sync uses); a ticker without one is left out
+    and named in a comment.
     """
-    tickers = [t.upper() for t in portfolio_weights.keys() if portfolio_weights[t] > 0]
-    weights_list = [round(portfolio_weights[t], 2) for t in tickers]
+    from .config import ETF_MARKET_MAP
 
-    # Market ticker mapping for yfinance
-    yf_map = {
-        "VWCE": "VWCE.DE", "IWDA": "IWDA.AS", "SXR8": "SXR8.DE", "VUAA": "VUAA.DE",
-        "QDVE": "QDVE.DE", "AGGU": "AGGU.L", "XEON": "XEON.DE", "SGLD": "SGLD.L",
-        "IUSN": "IUSN.DE", "EIMI": "EMIM.AS", "MEUD": "MEUD.PA", "GGRA": "GGRA.L",
-        "VHYL": "VGWD.DE", "RARE": "RARE.L", "BATT": "BATE.DE", "IUSQ": "IUSQ.DE"
-    }
-    yf_tickers = [yf_map.get(t, f"{t}.DE") for t in tickers]
+    tickers = [t.upper() for t, w in portfolio_weights.items() if w and w > 0]
+    known = [t for t in tickers if t in ETF_MARKET_MAP]
+    unknown = [t for t in tickers if t not in ETF_MARKET_MAP]
+    total = sum(portfolio_weights[t] for t in portfolio_weights if t.upper() in known) or 1.0
+    symbols = {t: ETF_MARKET_MAP[t]["symbol"] for t in known}
+    weights = {t: round(next(v for k, v in portfolio_weights.items() if k.upper() == t) / total, 4) for t in known}
+    skipped = f"# Left out (no Yahoo symbol configured): {', '.join(unknown)}\n" if unknown else ""
+
+    header = f"""{skipped}# Requires: pip install yfinance pandas
+import pandas as pd
+import yfinance as yf
+
+SYMBOLS = {json.dumps(symbols)}  # dashboard ticker -> Yahoo symbol (EUR listings)
+WEIGHTS = {json.dumps(weights)}  # target weights, sum to 1
+
+raw = yf.download(list(SYMBOLS.values()), start="2015-01-01", auto_adjust=True, progress=False)["Close"]
+if isinstance(raw, pd.Series):  # a single symbol comes back as a Series
+    raw = raw.to_frame(next(iter(SYMBOLS.values())))
+prices = raw.rename(columns={{v: k for k, v in SYMBOLS.items()}})[list(SYMBOLS)]
+prices = prices.ffill().dropna()  # exchanges have different holidays; start when every fund has a price
+returns = prices.pct_change().dropna()
+print(f"{{len(prices)}} trading days, {{prices.index[0].date()}} to {{prices.index[-1].date()}}")
+"""
 
     pyportfolioopt_code = f"""# ==============================================================================
-# PyPortfolioOpt Robust Optimization Script
-# Hierarchical Risk Parity (HRP), Mean-CVaR, and Ledoit-Wolf Shrinkage
+# PyPortfolioOpt: Hierarchical Risk Parity, minimum CVaR and Ledoit-Wolf shrinkage
+# pip install yfinance pandas pyportfolioopt packaging
+# Save as apex_pypfopt.py (a file named after the library would shadow it) and run: python apex_pypfopt.py
 # ==============================================================================
-import yfinance as yf
-import pandas as pd
-from pypopt import HRPOpt, EfficientCVaR, risk_models
+{header}
+import scipy.cluster.hierarchy as sch
+from pypfopt import EfficientCVaR, HRPOpt, expected_returns, risk_models
 
-# 1. Download daily adjusted close prices for European UCITS ETFs
-tickers = {json.dumps(yf_tickers)}
-raw_data = yf.download(tickers, start="2015-01-01")['Adj Close']
-returns = raw_data.pct_change().dropna()
+# PyPortfolioOpt 1.6 reads a private SciPy table that SciPy 1.18 removed; restore it if missing.
+if not hasattr(sch, "_LINKAGE_METHODS"):
+    sch._LINKAGE_METHODS = {{m: i for i, m in enumerate(["single", "complete", "average", "weighted", "centroid", "median", "ward"])}}
 
-# 2. Hierarchical Risk Parity (HRP) - Machine-Learning Dendrogram Clustering
-# Does not invert covariance matrix; stable across macro regime shifts
-hrp = HRPOpt(returns)
-hrp_weights = hrp.optimize()
-print("🏆 PyPortfolioOpt HRP Optimal Allocation:")
+if len(SYMBOLS) < 2:
+    raise SystemExit("Optimisation needs at least two funds.")
+
+# 1. Hierarchical Risk Parity: clusters correlated funds, never inverts the covariance matrix
+hrp_weights = HRPOpt(returns).optimize()
+print("\\nHRP weights:")
 for ticker, weight in hrp_weights.items():
-    print(f"  {{ticker}}: {{weight*100:.2f}}%")
+    print(f"  {{ticker}}: {{weight * 100:.1f}}%")
 
-# 3. Mean-CVaR Optimization (Minimizing Expected Tail Loss During Crashes)
-cvar_optimizer = EfficientCVaR(returns=returns)
-cvar_weights = cvar_optimizer.min_cvar()
-print("\\n🛡️ PyPortfolioOpt Mean-CVaR Optimal Allocation:")
-for ticker, weight in cvar_weights.items():
-    print(f"  {{ticker}}: {{weight*100:.2f}}%")
+# 2. Minimum CVaR: the mix with the smallest average loss on the worst 5% of days
+mu = expected_returns.mean_historical_return(prices)
+cvar = EfficientCVaR(mu, returns, beta=0.95)
+cvar.min_cvar()
+print("\\nMinimum-CVaR weights:")
+for ticker, weight in cvar.clean_weights().items():
+    print(f"  {{ticker}}: {{weight * 100:.1f}}%")
 
-# 4. Ledoit-Wolf Covariance Shrinkage (Removes Noise from Extreme Outliers)
-shrunk_covariance = risk_models.CovarianceShrinkage(raw_data).ledoit_wolf()
-print("\\n📊 Shrunk Covariance Matrix Shape:", shrunk_covariance.shape)
+# 3. Ledoit-Wolf shrinkage: a less noisy covariance matrix (annualised)
+cov = risk_models.CovarianceShrinkage(prices).ledoit_wolf()
+print("\\nShrunk annual volatilities:")
+for ticker in cov.index:
+    print(f"  {{ticker}}: {{cov.loc[ticker, ticker] ** 0.5 * 100:.1f}}%")
 """
 
     riskfolio_code = f"""# ==============================================================================
-# Riskfolio-Lib Tail-Risk & Equal Risk Contribution (Risk Parity) Script
-# 24+ Risk Measures, Student-t Distributions, and CDaR Optimization
+# Riskfolio-Lib: equal risk contribution and minimum Conditional Drawdown at Risk
+# pip install yfinance pandas riskfolio-lib
+# Save as apex_riskfolio.py (a file named after the library would shadow it) and run: python apex_riskfolio.py
 # ==============================================================================
+{header}
 import riskfolio as rp
-import yfinance as yf
-import pandas as pd
 
-# 1. Download historical prices
-tickers = {json.dumps(yf_tickers)}
-raw_data = yf.download(tickers, start="2015-01-01")['Adj Close']
-returns = raw_data.pct_change().dropna()
+if len(SYMBOLS) < 2:
+    raise SystemExit("Optimisation needs at least two funds.")
 
-# 2. Build Riskfolio Portfolio object with fat-tailed empirical statistics
-portfolio = rp.Portfolio(returns=returns)
-portfolio.assets_stats(method_mu='hist', method_cov='hist')
+port = rp.Portfolio(returns=returns)
+port.assets_stats(method_mu="hist", method_cov="hist")
 
-# 3. Equal Risk Contribution (Risk Parity across all volatility contributors)
-erc_weights = portfolio.rp_optimization(
-    model='Classic',  # Standard or 'BL' for Black-Litterman
-    rm='MV',          # Risk measure: Mean-Variance
-    rf=0.025,         # Risk-free rate (2.5%)
-    b=None            # Risk contribution constraints
-)
-print("⚖️ Riskfolio-Lib Equal Risk Contribution (Risk Parity):")
-print(erc_weights * 100)
+# 1. Equal risk contribution: every fund adds the same share of portfolio variance
+erc = port.rp_optimization(model="Classic", rm="MV", rf=0, b=None, hist=True)
+print("\\nEqual-risk-contribution weights (%):")
+print((erc["weights"] * 100).round(1).to_string())
 
-# 4. Conditional Drawdown at Risk (CDaR) Minimization (Deep Downside Defense)
-cdar_weights = portfolio.optimization(
-    model='Classic',
-    rm='CDaR',        # Conditional Drawdown at Risk
-    obj='MinRisk',     # Minimize downside tail drawdown
-    rf=0.025
-)
-print("\\n🛡️ Riskfolio-Lib Minimum CDaR Portfolio:")
-print(cdar_weights * 100)
+# 2. Minimum CDaR: the mix whose worst drawdowns were shallowest
+cdar = port.optimization(model="Classic", rm="CDaR", obj="MinRisk", rf=0, l=0, hist=True)
+print("\\nMinimum-CDaR weights (%):")
+print((cdar["weights"] * 100).round(1).to_string())
 """
 
     quantstats_code = f"""# ==============================================================================
-# QuantStats Downside Teardown & Historical Crisis Teasheet Generator
-# Comprehensive tearsheet: CAGR, Sharpe, Sortino, Tail Ratio, and Crisis Stress
+# QuantStats: HTML tear sheet of the portfolio against VWCE (FTSE All-World)
+# pip install yfinance pandas quantstats
+# Save as apex_quantstats.py (a file named after the library would shadow it) and run: python apex_quantstats.py
 # ==============================================================================
+{header}
 import quantstats as qs
-import yfinance as yf
-import pandas as pd
 
-# 1. Download prices and build portfolio returns series
-tickers = {json.dumps(yf_tickers)}
-weights = {json.dumps([w/100.0 for w in weights_list])}
+w = pd.Series(WEIGHTS)
+portfolio = (returns[w.index] * w).sum(axis=1)  # rebalanced daily to the target weights
+portfolio.name = "Portfolio"
 
-raw_data = yf.download(tickers, start="2010-01-01")['Adj Close']
-returns_df = raw_data.pct_change().dropna()
-portfolio_returns = (returns_df * weights).sum(axis=1)
+bench = yf.download("VWCE.DE", start="2015-01-01", auto_adjust=True, progress=False)["Close"].squeeze()
+benchmark = bench.pct_change().dropna().reindex(portfolio.index).fillna(0)
+benchmark.name = "VWCE"
 
-# 2. Benchmark comparison against All-World (VWCE) or S&P 500
-benchmark_data = yf.download("VWCE.DE", start="2010-01-01")['Adj Close']
-benchmark_returns = benchmark_data.pct_change().dropna()
-
-# 3. Generate Full HTML Teardown Tearsheet with Crisis Breakdown
-qs.extend_pandas()
-qs.reports.html(
-    portfolio_returns,
-    benchmark=benchmark_returns,
-    output="apex_portfolio_tearsheet.html",
-    title="ApexETF Quantitative Teardown Report"
-)
-print("✅ QuantStats Tearsheet generated successfully in 'apex_portfolio_tearsheet.html'!")
+print(f"CAGR {{qs.stats.cagr(portfolio):.2%}}, volatility {{qs.stats.volatility(portfolio):.2%}}, "
+      f"max drawdown {{qs.stats.max_drawdown(portfolio):.2%}}, Sharpe {{qs.stats.sharpe(portfolio):.2f}}")
+qs.reports.html(portfolio, benchmark=benchmark, output="apex_portfolio_tearsheet.html",
+                title="ApexETF portfolio tear sheet")
+print("Wrote apex_portfolio_tearsheet.html")
 """
 
     return {

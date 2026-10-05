@@ -158,13 +158,19 @@ window.RegimeRiskParityModule = (function () {
       } else if (btn.id === "open-platforms-btn") {
         openPlatformsDialog(btn);
       } else if (btn.id === "apply-remedy-btn") {
-        const shift = Math.round(stressTestData?.recommendedCashShift || 15);
-        activePortfolio["XEON"] = (activePortfolio["XEON"] || 0) + shift;
+        // Mix in exactly the computed XEON share: every other weight shrinks by (1 - f).
+        const shift = Number(stressTestData?.recommendedCashShift);
+        if (!Number.isFinite(shift) || shift <= 0) return;
+        const f = Math.min(1, shift / 100);
+        const total = Object.values(activePortfolio).reduce((a, b) => a + b, 0) || 100;
+        Object.keys(activePortfolio).forEach((k) => { activePortfolio[k] = (activePortfolio[k] / total) * 100 * (1 - f); });
+        activePortfolio["XEON"] = (activePortfolio["XEON"] || 0) + f * 100;
+        Object.keys(activePortfolio).forEach((k) => { activePortfolio[k] = Math.round(activePortfolio[k] * 10) / 10; });
         activePreset = "";
         normalizeActiveWeights();
         refreshSelectionUi();
         runAllAnalytics();
-        UI.toast(`Added a ${shift}% XEON liquidity buffer.`, { type: "success" });
+        UI.toast(`Mixed in ${shift}% XEON; the other weights shrank accordingly.`, { type: "success" });
       }
     });
 
@@ -824,7 +830,7 @@ window.RegimeRiskParityModule = (function () {
         <div class="callout callout-danger">${icon("alert")}<div>
           <div class="callout-title">Behavioural drawdown warning — breach by ${esc(gap)} points</div>
           <div>${esc(data.remedyAdvice || "")}</div>
-          <div class="mt-2"><button type="button" id="apply-remedy-btn" class="btn btn-secondary btn-sm">${icon("shield")} Add +${esc(Math.round(data.recommendedCashShift || 15))}% XEON liquidity buffer</button></div>
+          ${Number(data.recommendedCashShift) > 0 ? `<div class="mt-2"><button type="button" id="apply-remedy-btn" class="btn btn-secondary btn-sm">${icon("shield")} Try it: mix in ${esc(Math.round(data.recommendedCashShift))}% XEON</button></div>` : ""}
         </div></div>`;
     } else {
       box.innerHTML = `<div class="callout callout-success">${icon("check")}<div><div class="callout-title">Stress test passed</div>Worst drawdown of ${esc(fmt.pct(worst, 1))} sits inside your ${esc(fmt.pct(behavioralTolerance, 1))} behavioural threshold.</div></div>`;
@@ -835,19 +841,24 @@ window.RegimeRiskParityModule = (function () {
     const container = document.getElementById("quantstats-tearsheet-container");
     if (!container || !tearSheetData?.metrics) return;
     const m = tearSheetData.metrics;
+    const period = tearSheetData.period;
     const tile = (label, value, sub, cls = "") =>
       `<div class="metric-box"><span class="metric-label">${esc(label)}</span><span class="metric-value ${cls}">${value}</span><span class="metric-sub">${esc(sub)}</span></div>`;
+    const rf = tearSheetData.riskFreeRate;
 
     container.innerHTML = `
+      <p class="text-muted text-xs mb-3">${period
+        ? `Measured from weekly prices, ${esc(period.from)} to ${esc(period.to)} (${esc(fmt.num(period.years, 1))} years, rebalanced weekly).`
+        : ""} ${esc(tearSheetData.note || "")}</p>
       <div class="grid-4">
-        ${tile("Expected CAGR", esc(fmt.pct(m.cagr, 2)), "Compounded annual return")}
-        ${tile("Annual volatility", esc(fmt.pct(m.annualizedVolatility, 2)), "Portfolio standard deviation")}
-        ${tile("Sharpe ratio (Rf 2.5%)", esc(fmt.num(m.sharpeRatio, 2)), "Excess return per unit of total risk")}
-        ${tile("Sortino (downside vol)", esc(fmt.num(m.sortinoRatio, 2)), "Penalises only negative drawdowns")}
-        ${tile("Tail ratio (95th / 5th)", esc(fmt.num(m.tailRatio, 2)), "Above 1.0 = positive upside asymmetry")}
-        ${tile("Conditional DaR (95%)", esc(fmt.pct(m.cdar95, 2)), "Average depth of the 5% worst drawdowns", "val-negative")}
-        ${tile("Ulcer index", esc(fmt.num(m.ulcerIndex, 2)), "Penalises drawdown depth and length")}
-        ${tile("Safe withdrawal rate (30Y)", esc(fmt.pct(m.swr30Y, 2)), "Portfolio Charts retirement model")}
+        ${tile("CAGR", esc(fmt.pct(m.cagr, 2)), "Compounded annual return, past")}
+        ${tile("Annual volatility", esc(fmt.pct(m.annualizedVolatility, 2)), "Standard deviation of weekly returns")}
+        ${tile("Sharpe ratio", esc(fmt.num(m.sharpeRatio, 2)), rf != null ? `Risk-free: XEON, ${fmt.pct(rf, 2)} a year` : "Risk-free rate unavailable")}
+        ${tile("Sortino ratio", esc(fmt.num(m.sortinoRatio, 2)), "Only downside swings count as risk")}
+        ${tile("Maximum drawdown", esc(fmt.pct(m.maxDrawdown, 1)), `Longest under water: ${fmt.num(m.longestUnderwaterMonths, 1)} months`, "val-negative")}
+        ${tile("VaR 95% (4 weeks)", esc(fmt.pct(m.var95Monthly, 1)), `Average beyond it (CVaR): ${fmt.pct(m.cvar95Monthly, 1)}`, "val-negative")}
+        ${tile("Conditional DaR (95%)", esc(fmt.pct(m.cdar95, 1)), "Average of the 5% deepest drawdown readings", "val-negative")}
+        ${tile("Ulcer index", esc(fmt.num(m.ulcerIndex, 2)), "Depth and length of drawdowns combined")}
       </div>`;
   }
 

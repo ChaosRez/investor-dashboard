@@ -75,9 +75,9 @@ window.CurvoModule = (function () {
 
     const presetsHtml = Object.entries(presetPortfolios)
       .map(([key, p]) => `
-        <button type="button" class="preset-card preset-btn${key === activePreset ? " active" : ""}" data-preset="${key}" aria-pressed="${key === activePreset}">
+        <button type="button" class="preset-card preset-btn${key === activePreset ? " active" : ""}" data-preset="${key}" aria-pressed="${key === activePreset}" data-tip="${esc(p.description)}">
           <span class="preset-card-title">${esc(p.name)}</span>
-          <span class="preset-card-desc">${esc(p.description)}</span>
+          <span class="preset-card-desc">${Object.entries(p.holdings).map(([t, w]) => `${esc(t)} ${esc(w)}%`).join(" · ")}</span>
         </button>`)
       .join("");
 
@@ -86,10 +86,10 @@ window.CurvoModule = (function () {
         <div class="card-header">
           <div>
             <div class="cluster">
-              <h2 class="card-title">${icon("trending-up")} Curvo historical backtest &amp; DCA growth engine</h2>
+              <h2 class="card-title">${icon("trending-up")} Backtest &amp; DCA plan</h2>
               <span class="stage-status-badge badge-essential">Stage 3 · Planning phase</span>
             </div>
-            <span class="card-subtitle">Historical performance metrics from Curvo.eu (2000–2026 data series)</span>
+            <span class="card-subtitle">Your monthly plan on real prices, then projected forward.</span>
           </div>
           <span class="badge badge-acc">UCITS real data</span>
         </div>
@@ -207,14 +207,6 @@ window.CurvoModule = (function () {
       blendedMaxDd += (c.maxDrawdown || -45.0) * normW;
     }
 
-    // Diversification adjustment if holding bonds (AGGU)
-    const bondW = (weights["AGGU"] || 0) / (totalW || 1);
-    const eqW = 1.0 - bondW;
-    if (bondW > 0.05 && eqW > 0.05) {
-      blendedStdev = Math.sqrt(Math.pow(eqW * 15.1, 2) + Math.pow(bondW * 5.8, 2) + 2 * eqW * bondW * 15.1 * 5.8 * 0.10);
-      blendedSharpe = (blendedCagr - 2.5) / (blendedStdev || 1);
-    }
-
     const monthlyRate = Math.pow(1 + blendedCagr / 100.0, 1 / 12) - 1;
     const timeline = [];
     let curVal = initialAmount;
@@ -277,30 +269,53 @@ window.CurvoModule = (function () {
       .map((sr) => `<span class="legend-item" role="listitem"><span class="legend-key" style="--c:${sr.color}"></span>${esc(sr.label)}</span>`)
       .join("");
 
+    const b = data.historicalBacktest;
+    const backtestHtml = !b ? `<p class="text-muted text-sm">The backtest with real prices needs the local server.</p>`
+      : !b.available ? `<p class="text-muted text-sm">${esc(b.reason || "No price history for this portfolio.")}</p>`
+      : `
+        <div class="grid-4">
+          <div class="metric-box"><span class="metric-label">Deposited</span><span class="metric-value">${esc(fmt.eur(b.deposits))}</span><span class="metric-sub">${esc(b.from)} to ${esc(b.to)}</span></div>
+          <div class="metric-box"><span class="metric-label">Worth at the end</span><span class="metric-value val-positive">${esc(fmt.eur(b.finalValue))}</span><span class="metric-sub">${esc(fmt.eur(b.realFinalValue))} after inflation</span></div>
+          <div class="metric-box"><span class="metric-label">Return of the mix</span><span class="metric-value">${esc(fmt.pct(b.cagr, 1))} a year</span><span class="metric-sub">volatility ${esc(fmt.pct(b.volatility, 1))}</span></div>
+          <div class="metric-box tone-rose"><span class="metric-label">Deepest fall on the way</span><span class="metric-value val-negative">${esc(fmt.pct(b.maxDrawdown, 1))}</span><span class="metric-sub">of the mix, peak to trough</span></div>
+        </div>
+        ${b.capped ? `<p class="text-muted text-xs mt-2">Price history covers ${esc(fmt.num(b.years, 1))} of the ${esc(b.requestedYears)} years you chose.</p>` : ""}
+        <details class="planner-more mt-3"><summary class="text-sm">Year by year</summary>
+          <div class="table-responsive mt-2"><table class="data-table"><caption class="sr-only">Backtest values year by year</caption>
+            <thead><tr><th scope="col">Date</th><th scope="col" class="num">Deposited</th><th scope="col" class="num">Value</th><th scope="col" class="num">After inflation</th></tr></thead>
+            <tbody>${(b.timeline || []).map((r) => `<tr><th scope="row">${esc(r.date)}</th><td class="num">${esc(fmt.eur(r.deposits))}</td><td class="num">${esc(fmt.eur(r.value))}</td><td class="num">${esc(fmt.eur(r.realValue))}</td></tr>`).join("")}</tbody>
+          </table></div>
+        </details>`;
+
     container.innerHTML = `
-      <div class="grid-4 mb-5">
-        <div class="metric-box"><span class="metric-label">Historical CAGR</span><span class="metric-value val-positive">${esc(fmt.pct(m.cagrPercent, 2))}</span><span class="metric-sub">Compound annual growth</span></div>
-        <div class="metric-box"><span class="metric-label">Annualised volatility</span><span class="metric-value">${esc(fmt.pct(m.annualizedVolatility, 2))}</span><span class="metric-sub">Standard deviation</span></div>
-        <div class="metric-box"><span class="metric-label">Sharpe ratio</span><span class="metric-value">${esc(fmt.num(m.sharpeRatio, 2))}</span><span class="metric-sub">Risk-adjusted return</span></div>
-        <div class="metric-box"><span class="metric-label">Max drawdown (Curvo)</span><span class="metric-value val-negative">${esc(fmt.pct(m.maxDrawdown, 1))}</span><span class="metric-sub">Deepest historical crash</span></div>
+      <div class="card">
+        <div class="card-header"><div>
+          <h3 class="card-title">With real prices</h3>
+          <span class="card-subtitle">What this plan actually returned over the last ${esc(b?.available ? fmt.num(b.years, 1) : params.years)} years. No fees or taxes.</span>
+        </div></div>
+        ${backtestHtml}
       </div>
 
       <div class="card">
+        <div class="card-header"><div>
+          <h3 class="card-title">Projection</h3>
+          <span class="card-subtitle">At the funds' long-run average return of ${esc(fmt.pct(m.cagrPercent, 2))} a year, every year: an illustration, not a forecast.${(data.missingStats || []).length ? ` No long-run figures for ${esc(data.missingStats.join(", "))}.` : ""}</span>
+        </div></div>
         ${UI.chart.frameHtml({
-          title: "Wealth accumulation projection (DCA vs inflation)",
-          subtitle: "Compounded at the blend's historical Curvo CAGR · nominal vs inflation-adjusted purchasing power",
+          title: "Wealth projection (deposits, nominal, after inflation)",
+          subtitle: `Long-run volatility ${fmt.pct(m.annualizedVolatility, 1)} · deepest historical fall ${fmt.pct(m.maxDrawdown, 1)}: real paths swing far more than this line`,
           legend,
         })}
 
         <div class="grid-3 totals-row">
-          <div class="total-cell"><div class="total-label">Total out-of-pocket deposits</div><div class="total-value">${esc(fmt.eur(s.totalContributions))}</div></div>
-          <div class="total-cell"><div class="total-label">Final nominal value</div><div class="total-value">${esc(fmt.eur(s.finalNominalValue))}</div><div class="total-sub val-positive">Wealth multiple ${esc(fmt.num(s.returnMultiple, 2))}×</div></div>
-          <div class="total-cell"><div class="total-label">Real purchasing power</div><div class="total-value">${esc(fmt.eur(s.finalRealValue))}</div><div class="total-sub">After inflation adjustment</div></div>
+          <div class="total-cell"><div class="total-label">Deposits</div><div class="total-value">${esc(fmt.eur(s.totalContributions))}</div></div>
+          <div class="total-cell"><div class="total-label">Projected value</div><div class="total-value">${esc(fmt.eur(s.finalNominalValue))}</div><div class="total-sub val-positive">${esc(fmt.num(s.returnMultiple, 2))}× deposits</div></div>
+          <div class="total-cell"><div class="total-label">After inflation</div><div class="total-value">${esc(fmt.eur(s.finalRealValue))}</div><div class="total-sub">at ${esc(fmt.pct(params.inflationRate, 1))} a year</div></div>
         </div>
 
         <div class="row-between mt-4 wrap-gap">
-          <span class="text-muted text-sm">Verify this exact backtest portfolio on Curvo with underlying European UCITS fund data:</span>
-          ${UI.link(data.curvoVerificationUrl, `${icon("external")} Open on Curvo.eu/backtest`, { cls: "btn btn-secondary btn-sm", html: true })}
+          <span class="text-muted text-sm">Check the long-run history on Curvo:</span>
+          ${UI.link(data.curvoVerificationUrl, `${icon("external")} Open on Curvo.eu`, { cls: "btn btn-secondary btn-sm", html: true })}
         </div>
       </div>`;
 

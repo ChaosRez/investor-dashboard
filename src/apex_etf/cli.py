@@ -288,20 +288,27 @@ def cmd_teardown(args: argparse.Namespace) -> None:
 
     res = calculate_quantstats_downside_tear_sheet(weights, etfs_by_ticker)
     m = res.get("metrics", {})
+    period = res.get("period")
+    if period:
+        print(f"Measured from weekly prices {period['from']} to {period['to']} ({period['years']} years, rebalanced weekly).")
+    if res.get("note"):
+        print(f"⚠️  {res['note']}")
 
-    print(f" • Expected CAGR:              {m.get('cagr', 0):>6.2f}%")
-    print(f" • Annualized Volatility:      {m.get('annualizedVolatility', 0):>6.2f}%")
-    print(f" • Sharpe Ratio (Rf=2.5%):     {m.get('sharpeRatio', 0):>6.2f}")
-    print(f" • Sortino Ratio (Downside):   {m.get('sortinoRatio', 0):>6.2f}")
-    print(f" • Calmar Ratio (CAGR/MaxDD):  {m.get('calmarRatio', 0):>6.2f}")
-    print(f" • Maximum Historical Drawdown:{m.get('maxDrawdown', 0):>6.2f}%")
-    print(f" • Tail Ratio (95th/5th tail): {m.get('tailRatio', 0):>6.2f}")
-    print(f" • Monthly VaR 95%:            {m.get('var95Monthly', 0):>6.2f}%")
-    print(f" • Monthly CVaR (Tail Loss):   {m.get('cvar95Monthly', 0):>6.2f}%")
-    print(f" • CDaR 95% (Conditional DD):  {m.get('cdar95', 0):>6.2f}%")
-    print(f" • Ulcer Index (Depth+Length): {m.get('ulcerIndex', 0):>6.2f}")
-    print(f" • Safe Withdrawal Rate (30Y): {m.get('swr30Y', 0):>6.2f}%")
-    print(f" • Longest Underwater Period:  {m.get('longestUnderwaterMonths', 0)} months")
+    def show(label, value, unit="%"):
+        print(f" • {label:<28}{'n/a' if value is None else f'{value:>7.2f}{unit}'}")
+    show("CAGR:", m.get("cagr"))
+    show("Annualized Volatility:", m.get("annualizedVolatility"))
+    show("Sharpe Ratio:", m.get("sharpeRatio"), "")
+    show("Sortino Ratio (Downside):", m.get("sortinoRatio"), "")
+    show("Calmar Ratio (CAGR/MaxDD):", m.get("calmarRatio"), "")
+    show("Maximum Drawdown:", m.get("maxDrawdown"))
+    show("Tail Ratio (95th/5th):", m.get("tailRatio"), "")
+    show("VaR 95% (4 weeks):", m.get("var95Monthly"))
+    show("CVaR 95% (4 weeks):", m.get("cvar95Monthly"))
+    show("CDaR 95%:", m.get("cdar95"))
+    show("Ulcer Index:", m.get("ulcerIndex"), "")
+    show("Longest Underwater (months):", m.get("longestUnderwaterMonths"), "")
+    print(" • Safe Withdrawal Rate (30Y): n/a (needs decades of history, not estimated)")
     print("=" * 70)
 
 def _parse_amounts(items: List[str], flag: str) -> Dict[str, float]:

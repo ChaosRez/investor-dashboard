@@ -3,7 +3,9 @@ Unit tests for ApexETF Quantitative Analysis & Portfolio Calculation Engine
 """
 
 import unittest
-from apex_etf.analysis import calculate_portfolio_overlap, calculate_curvo_portfolio_simulation
+from datetime import date, timedelta
+
+from apex_etf.analysis import calculate_portfolio_overlap, calculate_curvo_portfolio_simulation, calculate_dca_backtest
 
 class TestAnalysisEngine(unittest.TestCase):
     def setUp(self):
@@ -22,7 +24,7 @@ class TestAnalysisEngine(unittest.TestCase):
                 ],
                 "countryBreakdown": {"United States": 61.5, "Japan": 6.2, "United Kingdom": 3.8},
                 "sectorBreakdown": {"Technology": 24.5, "Financials": 15.2},
-                "curvoMetrics": {"cagr10Y": 10.4, "volatility10Y": 14.8, "maxDrawdown": -33.6}
+                "historicalStatsCurvo": {"cagr": 10.4, "stdev": 14.8, "maxDrawdown": -33.6}
             },
             "QDVE": {
                 "ticker": "QDVE",
@@ -37,7 +39,7 @@ class TestAnalysisEngine(unittest.TestCase):
                 ],
                 "countryBreakdown": {"United States": 100.0},
                 "sectorBreakdown": {"Technology": 100.0},
-                "curvoMetrics": {"cagr10Y": 21.2, "volatility10Y": 20.5, "maxDrawdown": -31.2}
+                "historicalStatsCurvo": {"cagr": 21.2, "stdev": 20.5, "maxDrawdown": -31.2}
             },
             "VHYL": {
                 "ticker": "VHYL",
@@ -51,7 +53,7 @@ class TestAnalysisEngine(unittest.TestCase):
                 ],
                 "countryBreakdown": {"United States": 42.0, "United Kingdom": 7.5},
                 "sectorBreakdown": {"Financials": 25.0, "Consumer": 12.0},
-                "curvoMetrics": {"cagr10Y": 7.8, "volatility10Y": 13.5, "maxDrawdown": -28.0}
+                "historicalStatsCurvo": {"cagr": 7.8, "stdev": 13.5, "maxDrawdown": -28.0}
             }
         }
 
@@ -110,6 +112,53 @@ class TestAnalysisEngine(unittest.TestCase):
         # Nominal value should exceed invested capital given positive CAGR
         self.assertGreater(results["finalNominalValue"], 70000)
         self.assertGreater(results["finalRealValue"], results["totalInvested"])
+
+    def test_projection_uses_each_funds_own_return(self):
+        # Regression: the engine read cagr10Y/volatility10Y, which no dataset entry has, so every
+        # portfolio was projected at the same default 8.5%.
+        base = {"initialDeposit": 10000, "monthlyDca": 500, "years": 10, "inflation": 2.0}
+        world = calculate_curvo_portfolio_simulation({**base, "portfolio": {"VWCE": 100}}, self.mock_etfs)
+        tech = calculate_curvo_portfolio_simulation({**base, "portfolio": {"QDVE": 100}}, self.mock_etfs)
+        self.assertEqual(world["curvoMetrics"]["cagrPercent"], 10.4)
+        self.assertEqual(tech["curvoMetrics"]["cagrPercent"], 21.2)
+        self.assertGreater(tech["results"]["finalNominalValue"], world["results"]["finalNominalValue"])
+
+    def test_funds_without_statistics_are_named_not_defaulted(self):
+        res = calculate_curvo_portfolio_simulation({"years": 5, "portfolio": {"VWCE": 50, "NOSTATS": 50}}, self.mock_etfs)
+        self.assertEqual(res["missingStats"], ["NOSTATS"])
+        self.assertEqual(res["curvoMetrics"]["cagrPercent"], 10.4)  # the covered part, not a blend with a default
+        self.assertIn("error", calculate_curvo_portfolio_simulation({"portfolio": {"NOSTATS": 100}}, self.mock_etfs))
+
+
+class TestDcaBacktest(unittest.TestCase):
+    """The DCA plan on real (here: synthetic) prices."""
+
+    @staticmethod
+    def history(prices_by_ticker, start=date(2020, 1, 3)):
+        return {"instruments": {t: {"start": start.isoformat(), "lastDate": (start + timedelta(weeks=len(v) - 1)).isoformat(), "values": v}
+                                for t, v in prices_by_ticker.items()}}
+
+    def test_flat_prices_return_exactly_the_deposits(self):
+        h = self.history({"A": [100.0] * 160})
+        res = calculate_dca_backtest({"A": 100}, 1000, 100, 2, 0, history=h)
+        self.assertTrue(res["available"])
+        self.assertEqual(res["months"], 24)
+        self.assertEqual(res["deposits"], 1000 + 100 * 24)
+        self.assertEqual(res["finalValue"], res["deposits"])
+        self.assertEqual(res["maxDrawdown"], 0.0)
+
+    def test_growth_and_a_capped_window(self):
+        weekly = [100 * 1.002 ** i for i in range(120)]  # ~2.3 years of steady growth
+        res = calculate_dca_backtest({"A": 100}, 1000, 0, 10, 0, history=self.history({"A": weekly}))
+        self.assertTrue(res["capped"])  # asked for 10 years, history has ~2
+        self.assertGreater(res["finalValue"], 1000)
+        self.assertAlmostEqual(res["cagr"], (1.002 ** (365.25 / 7) - 1) * 100, delta=0.6)
+
+    def test_missing_history_is_reported(self):
+        res = calculate_dca_backtest({"A": 50, "B": 50}, 1000, 100, 5, 0, history=self.history({"A": [100.0] * 60}))
+        self.assertFalse(res["available"])
+        self.assertIn("B", res["reason"])
+
 
 if __name__ == "__main__":
     unittest.main()

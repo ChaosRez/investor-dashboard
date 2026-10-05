@@ -203,9 +203,71 @@ class TestCrisisEstimatesAreLabelled(unittest.TestCase):
         res = calculate_crisis_stress_test({"VWCE": 50, "ZZZZ": 50})
         self.assertTrue(all(c["assumedFor"] == ["ZZZZ"] for c in res["crises"]))
 
+    def test_the_cash_share_keeps_every_crisis_within_the_limit(self):
+        from apex_etf.analysis import HISTORICAL_CRISES
+        res = calculate_crisis_stress_test({"VWCE": 100}, behavioral_tolerance=-20.0)
+        f = res["recommendedCashShift"] / 100
+        for crisis in HISTORICAL_CRISES:
+            r, cash = crisis["assetReturns"]["VWCE"], crisis["assetReturns"]["XEON"]
+            self.assertGreaterEqual((1 - f) * r + f * cash, -20.0 - 1e-9, crisis["id"])
+        # ... and one point less would not have been enough
+        g = f - 0.01
+        self.assertTrue(any((1 - g) * c["assetReturns"]["VWCE"] + g * c["assetReturns"]["XEON"] < -20.0 for c in HISTORICAL_CRISES))
+        self.assertNotIn("estimatedRecoveryMonths", res["crises"][0])
+
     def test_funds_that_existed_are_not_flagged(self):
         res = calculate_crisis_stress_test({"BATT": 100})
         by_id = {c["crisisId"]: c for c in res["crises"]}
         self.assertEqual(by_id["covid_2020"]["estimatedFor"], [])
         self.assertEqual(by_id["gfc_2008"]["estimatedFor"], [{"ticker": "BATT", "launchYear": 2018}])
+
+
+class TestTearSheetFromRealPrices(unittest.TestCase):
+    @staticmethod
+    def history(values, start="2020-01-03"):
+        from datetime import date, timedelta
+        d0 = date.fromisoformat(start)
+        return {"instruments": {t: {"start": start, "lastDate": (d0 + timedelta(weeks=len(v) - 1)).isoformat(), "values": v}
+                                for t, v in values.items()}}
+
+    def test_metrics_follow_the_prices(self):
+        import math
+        weekly = [100 * (1.003 ** i) * (0.9 if 50 <= i < 60 else 1.0) for i in range(260)]
+        cash = [100 * (1.0004 ** i) for i in range(260)]
+        res = calculate_quantstats_downside_tear_sheet({"A": 100}, history=self.history({"A": weekly, "XEON": cash}))
+        m = res["metrics"]
+        self.assertAlmostEqual(m["maxDrawdown"], -10.0, delta=0.5)  # the 10% dip
+        self.assertGreater(m["cagr"], 10)
+        self.assertIsNone(m["swr30Y"])  # not estimated
+        self.assertEqual(res["period"]["weeks"], 259)
+        self.assertAlmostEqual(res["riskFreeRate"], (1.0004 ** (365.25 / 7) - 1) * 100, delta=0.05)
+
+    def test_missing_history_gives_no_numbers(self):
+        res = calculate_quantstats_downside_tear_sheet({"A": 50, "B": 50}, history=self.history({"A": [100.0] * 100}))
+        self.assertTrue(all(v is None for v in res["metrics"].values()))
+        self.assertIn("B", res["note"])
+
+
+class TestGeneratedScripts(unittest.TestCase):
+    """The copyable scripts must at least be valid Python for current library APIs (they were run end to
+    end against yfinance 1.7, PyPortfolioOpt 1.6, Riskfolio-Lib 7 and QuantStats on 5 Oct 2026)."""
+
+    def setUp(self):
+        self.snippets = generate_quant_code_snippets({"VWCE": 60, "AGGU": 30, "SGLD": 10, "NOPE": 5})
+
+    def test_every_script_compiles(self):
+        for name, code in self.snippets.items():
+            with self.subTest(name=name):
+                compile(code, f"{name}.py", "exec")
+
+    def test_current_library_apis_and_dashboard_symbols(self):
+        py = self.snippets["pyportfolioopt"]
+        self.assertIn("from pypfopt import", py)          # not the non-existent "pypopt"
+        self.assertIn("EfficientCVaR(mu, returns", py)    # expected returns are a required argument
+        self.assertIn("_LINKAGE_METHODS", py)            # shim for SciPy >= 1.18
+        for code in self.snippets.values():
+            self.assertIn("auto_adjust=True", code)       # yfinance no longer returns "Adj Close"
+            self.assertIn('"AGGU": "EUNA.DE"', code)       # the EUR-hedged share class, not AGGU.L (USD)
+            self.assertIn("Left out (no Yahoo symbol configured): NOPE", code)
+        self.assertIn("returns[w.index] * w", self.snippets["quantstats"])  # weights aligned by name, not position
 
