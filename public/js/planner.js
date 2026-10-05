@@ -125,7 +125,7 @@ window.PlannerModule = (function () {
         <div class="card-header">
           <div>
             <div class="cluster"><span class="step-pill step-1">Step 1</span><h3 id="pl-compare-title" class="card-title">Compare the candidates</h3></div>
-            <span class="card-subtitle">Costs, tax treatment and how each instrument actually behaved, measured from daily prices. Add the ones you want to model to your split.</span>
+            <span class="card-subtitle">Measured from daily prices. Hover a name for its card; add the ones you want to model.</span>
           </div>
         </div>
         <div class="table-responsive" id="pl-compare">${compareTableHtml()}</div>
@@ -136,7 +136,7 @@ window.PlannerModule = (function () {
         <div class="card-header">
           <div>
             <div class="cluster"><span class="step-pill step-2">Step 2</span><h3 id="pl-split-title" class="card-title">Your split</h3></div>
-            <span class="card-subtitle">Enter what you hold today and what you want to hold. Money you do not place elsewhere stays in the cash account.</span>
+            <span class="card-subtitle">What you hold today and what you want to hold. The rest stays in cash.</span>
           </div>
         </div>
         ${scenarioControlsHtml()}
@@ -163,7 +163,7 @@ window.PlannerModule = (function () {
         <div class="card-header">
           <div>
             <div class="cluster"><span class="step-pill step-1">Step 4</span><h3 id="pl-exec-title" class="card-title">Order plan at ${esc(dataset.broker?.name || "your broker")}</h3></div>
-            <span class="card-subtitle">All at once, in tranches, or as free savings plans: dates, amounts, fees and how much is exposed while you buy.</span>
+            <span class="card-subtitle">Dates, amounts and fees for each way of buying.</span>
           </div>
         </div>
         ${executionControlsHtml()}
@@ -175,7 +175,7 @@ window.PlannerModule = (function () {
         <div class="card-header">
           <div>
             <div class="cluster"><span class="step-pill step-2">Step 5</span><h3 id="pl-tax-title" class="card-title">Taxes (Germany, simplified)</h3></div>
-            <span class="card-subtitle">Your saver's allowance, the interest it has to cover, and how each instrument is taxed. Not tax advice.</span>
+            <span class="card-subtitle">Your allowance and how each holding is taxed. Simplified, not tax advice.</span>
           </div>
         </div>
         <div class="form-grid mb-4">
@@ -183,7 +183,7 @@ window.PlannerModule = (function () {
             <input type="number" class="filter-input" id="pl-allowance" min="0" step="1" inputmode="decimal" value="${esc(state.allowance)}" /></label>
           <label class="field"><span class="field-label">Already used elsewhere this year (€)</span>
             <input type="number" class="filter-input" id="pl-allowance-used" min="0" step="1" inputmode="decimal" value="${esc(state.allowanceUsed)}" />
-            <span class="field-hint">e.g. interest on your emergency fund</span></label>
+            <span class="field-hint">e.g. emergency-fund interest</span></label>
         </div>
         <div id="pl-tax"></div>
       </section>
@@ -195,35 +195,26 @@ window.PlannerModule = (function () {
 
   function introHtml() {
     const ctx = (dataset.marketContext || []).map((m) => `
-      <div class="metric-box">
-        <span class="metric-label">${esc(m.label)}</span>
-        <span class="metric-value">${esc(m.value)}</span>
-        <span class="metric-sub">${esc(m.detail || "")} ${m.source ? UI.link(m.source.url, "Source") : ""}</span>
-      </div>`).join("");
+      <span class="planner-chip" role="listitem" tabindex="0" data-tip="${esc(m.detail || "")}"><span>${esc(m.label)}</span> <strong>${esc(m.value)}</strong></span>`).join("");
     return `
       <div class="card planner-intro">
         <div class="card-header">
           <div>
             <h2 class="card-title">${icon("target")} Short-horizon planner</h2>
-            <span class="card-subtitle">For money you may need again within a few years: compare instruments, test your own split against a market drop and plan the orders.</span>
+            <span class="card-subtitle">Facts and arithmetic for amounts you choose, not advice. Past behaviour is measured, not predicted.</span>
           </div>
           <div class="cluster">
             <span class="text-muted text-xs" id="pl-risk-asof">${riskAsOfText()}</span>
-            <button type="button" class="btn btn-secondary btn-sm" id="pl-refresh-risk" data-tip="Downloads fresh daily prices and recomputes volatility, beta, drawdowns and the market-fall episodes. Needs the local server.">${icon("refresh")} Refresh risk data</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="pl-refresh-risk" data-tip="Downloads fresh daily prices and recomputes returns, volatility, beta, drawdowns and the market falls. Needs the local server; Live Sync does it too.">${icon("refresh")} Refresh prices</button>
           </div>
         </div>
-        <div class="callout callout-info mb-4">${icon("info")}<div>
-          <div class="callout-title">Facts and arithmetic, not advice</div>
-          The planner never suggests instruments or amounts: every number below follows from what you enter. Past behaviour is measured, not predicted — the next fall can be deeper or hit different assets. Check each instrument's Key Information Document before buying.
-        </div></div>
-        <h4 class="section-label">Market context</h4>
-        <div class="planner-context">${ctx}</div>
+        <div class="planner-context" role="list" aria-label="Market context (hover for details)">${ctx}</div>
       </div>`;
   }
 
   function riskAsOfText() {
-    if (!risk || !risk.asOf) return "No risk data yet";
-    return `Prices up to ${risk.asOf} · ${risk.source || ""}`;
+    if (!risk || !risk.asOf) return "No price history yet";
+    return `Prices to ${risk.asOf}`;
   }
 
   /* --------------------------------------------------------- step 1: compare */
@@ -252,18 +243,16 @@ window.PlannerModule = (function () {
   }
 
   function compareTableHtml() {
-    const eps = (risk?.episodes || []).slice(-2).reverse(); // two most recent falls
+    const eps = (risk?.episodes || []).slice(-1); // the most recent fall; the others are in Step 3
     const groups = dataset.groups || [];
     const head = `
       <thead><tr>
         <th scope="col">Instrument</th>
         <th scope="col" class="num">Cost p.a.</th>
         <th scope="col" class="num"><span data-tip="Annualised standard deviation of weekly returns, last 3 years or since launch.">Volatility</span></th>
-        <th scope="col" class="num"><span data-tip="Average move per 1% move of world equity (${esc(dataset.benchmark)}), weekly returns.">Beta</span></th>
         ${eps.map((e) => `<th scope="col" class="num"><span data-tip="${esc(`${e.peak} → ${e.trough}: world equity ${fmt.pct(e.benchmarkMove, 1)}`)}">${esc(episodeLabel(e))}<br><span class="text-muted">world ${esc(fmt.pct(e.benchmarkMove, 1))}</span></span></th>`).join("")}
         <th scope="col" class="num"><span data-tip="Worst return over any 12-month holding period in the last 5 years (or since launch).">Worst 12 months</span></th>
-        <th scope="col" class="num"><span data-tip="Deepest fall from a peak in the last 5 years (or since launch).">Max. fall</span></th>
-        <th scope="col">Tax on gains</th>
+        <th scope="col">Tax</th>
         <th scope="col"><span data-tip="${esc(`Savings plan offered at ${dataset.broker?.name || "the broker"} (source: justETF)`)}">Savings plan</span></th>
         <th scope="col"><span class="sr-only">In your split</span></th>
       </tr></thead>`;
@@ -271,7 +260,7 @@ window.PlannerModule = (function () {
     const rows = groups.map((g) => {
       const members = dataset.instruments.filter((i) => i.group === g.id);
       if (!members.length) return "";
-      return `<tr class="planner-group-row"><th scope="rowgroup" colspan="${9 + eps.length}">${esc(g.label)}</th></tr>` + members.map((inst) => {
+      return `<tr class="planner-group-row"><th scope="rowgroup" colspan="${7 + eps.length}">${esc(g.label)}</th></tr>` + members.map((inst) => {
         const st = statsOf(inst.id);
         const w12 = st?.worst12m;
         const shortHistory = w12 && w12.windows < 365;
@@ -283,16 +272,13 @@ window.PlannerModule = (function () {
         return `
           <tr${inSplit ? ' class="highlight-row"' : ""}>
             <th scope="row">
-              <span class="table-etf-title">${esc(inst.shortName || inst.name)} <span class="info-tip" data-tip="${esc(`${inst.name}. ${inst.summary || ""}${inst.inception ? ` Launched ${inst.inception}.` : ""}`)}">?</span></span>
-              <span class="cluster planner-badges"><span class="badge ${KIND_BADGE[inst.kind] || "badge-neutral"} badge-sm">${esc(KIND_LABEL[inst.kind] || inst.kind)}</span>${inst.role === "benchmark" ? '<span class="badge badge-neutral badge-sm">Benchmark</span>' : ""}${inst.isin ? `<span class="table-etf-sub mono">${esc(inst.isin)}</span>` : ""}</span>
-              ${inst.exposure ? `<span class="table-etf-sub planner-summary">${esc(inst.exposure)}</span>` : ""}
+              <span class="table-etf-title"><span ${window.TickerCard ? TickerCard.attrs(inst.id) : ""}>${esc(inst.shortName || inst.name)}</span></span>
+              <span class="cluster planner-badges"><span class="badge ${KIND_BADGE[inst.kind] || "badge-neutral"} badge-sm">${esc(KIND_LABEL[inst.kind] || inst.kind)}</span>${inst.role === "benchmark" ? '<span class="badge badge-neutral badge-sm">Benchmark</span>' : ""}</span>
             </th>
             <td class="num">${cost}</td>
             <td class="num">${isCash ? "0%" : st?.volatility != null ? esc(fmt.pct(st.volatility, 1)) : "—"}</td>
-            <td class="num">${isCash ? "0.00" : st?.beta != null ? `<span data-tip="${esc(`${st.weeks} weeks from ${st.statsFrom}; beta in falling weeks ${fmt.num(st.downBeta, 2)}`)}">${esc(fmt.num(st.beta, 2))}</span>` : "—"}</td>
             ${eps.map((e) => (isCash ? `<td class="num">0.0%</td>` : moveCell(st, e))).join("")}
             <td class="num">${isCash ? "—" : w12 ? `<span class="${tone(w12.value)}" data-tip="${esc(`${w12.from} → ${w12.to}; ${w12.windows} holding periods${shortHistory ? " — short history, so this says little" : ""}`)}">${esc(fmt.pct(w12.value, 1, { sign: true }))}</span>${shortHistory ? '<br><span class="text-muted text-xs">short history</span>' : ""}` : "—"}</td>
-            <td class="num">${isCash ? "—" : st?.maxDrawdown?.value != null ? `<span class="val-negative" data-tip="${esc(`${st.maxDrawdown.peak} → ${st.maxDrawdown.trough}`)}">${esc(fmt.pct(st.maxDrawdown.value, 1))}</span>` : "—"}</td>
             <td><span class="text-sm">${esc(taxShort(inst))}</span>${inst.taxNote ? ` <span class="info-tip" data-tip="${esc(inst.taxNote)}">?</span>` : ""}</td>
             <td>${plan === true ? `<span class="badge badge-acc badge-sm">Yes</span>` : plan === false ? `<span class="badge badge-neutral badge-sm">No</span>` : `<span class="text-muted text-xs" data-tip="${esc(inst.tradeRepublic?.note || "")}">${isCash ? "—" : "Check app"}</span>`}</td>
             <td>${isCash ? "" : `<button type="button" class="btn ${inSplit ? "btn-ghost" : "btn-secondary"} btn-sm pl-toggle" data-id="${esc(inst.id)}" aria-pressed="${inSplit}">${inSplit ? `${icon("check")} In split` : `${icon("plus")} Add`}</button>`}</td>
@@ -303,8 +289,8 @@ window.PlannerModule = (function () {
   }
 
   function compareNoteHtml() {
-    if (!risk?.asOf) return "Risk statistics are missing. Press “Refresh risk data” (needs the local server).";
-    return `Statistics from ${esc(risk.source)} up to ${esc(risk.asOf)}. “n/a”: the instrument did not exist yet. * a proxy with the same underlying. Hover a figure for its dates.`;
+    if (!risk?.asOf) return "No price history yet. Press “Refresh prices” (needs the local server).";
+    return `Prices to ${esc(risk.asOf)}. n/a: did not exist yet · * proxy with the same underlying.`;
   }
 
   /* ---------------------------------------------------------- step 2: split */
@@ -312,7 +298,7 @@ window.PlannerModule = (function () {
     return `
       <div class="form-grid">
         <div class="field">
-          <label class="field-label" for="pl-drop">World equity falls by (%)</label>
+          <label class="field-label" for="pl-drop">Market drop (%)</label>
           <input type="number" class="filter-input" id="pl-drop" min="-60" max="-1" step="1" inputmode="decimal" value="${esc(state.drop)}" />
           <div class="pill-group" role="group" aria-label="Quick scenarios">
             ${[-10, -20, -30].map((v) => `<button type="button" class="pill-btn pl-drop-pill" data-drop="${v}" aria-pressed="${Number(state.drop) === v}">${v}%</button>`).join("")}
@@ -320,11 +306,10 @@ window.PlannerModule = (function () {
         </div>
         <label class="field"><span class="field-label">Horizon (months)</span>
           <input type="number" class="filter-input" id="pl-horizon" min="1" max="120" step="1" value="${esc(state.horizon)}" /></label>
-        <label class="field"><span class="field-label">Cash account rate (% p.a.)</span>
+        <label class="field"><span class="field-label">Cash rate (% a year)</span>
           <input type="number" class="filter-input" id="pl-cash-rate" min="0" max="20" step="0.05" inputmode="decimal" value="${esc(state.cashRate)}" /></label>
-        <label class="field"><span class="field-label">Most I would accept losing in that fall (€)</span>
-          <input type="number" class="filter-input" id="pl-loss-limit" min="0" step="10" inputmode="decimal" placeholder="optional" value="${esc(state.lossLimit)}" />
-          <span class="field-hint">Compared with the worst estimate below</span></label>
+        <label class="field"><span class="field-label">My loss limit (€, optional)</span>
+          <input type="number" class="filter-input" id="pl-loss-limit" min="0" step="10" inputmode="decimal" placeholder="e.g. 500" value="${esc(state.lossLimit)}" /></label>
       </div>`;
   }
 
@@ -455,14 +440,13 @@ window.PlannerModule = (function () {
     const notes = risk?.method?.notes || [];
     const edu = (dataset.education || []).map((e) => `<div class="panel"><strong>${esc(e.title)}</strong><p class="text-secondary text-sm mt-1">${esc(e.text)}</p>${e.source ? `<p class="text-xs mt-1">${UI.link(e.source.url, e.source.label)}</p>` : ""}</div>`).join("");
     return `
-      <section class="card" aria-labelledby="pl-method-title">
-        <div class="card-header"><div><h3 id="pl-method-title" class="card-title">Method &amp; sources</h3>
-          <span class="card-subtitle">Facts checked ${esc(dataset.asOf || "")}; statistics recomputed with “Refresh risk data” or <code>uv run apex-etf planner-risk</code>.</span></div></div>
-        <div class="grid-2 mb-4">${edu}</div>
+      <details class="card planner-more" aria-labelledby="pl-method-title">
+        <summary><h3 id="pl-method-title" class="card-title">Method &amp; sources</h3></summary>
+        <div class="grid-2 mt-3 mb-4">${edu}</div>
         <ul class="acad-list">${notes.map((n) => `<li>${esc(n)}</li>`).join("")}<li>The one-year loss figure assumes normally distributed returns with zero drift; real markets have fatter tails.</li></ul>
-        <h4 class="section-label mt-4">Sources</h4>
+        <h4 class="section-label mt-4">Sources (facts checked ${esc(dataset.asOf || "")})</h4>
         <ul class="acad-list planner-sources">${items.map((s) => `<li>${UI.link(s.url, s.label)}</li>`).join("")}</ul>
-      </section>`;
+      </details>`;
   }
 
   /* -------------------------------------------------------------- analysis */
@@ -585,57 +569,52 @@ window.PlannerModule = (function () {
     const s = result.stress;
     const eps = s.episodes || [];
     const epById = Object.fromEntries(eps.map((e) => [e.id, e]));
-    const worstLabel = s.totals.worstMethod === "beta" ? "beta estimate" : `same pattern as the ${episodeLabel(epById[s.totals.worstMethod])}`;
-    if (sub) sub.textContent = `World equity (${s.benchmark}) falls ${fmt.num(Math.abs(s.benchmarkMove), 0)}%. Measured behaviour, scaled to your scenario; amounts are what your split would gain or lose.`;
-
-    const limitTile = s.lossLimit != null ? `
-      <div class="metric-box ${s.withinLossLimit ? "tone-emerald" : "tone-rose"}">
-        <span class="metric-label">Your limit</span>
-        <span class="metric-value">${esc(fmt.eur(s.lossLimit, 0))}</span>
-        <span class="metric-sub">${s.withinLossLimit ? "The worst estimate stays within it" : `The worst estimate exceeds it by ${esc(fmt.eur(-s.totals.worst - s.lossLimit, 0))}`}</span>
-      </div>` : "";
+    const worstLabel = s.totals.worstMethod === "beta" ? "beta" : `like the ${episodeLabel(epById[s.totals.worstMethod])}`;
+    if (sub) sub.textContent = `World equity (${s.benchmark}) falls ${fmt.num(Math.abs(s.benchmarkMove), 0)}%: what your split gains or loses.`;
 
     const h = result.horizon;
+    const limitTile = s.lossLimit != null ? `
+      <div class="metric-box ${s.withinLossLimit ? "tone-emerald" : "tone-rose"}">
+        <span class="metric-label">Your limit ${esc(fmt.eur(s.lossLimit, 0))}</span>
+        <span class="metric-value">${s.withinLossLimit ? "Within" : "Exceeded"}</span>
+        <span class="metric-sub">${s.withinLossLimit ? "by the worst estimate" : `by ${esc(fmt.eur(-s.totals.worst - s.lossLimit, 0))}`}</span>
+      </div>` : "";
+
     host.innerHTML = `
       <div class="grid-4 planner-tiles">
-        <div class="metric-box"><span class="metric-label">Beta estimate</span>
+        <div class="metric-box"><span class="metric-label">Expected from beta</span>
           <span class="metric-value ${tone(s.totals.beta)}">${esc(signedEur(s.totals.beta, 0))}</span>
-          <span class="metric-sub">${esc(fmt.pct(s.totals.betaPercent, 2, { sign: true }))} of ${esc(fmt.eur(result.total, 0))}</span></div>
-        <div class="metric-box tone-amber"><span class="metric-label">Worst of the estimates</span>
+          <span class="metric-sub">${esc(fmt.pct(s.totals.betaPercent, 1, { sign: true }))} of ${esc(fmt.eur(result.total, 0))}</span></div>
+        <div class="metric-box tone-amber"><span class="metric-label">Worst estimate</span>
           <span class="metric-value ${tone(s.totals.worst)}">${esc(signedEur(s.totals.worst, 0))}</span>
-          <span class="metric-sub">${esc(worstLabel)}</span></div>
-        <div class="metric-box"><span class="metric-label">Interest it would cost to make up</span>
-          <span class="metric-value">${esc(fmt.num(s.monthsOfInterestToRecoverWorst, 1))} months</span>
-          <span class="metric-sub">of interest on everything in cash (${esc(fmt.eur(s.allCash.monthlyInterest, 2))}/month)</span></div>
-        ${limitTile || `<div class="metric-box"><span class="metric-label">Everything in the cash account</span>
-          <span class="metric-value">${esc(fmt.eur(0, 0))}</span><span class="metric-sub">no market loss; earns ${esc(fmt.eur(h.allCashInterest, 0))} over ${esc(h.months)} months</span></div>`}
+          <span class="metric-sub">${esc(worstLabel)} · ${esc(fmt.num(s.monthsOfInterestToRecoverWorst, 1))} months of cash interest</span></div>
+        <div class="metric-box"><span class="metric-label">1-in-20 loss, ${esc(h.months)} months</span>
+          <span class="metric-value val-negative">${esc(signedEur(-h.loss95, 0))}</span>
+          <span class="metric-sub">volatility ${esc(fmt.pct(h.horizonVolatility, 1))}; real tails are fatter</span></div>
+        ${limitTile || `<div class="metric-box"><span class="metric-label">All in cash, ${esc(h.months)} months</span>
+          <span class="metric-value val-positive">${esc(signedEur(h.allCashInterest, 0))}</span><span class="metric-sub">interest, no market risk</span></div>`}
       </div>
 
       <div class="panel mt-4" id="pl-stress-chart">
         ${UI.chart.frameHtml({
-          title: "Gain or loss per holding in the fall",
-          subtitle: "Bar: beta estimate. Line: range across the past falls scaled to your scenario.",
-          legend: `<span class="legend-item" role="listitem"><span class="legend-key is-rect" style="--c:var(--series-1)"></span>Beta estimate</span><span class="legend-item" role="listitem"><span class="legend-key" style="--c:var(--text-secondary)"></span>Range across past falls</span>`,
+          title: "Gain or loss per holding",
+          subtitle: "Bar: beta estimate · line: range across past falls, scaled",
+          legend: `<span class="legend-item" role="listitem"><span class="legend-key is-rect" style="--c:var(--series-1)"></span>Beta estimate</span><span class="legend-item" role="listitem"><span class="legend-key" style="--c:var(--text-secondary)"></span>Past falls</span>`,
           plotStyle: "height:auto",
         })}
       </div>
 
-      <h4 class="section-label mt-4">Scaled to your scenario, by past fall</h4>
-      <div class="table-responsive">${scaledTableHtml(s, eps)}</div>
-      <p class="text-muted text-xs mt-2">Each column repeats how every holding moved relative to world equity in that fall. <span class="planner-basis">β</span> = the instrument did not exist yet, so its beta is used; * = a proxy with the same underlying.</p>
+      ${(result.warnings || []).length ? `<div class="callout callout-warning mt-4">${icon("alert")}<div><ul class="acad-list mt-1">${result.warnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul></div></div>` : ""}
 
-      <h4 class="section-label mt-4">If a past fall repeated in full</h4>
-      <div class="table-responsive">${replayTableHtml(s, eps)}</div>
-
-      <h4 class="section-label mt-4">Over ${esc(h.months)} months</h4>
-      <div class="grid-4 planner-tiles">
-        <div class="metric-box"><span class="metric-label">Volatility of your split</span><span class="metric-value">${esc(fmt.pct(h.horizonVolatility, 1))}</span><span class="metric-sub">over ${esc(h.months)} months${Number(h.months) !== 12 ? ` (${esc(fmt.pct(h.portfolioVolatility, 1))} a year)` : ""}, from measured volatilities and correlations</span></div>
-        <div class="metric-box tone-amber"><span class="metric-label">A 1-in-20 loss</span><span class="metric-value val-negative">${esc(signedEur(-h.loss95, 0))}</span><span class="metric-sub">${esc(fmt.pct(-h.loss95Percent, 1))}; real markets have fatter tails</span></div>
-        <div class="metric-box"><span class="metric-label">Interest on the cash part</span><span class="metric-value val-positive">${esc(signedEur(h.cashInterest, 0))}</span><span class="metric-sub">at ${esc(fmt.pct(result.cashRate, 2))}, before tax</span></div>
-        <div class="metric-box"><span class="metric-label">If everything stayed in cash</span><span class="metric-value val-positive">${esc(signedEur(h.allCashInterest, 0))}</span><span class="metric-sub">no market risk; below the projected inflation rate</span></div>
-      </div>
-      ${h.notes && h.notes.length ? `<p class="text-muted text-xs mt-2">${h.notes.map(esc).join(" ")}</p>` : ""}
-      ${(result.warnings || []).length ? `<div class="callout callout-warning mt-4">${icon("alert")}<div><div class="callout-title">Check</div><ul class="acad-list">${result.warnings.map((w) => `<li>${esc(w)}</li>`).join("")}</ul></div></div>` : ""}`;
+      <details class="panel mt-4 planner-more">
+        <summary><strong>Details:</strong> each past fall, scaled and replayed</summary>
+        <h4 class="section-label mt-3">Scaled to your scenario</h4>
+        <div class="table-responsive">${scaledTableHtml(s, eps)}</div>
+        <p class="text-muted text-xs mt-2"><span class="planner-basis">β</span> did not exist yet, beta used · * proxy with the same underlying</p>
+        <h4 class="section-label mt-4">Replayed in full</h4>
+        <div class="table-responsive">${replayTableHtml(s, eps)}</div>
+        ${h.notes && h.notes.length ? `<p class="text-muted text-xs mt-2">${h.notes.map(esc).join(" ")}</p>` : ""}
+      </details>`;
 
     UI.chart.wireFrame(host.querySelector("#pl-stress-chart"));
     renderStressChart(s);
@@ -770,7 +749,7 @@ window.PlannerModule = (function () {
     }
     const orders = ex.orders.map((o) => `
       <tr><td class="nowrap">${esc(o.date)}</td>
-        <th scope="row"><span class="table-etf-title">${esc(known[o.id]?.shortName || o.name)}</span><span class="table-etf-sub mono">${esc(known[o.id]?.isin || "")}</span></th>
+        <th scope="row"><span class="table-etf-title"><span ${window.TickerCard ? TickerCard.attrs(o.id) : ""}>${esc(known[o.id]?.shortName || o.name)}</span></span><span class="table-etf-sub mono">${esc(known[o.id]?.isin || "")}</span></th>
         <td><span class="badge ${o.side === "buy" ? "badge-blue" : "badge-amber"} badge-sm">${o.side === "buy" ? "Buy" : "Sell"}</span></td>
         <td class="num">${esc(fmt.eur(o.amount, 2))}</td>
         <td class="num">${esc(fmt.eur(o.fee, 2))}${o.spreadEstimate ? `<div class="text-muted text-xs" data-tip="Estimated spread cost (included in the price, not charged separately)">+≈${esc(fmt.eur(o.spreadEstimate, 2))} spread</div>` : ""}</td>
@@ -789,21 +768,16 @@ window.PlannerModule = (function () {
         <div class="metric-box"><span class="metric-label">Interest while waiting</span><span class="metric-value val-positive">${esc(signedEur(sm.interestWhileWaiting, 2))}</span>
           <span class="metric-sub">on money not yet invested, at ${esc(fmt.pct(result.cashRate, 2))}</span></div>
       </div>
-      <div class="stack mt-4">
-        <div>
-          <h4 class="section-label">Orders</h4>
-          <div class="table-responsive planner-orders"><table class="data-table"><caption class="sr-only">Planned orders</caption>
-            <thead><tr><th scope="col">Date</th><th scope="col">Instrument</th><th scope="col">Side</th><th scope="col" class="num">Amount</th><th scope="col" class="num">Fee</th><th scope="col">Type</th></tr></thead>
-            <tbody>${orders}</tbody></table></div>
-        </div>
-        <div>
-          <h4 class="section-label">Exposure while buying</h4>
-          <div class="table-responsive"><table class="data-table"><caption class="sr-only">Money outside the cash account after each date</caption>
-            <thead><tr><th scope="col">After</th><th scope="col" class="num">Outside cash</th><th scope="col" class="num">If the ${esc(fmt.num(Math.abs(result.stress.benchmarkMove), 0))}% fall came next</th></tr></thead>
-            <tbody>${timeline}</tbody></table></div>
-          <p class="text-muted text-xs mt-2">Beta estimate. Buying in steps lowers what a fall right after the first purchase can cost; if prices rise meanwhile, later purchases cost more.</p>
-        </div>
-      </div>`;
+      <div class="table-responsive planner-orders mt-4"><table class="data-table"><caption class="sr-only">Planned orders</caption>
+        <thead><tr><th scope="col">Date</th><th scope="col">Instrument</th><th scope="col">Side</th><th scope="col" class="num">Amount</th><th scope="col" class="num">Fee</th><th scope="col">Type</th></tr></thead>
+        <tbody>${orders}</tbody></table></div>
+      <details class="panel mt-4 planner-more">
+        <summary><strong>Exposure while buying:</strong> what the ${esc(fmt.num(Math.abs(result.stress.benchmarkMove), 0))}% fall would cost after each date</summary>
+        <div class="table-responsive mt-3"><table class="data-table"><caption class="sr-only">Money outside the cash account after each date</caption>
+          <thead><tr><th scope="col">After</th><th scope="col" class="num">Outside cash</th><th scope="col" class="num">If the fall came next</th></tr></thead>
+          <tbody>${timeline}</tbody></table></div>
+        <p class="text-muted text-xs mt-2">Beta estimate. Buying in steps limits what a fall right after the first purchase costs; if prices rise meanwhile, later purchases cost more.</p>
+      </details>`;
   }
 
   function renderTax() {
@@ -816,28 +790,28 @@ window.PlannerModule = (function () {
     const t = result.tax;
     const known = byId();
     const rows = t.treatments.map((r) => `
-      <tr><th scope="row">${esc(known[r.id]?.shortName || r.name)}</th>
-        <td class="num">${r.onGainsPercent == null ? "see note" : esc(fmt.pct(r.onGainsPercent, 2))}</td>
-        <td class="text-sm">${esc(r.summary)}${r.note ? `<div class="text-muted text-xs mt-1">${esc(r.note)}</div>` : ""}</td></tr>`).join("");
+      <tr><th scope="row"><span ${window.TickerCard ? TickerCard.attrs(r.id) : ""}>${esc(known[r.id]?.shortName || r.name)}</span></th>
+        <td>${esc(known[r.id] ? taxShort(known[r.id]) : "")} <span class="info-tip" data-tip="${esc(`${r.summary}${r.note ? ` ${r.note}` : ""}`)}">?</span></td></tr>`).join("");
     const vorab = t.vorabpauschale.length ? `
-      <h4 class="section-label mt-4">Advance tax on accumulating funds (Vorabpauschale), upper bound</h4>
+      <h4 class="section-label mt-3">Advance tax on accumulating funds (Vorabpauschale), upper bound</h4>
       <div class="table-responsive"><table class="data-table"><caption class="sr-only">Vorabpauschale upper bound</caption>
         <thead><tr><th scope="col">Fund</th><th scope="col" class="num">Year</th><th scope="col" class="num">Vorabpauschale</th><th scope="col" class="num">Taxable part</th></tr></thead>
         <tbody>${t.vorabpauschale.map((v) => `<tr><th scope="row">${esc(known[v.id]?.shortName || v.id)}</th><td class="num">${esc(v.year)}</td><td class="num">${esc(fmt.eur(v.upperBound, 2))}</td><td class="num">${esc(fmt.eur(v.taxableUpperBound, 2))}</td></tr>`).join("")}</tbody></table></div>
-      <p class="text-muted text-xs mt-2">Based on the purchase amount; the real figure uses the fund's value on 1 January and is zero if the fund falls over the year. Deducted in January of the following year, counted against that year's allowance.</p>` : "";
+      <p class="text-muted text-xs mt-2">Based on the purchase amount; zero if the fund falls over the year. Deducted the following January.</p>` : "";
     host.innerHTML = `
-      <div class="grid-4 planner-tiles">
-        <div class="metric-box"><span class="metric-label">Interest on the cash part</span><span class="metric-value">${esc(fmt.eur(t.cashInterest, 0))}</span><span class="metric-sub">over ${esc(t.cashInterestMonths)} months</span></div>
-        <div class="metric-box"><span class="metric-label">Allowance left for it</span><span class="metric-value">${esc(fmt.eur(t.allowanceLeft, 0))}</span><span class="metric-sub">of ${esc(fmt.eur(t.allowance, 0))}</span></div>
+      <div class="grid-3 planner-tiles">
+        <div class="metric-box"><span class="metric-label">Cash interest, ${esc(t.cashInterestMonths)} months</span><span class="metric-value">${esc(fmt.eur(t.cashInterest, 0))}</span><span class="metric-sub">allowance left for it: ${esc(fmt.eur(t.allowanceLeft, 0))}</span></div>
         <div class="metric-box ${t.taxOnInterest > 0 ? "tone-amber" : "tone-emerald"}"><span class="metric-label">Tax on that interest</span><span class="metric-value">${esc(fmt.eur(t.taxOnInterest, 2))}</span><span class="metric-sub">${esc(fmt.pct(t.flatRate, 3))} on ${esc(fmt.eur(t.taxableInterest, 0))}</span></div>
-        <div class="metric-box"><span class="metric-label">Allowance left afterwards</span><span class="metric-value">${esc(fmt.eur(t.allowanceLeftAfterInterest, 0))}</span><span class="metric-sub">for fund gains, dividends and the Vorabpauschale</span></div>
+        <div class="metric-box"><span class="metric-label">Allowance left afterwards</span><span class="metric-value">${esc(fmt.eur(t.allowanceLeftAfterInterest, 0))}</span><span class="metric-sub">for fund gains and dividends</span></div>
       </div>
-      <h4 class="section-label mt-4">How each holding is taxed</h4>
-      <div class="table-responsive"><table class="data-table"><caption class="sr-only">Tax treatment per holding</caption>
-        <thead><tr><th scope="col">Holding</th><th scope="col" class="num">On gains</th><th scope="col">Details</th></tr></thead>
+      <div class="table-responsive mt-4"><table class="data-table"><caption class="sr-only">Tax treatment per holding</caption>
+        <thead><tr><th scope="col">Holding</th><th scope="col">Tax on gains</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
-      ${vorab}
-      <ul class="acad-list mt-4">${t.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>`;
+      <details class="panel mt-4 planner-more">
+        <summary><strong>Rules in brief</strong>${t.vorabpauschale.length ? " and the Vorabpauschale" : ""}</summary>
+        ${vorab}
+        <ul class="acad-list mt-3">${t.notes.map((n) => `<li>${esc(n)}</li>`).join("")}</ul>
+      </details>`;
   }
 
   /* ---------------------------------------------------------------- events */

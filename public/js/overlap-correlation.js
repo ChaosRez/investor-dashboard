@@ -108,7 +108,7 @@ window.OverlapModule = (function () {
     const ramp = seqRamp();
 
     const head = `<tr><td class="hm-corner"><span class="sr-only">Fund</span></td>${tickers
-      .map((t, c) => `<th scope="col" class="hm-col-head" data-c="${c}">${esc(t)}</th>`)
+      .map((t, c) => `<th scope="col" class="hm-col-head" data-c="${c}"><span data-ticker-card="${esc(t)}">${esc(t)}</span></th>`)
       .join("")}</tr>`;
 
     const body = tickers
@@ -131,7 +131,7 @@ window.OverlapModule = (function () {
                       aria-label="${esc(label)}" data-tip="${esc(`${rowTicker} vs ${colTicker} — correlation ${val.toFixed(2)}`)}"${style}>${val.toFixed(2)}</td>`;
           })
           .join("");
-        return `<tr><th scope="row" class="hm-row-head" data-r="${r}">${esc(rowTicker)}</th>${cells}</tr>`;
+        return `<tr><th scope="row" class="hm-row-head" data-r="${r}"><span data-ticker-card="${esc(rowTicker)}">${esc(rowTicker)}</span></th>${cells}</tr>`;
       })
       .join("");
 

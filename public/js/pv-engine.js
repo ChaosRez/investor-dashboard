@@ -57,15 +57,13 @@ window.PortfolioVisualizerModule = (function () {
               </div>
               <div class="text-muted text-xs">${esc(etf.benchmarkIndex)}</div>
             </th>
-            <td><span class="badge badge-blue">${esc(m.styleBox || "Large Blend")}</span></td>
             <td class="num">${c.cagr != null ? esc(fmt.pct(c.cagr, 2)) : "—"}</td>
             <td class="num">${c.stdev != null ? esc(fmt.pct(c.stdev, 2)) : "—"}</td>
             <td class="num">${esc(fmt.num(c.sharpe, 2))}</td>
             <td class="num">${esc(fmt.num(q.sortino, 2))}</td>
             <td class="num">${esc(fmt.num(q.calmar, 2))}</td>
             <td class="num val-negative">${q.var95 != null ? esc(fmt.pct(q.var95, 2)) : "—"}</td>
-            <td class="num">${esc(fmt.num(q.marketBeta ?? 1, 2))}</td>
-            <td class="num">${UI.link(q.pvUrl || "https://www.portfoliovisualizer.com", `${icon("external")} PV model`, { cls: "btn btn-secondary btn-sm", html: true })}</td>
+            <td class="num">${q.marketBeta != null ? esc(fmt.num(q.marketBeta, 2)) : "—"}</td>
           </tr>`;
       })
       .join("");
@@ -89,20 +87,14 @@ window.PortfolioVisualizerModule = (function () {
           ${UI.link("https://www.portfoliovisualizer.com/backtest-portfolio", `${icon("external")} Open PortfolioVisualizer.com`, { cls: "btn btn-secondary btn-sm", html: true })}
         </div>
 
-        <div class="grid-3 mb-5">
-          <div class="metric-box">
-            <span class="metric-label">Sortino vs Sharpe</span>
-            <span class="text-secondary text-sm">Sharpe penalises upside volatility. <strong>Sortino only penalises downside losses</strong>, making it the preferred metric for long-term equity investors who welcome positive upside swings.</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-label">Value at risk (VaR 95%)</span>
-            <span class="text-secondary text-sm">The maximum expected monthly loss at a 95% confidence level. Shows tail-risk severity during sudden liquidity contractions and flash crashes.</span>
-          </div>
-          <div class="metric-box">
-            <span class="metric-label">Calmar ratio</span>
-            <span class="text-secondary text-sm">Ratio of annualised CAGR to maximum drawdown. Highlights capital recovery velocity after bear-market capitulation events.</span>
-          </div>
-        </div>
+        <details class="panel planner-more mb-5">
+          <summary><strong>What the ratios mean</strong></summary>
+          <ul class="acad-list mt-2">
+            <li><strong>Sortino</strong> is like Sharpe but only penalises downside swings.</li>
+            <li><strong>VaR 95%</strong>: the monthly loss exceeded in only one month in twenty.</li>
+            <li><strong>Calmar</strong>: annual growth divided by the deepest fall; higher means faster recovery.</li>
+          </ul>
+        </details>
 
         <div class="panel mb-5">
           ${UI.chart.frameHtml({
@@ -113,7 +105,7 @@ window.PortfolioVisualizerModule = (function () {
           })}
           <div class="callout callout-info mt-4">
             ${icon("info")}
-            <div><strong>Bogleheads mathematical takeaway:</strong> adding 10%–20% AGGU (global aggregate bonds) shifts the portfolio leftward along the curve — reducing volatility from 15.1% to 12.4% — with only a marginal reduction in return. This is the classic <em>free lunch of asset-class diversification</em> formalised by Harry Markowitz.</div>
+            <div>Adding 10–20% global bonds (AGGU) moves a portfolio left on the curve: less volatility for a small cost in return.</div>
           </div>
         </div>
 
@@ -124,7 +116,6 @@ window.PortfolioVisualizerModule = (function () {
             <thead>
               <tr>
                 <th scope="col">Ticker &amp; benchmark</th>
-                <th scope="col">Style box <span class="info-tip" data-tip="Morningstar 3x3 classification of market-cap size and value/blend/growth style.">?</span></th>
                 <th scope="col" class="num">CAGR</th>
                 <th scope="col" class="num">StDev (risk)</th>
                 <th scope="col" class="num">Sharpe</th>
@@ -132,7 +123,6 @@ window.PortfolioVisualizerModule = (function () {
                 <th scope="col" class="num">Calmar <span class="info-tip" data-tip="Annualised CAGR divided by maximum historical drawdown. Measures crash-recovery efficiency.">?</span></th>
                 <th scope="col" class="num">VaR 95% (monthly) <span class="info-tip" data-tip="Worst expected monthly loss at 95% confidence under normal market distribution tails.">?</span></th>
                 <th scope="col" class="num">Beta <span class="info-tip" data-tip="Sensitivity vs the global market index (1.00 = market; below 1.00 = defensive).">?</span></th>
-                <th scope="col"><span class="sr-only">Link</span></th>
               </tr>
             </thead>
             <tbody>${rowsHtml}</tbody>

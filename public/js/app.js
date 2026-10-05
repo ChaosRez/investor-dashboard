@@ -250,7 +250,7 @@ window.App = (function () {
           <span class="stage-status-badge ${STATUS_BADGE[meta.status]}">${esc(meta.statusLabel)}</span>
           <h2 class="stage-context-title">${esc(meta.title)}</h2>
         </div>
-        <p class="stage-context-desc">${esc(meta.desc)}</p>
+        <p class="stage-context-desc" tabindex="0" data-tip="${esc(meta.desc)}">${esc(meta.desc)}</p>
       </div>
       <div class="stage-context-nav">
         ${prev ? `<button type="button" class="btn btn-ghost btn-sm" data-goto="${prev}">${UI.icon("arrow-left")} ${esc(STAGES[prev].short)}</button>` : ""}

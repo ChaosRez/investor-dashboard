@@ -65,10 +65,9 @@ window.VerificationDocsModule = (function () {
               <div class="etf-id">
                 <span class="ticker etf-ticker">${esc(etf.ticker)}</span>
                 ${window.ProviderLogos?.getLogoSvg(etf.issuer, 20, { label: false }) || ""}
-                <span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"}">${esc(etf.distributionPolicy || (etf.isAccumulating ? "Accumulating" : "Distributing"))}</span>
               </div>
               <div class="etf-name">${esc(etf.name)}</div>
-              <div class="etf-meta">Domicile ${esc(etf.domicile)}</div>
+              <div class="etf-meta"><span class="badge ${etf.isAccumulating ? "badge-acc" : "badge-dist"} badge-sm">${etf.isAccumulating ? "Acc" : "Dist"}</span><span class="badge badge-neutral badge-sm" data-tip="${esc(etf.domicile)}">${esc(({ Ireland: "IE", Luxembourg: "LU", Germany: "DE" })[etf.domicile] || etf.domicile || "—")}</span></div>
             </th>
 
             <td data-label="ISIN / WKN"><div class="cell-value">
@@ -83,8 +82,7 @@ window.VerificationDocsModule = (function () {
             </div></td>
 
             <td data-label="Replication"><div class="cell-value cell-wrap">
-              <div class="text-sm">${esc(etf.replication || "—")}</div>
-              ${etf.securitiesLendingRevenueShare ? `<div class="text-muted text-xs">${esc(etf.securitiesLendingRevenueShare)}</div>` : ""}
+              <div class="text-sm">${esc(etf.replication || "—")}${etf.securitiesLendingRevenueShare ? ` <span class="info-tip" data-tip="${esc(`Securities lending: ${etf.securitiesLendingRevenueShare}`)}">?</span>` : ""}</div>
             </div></td>
 
             <td class="cell-actions">
@@ -107,7 +105,7 @@ window.VerificationDocsModule = (function () {
 
         <div class="callout callout-info mb-4">
           ${icon("info")}
-          <div><strong>Retail verification mandate:</strong> third-party screeners can lag. Before investing, always consult the official <strong>Key Information Document (KID)</strong> from Vanguard, BlackRock or Amundi to verify the PRIIPs summary risk indicator (SRI), recommended holding period, ongoing charges and synthetic risk category.</div>
+          <div>Screeners can lag: before buying, read the issuer's <strong>Key Information Document (KID)</strong> for the risk indicator, costs and recommended holding period.</div>
         </div>
 
         <div class="etf-table-wrap">

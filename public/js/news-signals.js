@@ -240,29 +240,19 @@ window.NewsSignalsModule = (function () {
     const sig = item.signal || {};
     const tone = UI.signalTone(sig.bias);
 
-    const etfRows = (item.relatedEtfs || [])
+    const related = item.relatedEtfs || [];
+    const chips = related
       .map((e) => {
         const t = String(e.ticker).toUpperCase();
         const watch = WATCHLIST_TICKERS.includes(t);
         const current = filters.etf.toUpperCase() === t;
-        return `
-          <div class="transmission${current ? " is-current" : ""}">
-            <div class="row-between wrap-gap">
-              <div class="cluster">
-                <button type="button" class="etf-tag" data-action="filter-etf" data-ticker="${esc(t)}" data-tip="Filter the feed by ${esc(t)}">${watch ? icon("star", "icon-fill") : ""}${esc(t)}</button>
-                ${window.ProviderLogos?.getLogoSvg(e.issuer || e.ticker, 16, { label: false }) || ""}
-                <span class="text-sm fw-600">${esc(e.issuer || "")}</span>
-                ${watch ? `<span class="badge badge-watchlist badge-sm">Watchlist</span>` : ""}
-              </div>
-              <div class="cluster">
-                <button type="button" class="btn btn-secondary btn-sm news-action-filter" data-ticker="${esc(t)}">${icon("search")} Filter to ${esc(t)}</button>
-                <button type="button" class="btn btn-secondary btn-sm news-action-modal" data-ticker="${esc(t)}">${icon("file-text")} Inspect</button>
-              </div>
-            </div>
-            <p class="transmission-text"><strong>Transmission mechanism:</strong> ${esc(e.relation)}</p>
-          </div>`;
+        return `<button type="button" class="etf-tag${current ? " is-current" : ""}" data-action="filter-etf" data-ticker="${esc(t)}" aria-label="${esc(`${t}: show only news about it`)}">${watch ? icon("star", "icon-fill") : ""}${esc(t)}</button>`;
       })
       .join("");
+    const mechanisms = related
+      .map((e) => `<li><strong>${esc(String(e.ticker).toUpperCase())}</strong> — ${esc(e.relation || "")}</li>`)
+      .join("");
+    const action = item.retailAction || item.retailBogleheadAction || "Maintain disciplined automated DCA into broad market index ETFs without attempting to front-run rate cycles.";
 
     const source = item.sourceUrl
       ? UI.link(item.sourceUrl, `${item.source || "Source"} ↗`)
@@ -277,24 +267,18 @@ window.NewsSignalsModule = (function () {
             <span class="badge badge-blue">${esc(sig.timeframe || "")}</span>
             ${item.isLiveStream ? liveBadge(item) : ""}
           </div>
-          <div class="news-date">${esc(formatNewsDate(item.date))} · Source: ${source}</div>
+          <div class="news-date">${esc(formatNewsDate(item.date))} · ${source}</div>
         </div>
 
         <h3 class="news-title">${esc(item.title)}</h3>
         ${item.summary ? `<p class="news-summary">${esc(item.summary)}</p>` : ""}
 
-        <div class="panel transmission-box">
-          <div class="row-between wrap-gap section-label">
-            <span>Target ETFs affected &amp; financial transmission channel</span>
-            <span class="grounding-note">${icon("check")} Zero-speculation fundamental grounding</span>
-          </div>
-          ${etfRows}
-        </div>
-
-        <div class="retail-action-box">
-          <strong>${icon("shield")} Retail Boglehead action:</strong>
-          <span>${esc(item.retailAction || item.retailBogleheadAction || "Maintain disciplined automated DCA into broad market index ETFs without attempting to front-run rate cycles.")}</span>
-        </div>
+        ${related.length ? `<div class="news-affects cluster"><span class="text-muted text-xs">Affects</span>${chips}</div>` : ""}
+        <details class="news-why">
+          <summary>Why it matters</summary>
+          ${mechanisms ? `<ul class="acad-list">${mechanisms}</ul>` : ""}
+          <p class="retail-action-box mt-3"><strong>${icon("shield")} Discipline:</strong> <span>${esc(action)}</span></p>
+        </details>
       </article>`;
   }
 

@@ -25,7 +25,7 @@ window.ScreenerModule = (function () {
     ter: { label: "Lowest cost (TER)", get: (e) => e.ter, best: "asc" },
     td: { label: "Best tracking difference", get: (e) => e.trackingDifference5Y, best: "asc" },
     aum: { label: "Largest fund size", get: (e) => e.aumMillionsEUR, best: "desc" },
-    cagr: { label: "Highest CAGR", get: (e) => e.historicalStatsCurvo?.cagr, best: "desc" },
+    ret1y: { label: "Best 1-year return", get: (e) => window.TickerCard?.perf(e.ticker)?.returns?.["1y"], best: "desc" },
   };
 
   const DOMICILE_CODES = {
@@ -90,6 +90,8 @@ window.ScreenerModule = (function () {
 
     // Keep compare toggles truthful when the selection changes elsewhere
     document.addEventListener("apex:compare", refreshCompareStates);
+    // Measured returns arrive after the first render (performance.json from the server)
+    document.addEventListener("apex:performance", () => applyFilters());
   }
 
   function refreshCompareStates() {
@@ -248,19 +250,17 @@ window.ScreenerModule = (function () {
     const live = etf.liveMarketData;
     const news = newsCounts[String(etf.ticker).toUpperCase()] || 0;
     const isIreland = etf.domicile === "Ireland";
+    const ret1y = window.TickerCard?.perf(etf.ticker)?.returns?.["1y"];
 
     let priceHtml = `<span class="text-muted">—</span>`;
     if (live && Number.isFinite(Number(live.livePrice))) {
       const chg = Number(live.dayChangePercent) || 0;
       const up = chg >= 0;
-      const lo = live.fiftyTwoWeekLow ?? etf.fiftyTwoWeekLow;
-      const hi = live.fiftyTwoWeekHigh ?? etf.fiftyTwoWeekHigh;
       priceHtml = `
         <div class="price">
           <span class="price-value">${esc(money(live.livePrice, live.currency))}</span>
           <span class="price-change ${up ? "val-positive" : "val-negative"}" aria-label="${up ? "up" : "down"} ${esc(fmt.num(Math.abs(chg), 2))} percent today"><span aria-hidden="true">${up ? "▲" : "▼"}</span> ${esc(fmt.num(Math.abs(chg), 2))}%</span>
-        </div>
-        ${lo && hi ? `<div class="price-sub" data-tip="52-week range from ${esc(live.exchange || "the exchange")}">52W ${esc(lo)}–${esc(hi)}</div>` : ""}`;
+        </div>`;
     }
 
     return `
@@ -269,11 +269,17 @@ window.ScreenerModule = (function () {
           <div class="etf-id">
             <span class="ticker etf-ticker">${t}</span>
             ${window.ProviderLogos?.getLogoSvg(etf.issuer, 20, { label: false }) || ""}
-            ${etf.isUserWatchlist ? `<span class="watch-star" role="img" aria-label="In your watchlist" data-tip="In your personal 10-ETF watchlist">${icon("star", "icon-fill")}</span>` : ""}
-            ${news > 0 ? `<button type="button" class="badge badge-blue screener-news-badge" data-ticker="${t}" aria-label="${news} market news items affecting ${t}" data-tip="${news} active market ${news === 1 ? "catalyst" : "catalysts"} — open the news radar">${icon("rss")} ${news}</button>` : ""}
+            ${etf.isUserWatchlist ? `<span class="watch-star" role="img" aria-label="In your watchlist" data-tip="In your watchlist">${icon("star", "icon-fill")}</span>` : ""}
+            ${news > 0 ? `<button type="button" class="badge badge-blue screener-news-badge" data-ticker="${t}" aria-label="${news} market news items affecting ${t}" data-tip="${news} news ${news === 1 ? "item" : "items"} — open the news radar">${icon("rss")} ${news}</button>` : ""}
           </div>
           <div class="etf-name">${esc(etf.name)}</div>
-          <div class="etf-meta"><span class="mono">${esc(etf.isin)}</span>${etf.wkn ? ` · WKN ${esc(etf.wkn)}` : ""}</div>
+          <div class="etf-meta">
+            ${etf.isAccumulating
+              ? `<span class="badge badge-acc badge-sm" data-tip="Accumulating: dividends are reinvested inside the fund.">Acc</span>`
+              : `<span class="badge badge-dist badge-sm" data-tip="Distributing: pays dividends out, which are taxed when paid.">Dist</span>`}
+            <span class="badge ${isIreland ? "badge-acc" : "badge-neutral"} badge-sm" data-tip="${esc(etf.domicile)}${isIreland ? ": 15% US dividend withholding, no US estate-tax exposure" : ""}">${esc(domicileCode(etf.domicile))}</span>
+            <span class="mono">${esc(etf.isin)}</span>
+          </div>
         </th>
 
         <td data-label="Score" class="cell-score"><div class="cell-value">
@@ -283,31 +289,20 @@ window.ScreenerModule = (function () {
             : `<span class="text-muted">—</span>`}
         </div></td>
 
-        <td data-label="Distribution"><div class="cell-value">
-          ${etf.isAccumulating
-            ? `<span class="badge badge-acc" data-tip="Accumulating: dividends are reinvested automatically — no annual tax event, no cash drag.">Acc</span>`
-            : `<span class="badge badge-dist" data-tip="Distributing: pays out cash dividends — a taxable event every distribution.">Dist</span>`}
-        </div></td>
-
         <td data-label="TER" class="num"><div class="cell-value">${esc(fmt.pct(etf.ter, 2))}</div></td>
 
         <td data-label="5Y tracking diff." class="num"><div class="cell-value">
           <span class="${tdBeats ? "val-positive" : ""}">${esc(fmt.pct(td, 2, { sign: true }))}</span>
-          ${tdBeats ? `<div class="cell-sub val-positive">beats index</div>` : ""}
         </div></td>
 
         <td data-label="Fund size" class="num"><div class="cell-value">${esc(fmt.aum(etf.aumMillionsEUR))}</div></td>
 
-        <td data-label="Domicile"><div class="cell-value">
-          <span class="badge ${isIreland ? "badge-acc" : "badge-amber"}" data-tip="${esc(etf.domicile)}${isIreland ? " — 15% US dividend treaty withholding, no US estate-tax exposure" : " — standard treaty rate"}">${esc(domicileCode(etf.domicile))}</span>
-        </div></td>
+        <td data-label="1 year" class="num"><div class="cell-value">${ret1y != null ? `<span class="${ret1y < 0 ? "val-negative" : "val-positive"}">${esc(fmt.pct(ret1y, 1, { sign: true }))}</span>` : "—"}</div></td>
 
-        <td data-label="Curvo CAGR" class="num"><div class="cell-value">${etf.historicalStatsCurvo?.cagr != null ? esc(fmt.pct(etf.historicalStatsCurvo.cagr, 2)) : "—"}</div></td>
-
-        <td data-label="Price" class="cell-price"><div class="cell-value">${priceHtml}</div></td>
+        <td data-label="Price" class="cell-price num"><div class="cell-value">${priceHtml}</div></td>
 
         <td class="cell-actions">
-          <button type="button" class="btn btn-secondary btn-sm view-profile-btn" data-ticker="${t}" aria-label="View ${t} details">${icon("eye")} Details</button>
+          <button type="button" class="btn btn-secondary btn-sm btn-icon view-profile-btn" data-ticker="${t}" aria-label="View ${t} details" data-tip="Details">${icon("eye")}</button>
           <button type="button" class="btn btn-secondary btn-sm btn-icon compare-btn" data-ticker="${t}" aria-pressed="${comparing}" aria-label="Compare ${t}" data-tip="${comparing ? "Remove from comparison matrix" : "Add to comparison matrix"}">${icon("scale")}</button>
           <button type="button" class="btn btn-secondary btn-sm btn-icon add-portfolio-btn" data-ticker="${t}" aria-label="Add ${t} to overlap audit" data-tip="Add to portfolio overlap audit">${icon("plus")}</button>
         </td>
@@ -349,18 +344,16 @@ window.ScreenerModule = (function () {
 
       <div class="etf-table-wrap">
         <table class="etf-table">
-          <caption class="sr-only">ETF screener results, sortable by score, cost, tracking difference, fund size and CAGR</caption>
+          <caption class="sr-only">ETF screener results, sortable by score, cost, tracking difference, fund size and 1-year return</caption>
           <thead>
             <tr>
-              <th scope="col">ETF <span class="info-tip" data-tip="Ticker, issuer, benchmark name and statutory ISIN. The star marks your personal watchlist.">?</span></th>
+              <th scope="col">ETF <span class="info-tip" data-tip="Hover or focus a ticker for its card: what it is, price and measured performance. Badges: Acc/Dist and fund domicile.">?</span></th>
               ${sortHeader("score", "Score", "Retail multi-factor score (0–100): index coverage, total cost, tracking, fund size, domicile tax efficiency and broker availability.", "")}
-              <th scope="col">Type <span class="info-tip" data-tip="Accumulating (Acc) reinvests dividends to avoid tax leakage. Distributing (Dist) pays cash, creating annual tax events.">?</span></th>
-              ${sortHeader("ter", "TER", "Total Expense Ratio: ongoing annual fee retained from NAV. Aim for under 0.25% for core broad-market equity.", "num")}
-              ${sortHeader("td", "5Y TD", "Tracking Difference vs the net index. Negative means the fund outperformed — via tax optimisation and securities lending.", "num")}
-              ${sortHeader("aum", "Fund size", "Assets under management. Above €100M removes closure risk; above €10B gives the tightest spreads.", "num")}
-              <th scope="col">Domicile <span class="info-tip" data-tip="Ireland (IE): 15% US dividend treaty withholding (vs 30%) and no exposure to the 40% US estate tax.">?</span></th>
-              ${sortHeader("cagr", "CAGR", "Compound annual growth rate from Curvo historical backtest data.", "num")}
-              <th scope="col">Price</th>
+              ${sortHeader("ter", "TER", "Total Expense Ratio: ongoing annual fee retained from NAV.", "num")}
+              ${sortHeader("td", "5Y TD", "Tracking difference vs the index. Negative means the fund beat it.", "num")}
+              ${sortHeader("aum", "Size", "Fund size (assets under management). Above €100M removes closure risk.", "num")}
+              ${sortHeader("ret1y", "1 year", "Total return over the last 12 months, measured from daily prices (Yahoo Finance, distributions reinvested).", "num")}
+              <th scope="col" class="num">Price</th>
               <th scope="col"><span class="sr-only">Actions</span></th>
             </tr>
           </thead>
@@ -609,5 +602,5 @@ window.ScreenerModule = (function () {
     UI.dialog.open("detail-modal", { opener: opener || document.activeElement });
   }
 
-  return { init, showDetailModal };
+  return { init, showDetailModal, showDetails: showDetailModal };
 })();

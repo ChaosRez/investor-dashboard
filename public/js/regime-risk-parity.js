@@ -194,10 +194,10 @@ window.RegimeRiskParityModule = (function () {
 
     const presetsHtml = Object.entries(presets)
       .map(([key, p]) => `
-        <button type="button" class="preset-card preset-regime-btn${key === activePreset ? " active" : ""}" data-preset="${key}" aria-pressed="${key === activePreset}">
+        <button type="button" class="preset-card preset-regime-btn${key === activePreset ? " active" : ""}" data-preset="${key}" aria-pressed="${key === activePreset}" data-tip="${esc(p.desc)}">
           <span class="preset-card-head"><span class="preset-card-title">${esc(p.name)}</span></span>
           <span class="badge badge-neutral badge-sm">${esc(p.tag)}</span>
-          <span class="preset-card-desc">${esc(p.desc)}</span>
+          <span class="preset-card-desc">${Object.entries(p.portfolio).map(([t, w]) => `${esc(t)} ${esc(w)}%`).join(" · ")}</span>
         </button>`)
       .join("");
 
@@ -218,25 +218,28 @@ window.RegimeRiskParityModule = (function () {
               <h2 class="card-title">${icon("shield")} Regime resilience &amp; robust risk parity studio</h2>
               <span class="stage-status-badge badge-essential">Stage 4 · Regime resilience</span>
             </div>
-            <span class="card-subtitle">Moving beyond fragile mean-variance optimisation to non-linear risk parity, graph-clustering dendrograms and downside crisis stress-testing.</span>
+            <span class="card-subtitle">Pick building blocks, size them by risk, stress-test the result.</span>
           </div>
           <div class="cluster">
             <button type="button" id="open-quant-code-btn" class="btn btn-secondary btn-sm">${icon("code")} Python quant scripts</button>
             <button type="button" id="open-platforms-btn" class="btn btn-secondary btn-sm">${icon("globe")} No-code web platforms</button>
           </div>
         </div>
-        <ol class="workflow-grid">
-          <li class="workflow-step"><span class="step-badge step-1" aria-hidden="true">1</span><div><strong>Pick structural building blocks</strong><p>Don't let an optimiser pick your assets. Manually select assets representing distinct economic regimes (equities, tilts, bonds, cash, gold).</p></div></li>
-          <li class="workflow-step"><span class="step-badge step-2" aria-hidden="true">2</span><div><strong>Size with HRP or risk parity</strong><p>Size positions by <strong>volatility risk contribution</strong> rather than subjective return guesses, using PyPortfolioOpt (HRP) or Riskfolio (ERC).</p></div></li>
-          <li class="workflow-step"><span class="step-badge step-3" aria-hidden="true">3</span><div><strong>Stress-test the downside</strong><p>Run QuantStats crisis teardowns (2000 Dot-Com, 2008 Lehman, 2022 Stagflation). If drawdown breaches your tolerance, increase liquidity.</p></div></li>
-        </ol>
+        <details class="panel planner-more">
+          <summary><strong>How the studio works</strong></summary>
+          <ol class="workflow-grid mt-3">
+            <li class="workflow-step"><span class="step-badge step-1" aria-hidden="true">1</span><div><strong>Pick building blocks</strong><p>Choose assets for distinct economic regimes (equities, tilts, bonds, cash, gold) yourself instead of letting an optimiser pick them.</p></div></li>
+            <li class="workflow-step"><span class="step-badge step-2" aria-hidden="true">2</span><div><strong>Size by risk</strong><p>HRP or equal risk contribution size positions by their share of volatility, not by return guesses.</p></div></li>
+            <li class="workflow-step"><span class="step-badge step-3" aria-hidden="true">3</span><div><strong>Stress-test</strong><p>See the result in five historical crises; if the worst fall breaches your limit, add liquidity.</p></div></li>
+          </ol>
+        </details>
       </div>
 
       <section class="card" aria-labelledby="step1-title">
         <div class="card-header">
           <div>
             <div class="cluster"><span class="step-pill step-1">Step 1</span><h3 id="step1-title" class="card-title">Macro structural building blocks &amp; portfolio blueprints</h3></div>
-            <span class="card-subtitle">Choose a battle-tested regime blueprint, or customise your own building-block allocation.</span>
+            <span class="card-subtitle">Start from a preset (hover for its idea) or click ETFs to build your own.</span>
           </div>
         </div>
 
@@ -267,7 +270,7 @@ window.RegimeRiskParityModule = (function () {
         <div class="card-header">
           <div>
             <div class="cluster"><span class="step-pill step-2">Step 2</span><h3 id="step2-title" class="card-title">Position sizing via non-linear parity &amp; ML clustering</h3></div>
-            <span class="card-subtitle">PyPortfolioOpt (HRP &amp; Mean-CVaR) vs Riskfolio-Lib (Equal Risk Contribution) vs traditional Markowitz</span>
+            <span class="card-subtitle">Six sizing methods for the same building blocks.</span>
           </div>
         </div>
 
@@ -314,7 +317,7 @@ window.RegimeRiskParityModule = (function () {
         <div class="card-header">
           <div>
             <div class="cluster"><span class="step-pill step-3">Step 3</span><h3 id="step3-title" class="card-title">Downside stress-testing &amp; QuantStats teardown</h3></div>
-            <span class="card-subtitle">Performance across canonical historical macro crises vs 100% equity and 60/40 benchmarks.</span>
+            <span class="card-subtitle">Your allocation in five historical crises, against 100% equity and 60/40.</span>
           </div>
         </div>
 
@@ -495,7 +498,7 @@ window.RegimeRiskParityModule = (function () {
       if (!m) return "";
       const recommended = key === "hrp" || key === "equalRiskContribution";
       const weights = Object.entries(m.weights || {})
-        .map(([t, w]) => `<span class="w-chip"><strong>${esc(t)}</strong> ${esc(fmt.num(w, 1))}%</span>`)
+        .map(([t, w]) => `<span class="w-chip"><strong data-ticker-card="${esc(t)}">${esc(t)}</strong> ${esc(fmt.num(w, 1))}%</span>`)
         .join("");
       return `
         <tr class="${recommended ? "highlight-row" : ""}">
