@@ -35,7 +35,7 @@ uv run apex-etf platforms
 # 8. Check installation status & dataset integrity
 uv run apex-etf status
 
-# 9. Run the complete automated test suite (64 tests across 6 test modules)
+# 9. Run the complete automated test suite (89 tests across 6 test modules)
 uv run pytest tests
 ```
 
@@ -180,8 +180,8 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
 │   ├── test_analysis.py          # 6 tests: overlap math, weighted TER, Curvo DCA compounding
 │   ├── test_cli.py               # 6 tests: CLI subcommands (audit, optimize, stress-test, teardown, platforms)
 │   ├── test_data_integrity.py    # 4 tests: ETF schema, sector sums, holdings sums, correlation matrix
-│   ├── test_server.py            # 17 tests: HTTP REST endpoints on ephemeral port, sync error handling
-│   └── test_sync.py              # 20 tests: config, ISIN mappings, fetch errors, daily change, justETF parsing, sync reporting
+│   ├── test_server.py            # 18 tests: HTTP REST endpoints on ephemeral port, sync errors, responsiveness during a sync
+│   └── test_sync.py              # 44 tests: fetch errors and CA fallback, daily change, justETF parsing, sync reporting, headline retention, atomic writes, quote-symbol coverage
 ├── scripts/                      # Data maintenance and store generation scripts
 │   ├── build_etf_data.py
 │   ├── build_supporting_data.py
@@ -213,23 +213,24 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
 * **Accessibility:** WAI-ARIA tabs, focus-trapped dialogs with `inert` background, keyboard-focusable tooltips, labelled form controls, every chart has a **Table** view, and the correlation heatmap is a keyboard grid.
 * **Offline behaviour:** the dashboard renders instantly from the bundled `data-store.js`, then refreshes from the REST API in the background. Overlap audit and Curvo backtests fall back to client-side math. Risk-parity analytics, Live Sync and script generation need the local server and say so when it is unreachable.
 * **Caching:** the dev server sends `Cache-Control: no-cache` for static files and `index.html` versions its asset URLs (`?v=YYYYMMDD`). Bump that version string when you ship frontend changes.
-* **Live Sync reports what it refreshed:** `POST /api/sync` returns `status` (`success`, `partial` or `failed`), per-source counts (`quotesUpdated`, `quotesFailed`, `fundDataUpdated`, `newsSources`) and human-readable `warnings`. The header button shows the same outcome ("Synced" / "Partly synced" / "Sync failed") and the freshness chip is judged by the *oldest* quote, so a partial sync never makes the table look fresher than it is. A sync takes ~15 s and the single-threaded server answers nothing else until it finishes.
+* **Live Sync reports what it refreshed:** `POST /api/sync` returns `status` (`success`, `partial` or `failed`), per-source counts (`quotesUpdated`, `quotesFailed`, `fundDataUpdated`, `newsSources`) and human-readable `warnings`. The header button shows the same outcome ("Synced" / "Partly synced" / "Sync failed") and the freshness chip is judged by the *oldest* quote, so a partial sync never makes the table look fresher than it is. A sync takes ~15 s; the server is threaded, so everything else keeps answering meanwhile, and a second sync started while one is running (say from another tab) is refused with HTTP 409.
+* **Headlines survive a feed outage:** a news feed that stops answering keeps its last headlines, labelled **Cached** (with when they were fetched) and counted as "cached" rather than "live"; they are dropped after 7 days. A feed that answers always replaces them.
 
 ### 🔧 Troubleshooting Live Sync
 
 | Warning in the sync summary | Cause | Fix |
 |---|---|---|
 | `Yahoo Finance: … price requests failed (HTTP 429)` | Yahoo rejects browser-spoofing and Python's default User-Agent. The sync identifies itself as `ApexETF/…`. | If it returns, check `USER_AGENT` in `src/apex_etf/sync.py`; Yahoo changes its bot filtering from time to time. |
-| `ECB feed: no headlines (TLS certificate could not be verified)` | Your Python's CA bundle does not trust the CA that signs `ecb.europa.eu` (Sectigo's newer root). Verification stays on. | Point Python at a bundle that has it. Verified on macOS: `SSL_CERT_FILE=/opt/homebrew/etc/ca-certificates/cert.pem uv run apex-etf` (Homebrew `ca-certificates`; the `certifi` bundle works too). The system `/etc/ssl/cert.pem` does not. |
+| `ECB feed: no headlines (TLS certificate could not be verified)` | Your Python's CA bundle does not trust the CA that signs `ecb.europa.eu` (Sectigo's newer root). Verification stays on. | Nothing, normally: after the default trust store rejects a certificate the sync retries with `certifi` (if installed) and then with common OS bundles (Homebrew, Debian, RHEL), still requiring a valid chain and hostname, and logs the bundle it used. You only see this warning if none of them can verify it. Then point Python at a current bundle: `SSL_CERT_FILE=/opt/homebrew/etc/ca-certificates/cert.pem uv run apex-etf`. Set `APEX_STRICT_TLS=1` to forbid the fallback and use only the default trust store. |
 | `justETF: fund size and TER unavailable … (page layout not recognised)` | justETF changed its profile markup. | Update `JUSTETF_SIZE_PATTERNS` / `JUSTETF_TER_PATTERNS` in `sync.py`. |
 
-`SGLD` has no Yahoo symbol in `ETF_MARKET_MAP`, so it never gets a live quote (it is reported as skipped, not failed).
+Every ETF in `etfs.json` needs an entry in `ETF_MARKET_MAP` (Yahoo symbol, exchange, ISIN) or it never gets a live quote; a test fails if one is missing or its ISIN disagrees with the dataset. A ticker without an entry is reported as *skipped*, not failed.
 
 ---
 
 ## 🧪 Running Automated Tests
 
-Run the comprehensive test suite (64 unit and integration tests across 6 test modules):
+Run the comprehensive test suite (89 unit and integration tests across 6 test modules):
 
 ```bash
 # Using pytest (Recommended):

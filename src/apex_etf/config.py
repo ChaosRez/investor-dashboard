@@ -32,7 +32,7 @@ ETF_MARKET_MAP: Dict[str, Dict[str, str]] = {
     "AGGU": {"symbol": "AGGU.L",  "exchange": "London Stock Exchange", "isin": "IE00BDBRDM35"},
     "IUSN": {"symbol": "IUSN.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00BF4RFH31"},
     "VUSA": {"symbol": "VUSA.AS", "exchange": "Euronext Amsterdam", "isin": "IE00B3XXRP09"},
-    "GGRA": {"symbol": "GGRA.L",  "exchange": "London Stock Exchange", "isin": "IE00BZ56RN96"},
+    "GGRA": {"symbol": "GGRA.L",  "exchange": "London Stock Exchange", "isin": "IE00BZ56SW52"},
     "FWRA": {"symbol": "FWIA.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE000716YHJ7"},
     "BATT": {"symbol": "BATE.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00BF0M2Z96"},
     "RARE": {"symbol": "RARE.L",  "exchange": "London Stock Exchange", "isin": "IE000KHX9DX6"},
@@ -42,5 +42,8 @@ ETF_MARKET_MAP: Dict[str, Dict[str, str]] = {
     "XEON": {"symbol": "XEON.DE", "exchange": "XETRA (Frankfurt)", "isin": "LU0290358497"},
     "VHYL": {"symbol": "VGWD.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00B8GKDB10"},
     "AII":  {"symbol": "AIFS.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE000X59ZHE2"},
-    "WTAI": {"symbol": "2B76.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00BDVPNG13"}
+    "WTAI": {"symbol": "2B76.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00BDVPNG13"},
+    # Invesco Physical Gold ETC. Yahoo lists it on XETRA as 8PSG.DE (EUR, matching the dashboard's
+    # EUR figures); SGLD.L is the USD line and SGLD.MI the Milan EUR line (both quote the same NAV).
+    "SGLD": {"symbol": "8PSG.DE", "exchange": "XETRA (Frankfurt)", "isin": "IE00B579F325"}
 }

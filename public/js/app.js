@@ -325,6 +325,7 @@ window.App = (function () {
         // The ApexETF server always answers JSON. Anything else (a static server's 501 page, a proxy
         // error) means there is no sync API behind this origin.
         if (!payload) throw new Error(`HTTP ${res.status}`);
+        if (res.status === 409) throw Object.assign(new Error("busy"), { busy: true });
         if (payload.error || !res.ok) {
           const reason = payload.error || `HTTP ${res.status}`;
           throw Object.assign(new Error(reason), { serverMessage: reason });
@@ -337,9 +338,14 @@ window.App = (function () {
         label.textContent = outcome.label;
         UI.toast(outcome.message, { type: outcome.type, timeout: outcome.type === "success" ? 4500 : 12000 });
       } catch (err) {
-        label.textContent = "Sync failed";
-        let message, short;
-        if (err && err.name === "AbortError") {
+        label.textContent = err && err.busy ? "Busy" : "Sync failed";
+        let message, short, type = "error";
+        if (err && err.busy) {
+          // Another sync (another tab, the CLI via the same server) already holds the lock: nothing failed.
+          message = "A sync is already running. Wait for it to finish, then try again.";
+          short = "another sync was already running.";
+          type = "warning";
+        } else if (err && err.name === "AbortError") {
           message = "Sync timed out. The server may still be working — reload in a minute.";
           short = "timed out.";
         } else if (err && err.serverMessage) {
@@ -349,9 +355,9 @@ window.App = (function () {
           message = "Couldn't reach the sync endpoint. Start the local server with “uv run apex-etf” (Live Sync is unavailable when index.html is opened directly).";
           short = "server unreachable.";
         }
-        lastSyncAttempt = { at: Date.now(), summary: `failed — ${short}` };
+        lastSyncAttempt = { at: Date.now(), summary: `${type === "error" ? "failed" : "not run"} — ${short}` };
         updateFreshness();
-        UI.toast(message, { type: "error", timeout: 8000 });
+        UI.toast(message, { type, timeout: 8000 });
       } finally {
         clearTimeout(timer);
         progress.dismiss(); // the result toast replaces it; never show both
@@ -515,11 +521,12 @@ window.App = (function () {
     if (aumEl) aumEl.textContent = UI.fmt.aum(totalAum);
     if (countEl) countEl.textContent = String(etfsData.length);
 
-    const liveCount = newsData.filter((n) => n.isLiveStream).length;
+    const liveCount = newsData.filter((n) => n.isLiveStream && !n.isStale).length;
+    const cachedCount = newsData.filter((n) => n.isLiveStream && n.isStale).length;
     const badge = $("news-count-badge");
     if (badge) {
-      badge.hidden = liveCount === 0;
-      badge.textContent = `${liveCount} live`;
+      badge.hidden = liveCount + cachedCount === 0;
+      badge.textContent = liveCount > 0 ? `${liveCount} live` : `${cachedCount} cached`;
     }
 
     updateFreshness();

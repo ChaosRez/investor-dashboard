@@ -4,7 +4,6 @@ Serves static frontend assets and institutional REST endpoints.
 """
 
 import http.server
-import socketserver
 import json
 import os
 import urllib.parse
@@ -28,7 +27,7 @@ from .analysis import (
     REGIME_PRESETS,
     HISTORICAL_CRISES,
 )
-from .sync import run_full_sync
+from .sync import SyncInProgress, run_full_sync
 
 def load_json(rel_path: str):
     path = os.path.join(DATA_DIR, rel_path)
@@ -46,11 +45,14 @@ ETFS_BY_TICKER = {etf["ticker"].upper(): etf for etf in ETFS_DATA}
 
 def reload_datasets():
     global ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER
-    ETFS_DATA = load_json("etfs.json")
-    CORRELATIONS_DATA = load_json("correlations.json")
-    NEWS_DATA = load_json("news.json")
-    EDUCATION_DATA = load_json("education.json")
-    ETFS_BY_TICKER = {etf["ticker"].upper(): etf for etf in ETFS_DATA}
+    # The server is threaded: load everything first, then swap, so a request running in parallel
+    # never sees half of the new datasets next to half of the old ones.
+    etfs = load_json("etfs.json")
+    correlations = load_json("correlations.json")
+    news = load_json("news.json")
+    education = load_json("education.json")
+    by_ticker = {etf["ticker"].upper(): etf for etf in etfs}
+    ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER = etfs, correlations, news, education, by_ticker
 
 class ETFHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -170,6 +172,8 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
                 sync_res = run_full_sync()
                 reload_datasets()
                 self.send_json(sync_res, status=500 if "error" in sync_res else 200)
+            except SyncInProgress as e:
+                self.send_json({"error": str(e), "code": "sync_in_progress"}, status=409)
             except Exception as e:
                 self.send_json({"error": f"Sync failed: {str(e)}"}, status=500)
             return
@@ -259,9 +263,13 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response_bytes)
 
+def create_server(port: int = DEFAULT_PORT, host: str = DEFAULT_HOST) -> http.server.ThreadingHTTPServer:
+    """One thread per request, so a ~15 s Live Sync no longer freezes every other request.
+    (HTTPServer already sets allow_reuse_address; threads are daemons and die with the process.)"""
+    return http.server.ThreadingHTTPServer((host, port), ETFHandler)
+
 def run_server(port: int = DEFAULT_PORT, host: str = DEFAULT_HOST):
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer((host, port), ETFHandler) as httpd:
+    with create_server(port, host) as httpd:
         print(f"🚀 ApexETF Dashboard Server active at http://localhost:{port}")
         print(f"📊 Serving verified datasets from: {DATA_DIR}")
         print(f"🌐 REST APIs: /api/etfs, /api/news, /api/correlations, /api/overlap, /api/portfolio/backtest, /api/sync")

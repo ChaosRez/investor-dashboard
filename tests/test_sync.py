@@ -2,13 +2,20 @@
 Unit tests for ApexETF Synchronization and Configuration Module
 """
 
+import contextlib
+import io
 import json
 import os
 import ssl
+import stat
+import subprocess
+import sys
 import tempfile
+import threading
 import unittest
 import urllib.error
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from email.utils import format_datetime
 from unittest import mock
 
 from apex_etf import sync
@@ -191,7 +198,7 @@ class TestRunFullSyncReporting(unittest.TestCase):
         os.makedirs(os.path.join(self.tmp.name, "public", "js"))
         etfs = [
             {"ticker": "VWCE", "isin": "IE00BK5BQT80", "currentPriceEUR": 100.0, "aumMillionsEUR": 1.0, "ter": 0.3},
-            {"ticker": "SGLD", "isin": "IE00B579F325"},  # no Yahoo symbol configured
+            {"ticker": "NOSYM", "isin": "IE00B579F325"},  # fictional: no Yahoo symbol configured
         ]
         with open(os.path.join(self.data_dir, "etfs.json"), "w", encoding="utf-8") as f:
             json.dump(etfs, f)
@@ -239,7 +246,7 @@ class TestRunFullSyncReporting(unittest.TestCase):
         self.assertEqual(result["status"], "success")
         self.assertEqual(result["warnings"], [])
         self.assertEqual(result["quotesUpdated"], 1)
-        self.assertEqual(result["quotesSkipped"], ["SGLD"])  # unmapped is not a failure
+        self.assertEqual(result["quotesSkipped"], ["NOSYM"])  # unmapped is not a failure
         self.assertEqual(result["fundDataUpdated"], 2)
         self.assertEqual(result["newsSources"], {"ecb": 1, "marketwatch": 1})
         self.assertEqual(len(result["sources"]), 4)
@@ -265,6 +272,26 @@ class TestRunFullSyncReporting(unittest.TestCase):
         self.assertIn("MarketWatch feed: no headlines (HTTP 503).", result["warnings"])
         self.assertEqual(result["liveNewsItemsFetched"], 0)
 
+    def test_a_silent_feed_keeps_its_cached_headlines_through_a_sync(self):
+        yesterday = format_datetime(datetime.now(timezone.utc) - timedelta(days=1))
+        previous = [
+            {"id": "ecb-1", "source": sync.ECB_SOURCE, "isLiveStream": True, "date": yesterday, "title": "ECB: kept"},
+            {"id": "mw-1", "source": sync.MARKETWATCH_SOURCE, "isLiveStream": True, "date": yesterday, "title": "MW: replaced"},
+        ]
+        with open(os.path.join(self.data_dir, "news.json"), "w", encoding="utf-8") as f:
+            json.dump(previous, f)
+
+        result = self.run_sync(ecb="fail", mw="ok")
+
+        with open(os.path.join(self.data_dir, "news.json"), encoding="utf-8") as f:
+            saved = {n["id"]: n for n in json.load(f)}
+        self.assertTrue(saved["ecb-1"]["isStale"])           # kept, honestly labelled
+        self.assertNotIn("mw-1", saved)                      # MarketWatch delivered: its old item is replaced
+        self.assertIn("n1", saved)                           # ... by the fresh one
+        self.assertEqual(result["newsCachedKept"], {"ecb": 1, "marketwatch": 0})
+        self.assertEqual(result["liveNewsItemsFetched"], 1)  # cached copies are not "fetched"
+        self.assertIn("ECB feed: no headlines (TLS certificate could not be verified); showing 1 cached headline.", result["warnings"])
+
     def test_nothing_refreshed_is_failed(self):
         result = self.run_sync(quote="fail", fund="fail", ecb="fail", mw="fail")
         self.assertEqual(result["status"], "failed")
@@ -274,6 +301,270 @@ class TestRunFullSyncReporting(unittest.TestCase):
     def test_missing_dataset_is_an_error(self):
         os.remove(os.path.join(self.data_dir, "etfs.json"))
         self.assertEqual(sync.run_full_sync(), {"error": "etfs.json not found"})
+
+
+SRC_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+
+
+class TestCertificateFallback(unittest.TestCase):
+    """A stale system CA bundle must not silently kill a feed, and must never weaken verification."""
+
+    URL = "https://feed.example.test/rss"
+
+    def fetch(self, errors=None):
+        with contextlib.redirect_stderr(io.StringIO()), mock.patch.object(sync, "_logged_fallbacks", set()):
+            return fetch_url(self.URL, errors=errors)
+
+    def test_retries_with_another_bundle_when_the_default_one_rejects_the_certificate(self):
+        calls = []
+        rejected = urllib.error.URLError(ssl.SSLCertVerificationError("unable to get local issuer certificate"))
+
+        def fake_urlopen(req, timeout=None, context=None):
+            calls.append(context)
+            if context is None:
+                raise rejected
+            return _FakeResponse(b"<rss/>")
+
+        fallback_ctx = object()
+        with mock.patch("urllib.request.urlopen", fake_urlopen), \
+             mock.patch.object(sync, "_fallback_ssl_contexts", return_value=iter([("/fake/bundle.pem", fallback_ctx)])):
+            errors = []
+            self.assertEqual(self.fetch(errors), "<rss/>")
+        self.assertEqual(calls, [None, fallback_ctx])
+        self.assertEqual(errors, [])
+
+    def test_a_certificate_no_bundle_can_verify_is_still_refused(self):
+        tried = []
+
+        def fake_urlopen(req, timeout=None, context=None):
+            tried.append(context)
+            raise urllib.error.URLError(ssl.SSLCertVerificationError("self signed certificate"))
+
+        with mock.patch("urllib.request.urlopen", fake_urlopen), \
+             mock.patch.object(sync, "_fallback_ssl_contexts", return_value=iter([("/a.pem", "A"), ("/b.pem", "B")])):
+            errors = []
+            self.assertIsNone(self.fetch(errors))
+        self.assertEqual(tried, [None, "A", "B"])
+        self.assertEqual(errors, ["TLS certificate could not be verified"])
+
+    def test_other_failures_never_reach_for_another_bundle(self):
+        with mock.patch("urllib.request.urlopen", side_effect=urllib.error.URLError(ConnectionRefusedError())), \
+             mock.patch.object(sync, "_fallback_ssl_contexts", side_effect=AssertionError("fallback must not run")):
+            errors = []
+            self.assertIsNone(self.fetch(errors))
+        self.assertEqual(errors, ["network unreachable"])
+
+    def test_strict_mode_turns_the_fallback_off(self):
+        rejected = urllib.error.URLError(ssl.SSLCertVerificationError("unable to get local issuer certificate"))
+        with mock.patch("urllib.request.urlopen", side_effect=rejected), \
+             mock.patch.dict(os.environ, {"APEX_STRICT_TLS": "1"}), \
+             mock.patch.object(sync, "_fallback_ssl_contexts", side_effect=AssertionError("strict mode must not fall back")):
+            errors = []
+            self.assertIsNone(self.fetch(errors))
+        self.assertEqual(errors, ["TLS certificate could not be verified"])
+
+    def test_fallback_contexts_keep_verification_on(self):
+        contexts = list(sync._fallback_ssl_contexts())
+        if not contexts:
+            self.skipTest("no alternative CA bundle on this machine")
+        for path, ctx in contexts:
+            self.assertEqual(ctx.verify_mode, ssl.CERT_REQUIRED, path)
+            self.assertTrue(ctx.check_hostname, path)
+
+
+class TestLiveNewsFeeds(unittest.TestCase):
+    ECB_XML = (
+        '<?xml version="1.0"?><rss version="2.0"><channel>'
+        "<item><title> Christine Lagarde: Interview with La Croix</title>"
+        "<link>https://www.ecb.europa.eu//press/inter/x.html</link>"
+        "<pubDate>Wed, 30 Sep 2026 19:00:00 +0200</pubDate></item>"
+        "</channel></rss>"
+    )
+
+    def test_ids_are_the_same_in_every_process(self):
+        # Built-in hash() is salted per process; ids built from it never matched a previous sync.
+        title = "Christine Lagarde: Interview with La Croix"
+        ids = {
+            subprocess.check_output(
+                [sys.executable, "-c", f"from apex_etf.sync import _stable_id; print(_stable_id('ecb', {title!r}))"],
+                env={**os.environ, "PYTHONHASHSEED": seed, "PYTHONPATH": SRC_DIR}, text=True,
+            ).strip()
+            for seed in ("1", "2", "3")
+        }
+        self.assertEqual(ids, {sync._stable_id("ecb", title)})
+
+    def test_ecb_items_are_trimmed_stamped_and_attributed(self):
+        with mock.patch.object(sync, "fetch_url", return_value=self.ECB_XML):
+            (item,) = sync.sync_live_ecb_news()
+        self.assertEqual(item["title"], "🇪🇺 ECB: Christine Lagarde: Interview with La Croix")  # no doubled space
+        self.assertEqual(item["source"], sync.ECB_SOURCE)
+        self.assertTrue(item["fetchedAt"])
+        self.assertEqual(item["id"], sync._stable_id("ecb", "Christine Lagarde: Interview with La Croix"))
+
+
+class TestLiveNewsMerge(unittest.TestCase):
+    """merge_live_news: a feed that goes quiet must not wipe the news radar."""
+
+    NOW = datetime(2026, 10, 4, 12, 0, tzinfo=timezone.utc)
+
+    def item(self, id_, source, date="Fri, 02 Oct 2026 10:00:00 +0200", **extra):
+        return {"id": id_, "source": source, "isLiveStream": True, "date": date, "title": id_, **extra}
+
+    def merge(self, previous, ecb, mw, now=None):
+        return sync.merge_live_news(previous, {sync.ECB_SOURCE: ecb, sync.MARKETWATCH_SOURCE: mw}, now=now or self.NOW)
+
+    def test_a_feed_that_delivered_replaces_its_old_items(self):
+        old = [self.item("ecb-old", sync.ECB_SOURCE)]
+        new = [self.item("ecb-new", sync.ECB_SOURCE, fetchedAt="2026-10-04T12:00:00+00:00")]
+        merged, kept = self.merge(old, new, [])
+        self.assertEqual([i["id"] for i in merged], ["ecb-new"])
+        self.assertNotIn("isStale", merged[0])
+        self.assertEqual(kept[sync.ECB_SOURCE], 0)
+
+    def test_a_silent_feed_keeps_its_last_headlines_marked_stale(self):
+        old = [
+            self.item("ecb-1", sync.ECB_SOURCE, fetchedAt="2026-10-03T19:54:00+00:00"),
+            self.item("mw-1", sync.MARKETWATCH_SOURCE),
+        ]
+        merged, kept = self.merge(old, [], [self.item("mw-2", sync.MARKETWATCH_SOURCE)])
+        by_id = {i["id"]: i for i in merged}
+        self.assertEqual(set(by_id), {"ecb-1", "mw-2"})  # mw-1 was replaced, ecb-1 kept
+        self.assertTrue(by_id["ecb-1"]["isStale"])
+        self.assertEqual(by_id["ecb-1"]["staleSince"], self.NOW.isoformat())
+        self.assertEqual(by_id["ecb-1"]["fetchedAt"], "2026-10-03T19:54:00+00:00")  # last good fetch preserved
+        self.assertNotIn("isStale", by_id["mw-2"])
+        self.assertEqual(kept, {sync.ECB_SOURCE: 1, sync.MARKETWATCH_SOURCE: 0})
+
+    def test_stale_since_records_the_first_missed_sync(self):
+        first_miss = "2026-10-03T08:00:00+00:00"
+        merged, _ = self.merge([self.item("ecb-1", sync.ECB_SOURCE, isStale=True, staleSince=first_miss)], [], [])
+        self.assertEqual(merged[0]["staleSince"], first_miss)
+
+    def test_kept_headlines_expire_after_a_week(self):
+        old = [
+            self.item("ecb-ancient", sync.ECB_SOURCE, date="Mon, 21 Sep 2026 09:00:00 +0200"),
+            self.item("ecb-recent", sync.ECB_SOURCE, date="Fri, 02 Oct 2026 09:00:00 +0200"),
+        ]
+        merged, kept = self.merge(old, [], [])
+        self.assertEqual([i["id"] for i in merged], ["ecb-recent"])
+        self.assertEqual(kept[sync.ECB_SOURCE], 1)
+
+    def test_an_undated_item_ages_out_from_its_first_miss(self):
+        merged, _ = self.merge([self.item("ecb-undated", sync.ECB_SOURCE, date="")], [], [])
+        self.assertEqual(len(merged), 1)  # first miss: kept and stamped
+        merged, _ = self.merge(merged, [], [], now=self.NOW + timedelta(days=8))
+        self.assertEqual(merged, [])
+
+    def test_only_known_feeds_are_kept(self):
+        old = [self.item("x", "Some Other Feed"), {"id": "macro", "source": sync.ECB_SOURCE, "isLiveStream": False}]
+        merged, _ = self.merge(old, [], [])
+        self.assertEqual(merged, [])
+
+
+class TestAtomicWrites(unittest.TestCase):
+    def test_replaces_content_and_leaves_no_temp_files(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "x.json")
+            sync._write_json_atomic(path, {"a": 1})
+            sync._write_json_atomic(path, {"a": 2})
+            with open(path, encoding="utf-8") as f:
+                self.assertEqual(json.load(f), {"a": 2})
+            self.assertEqual(os.listdir(d), ["x.json"])
+
+    def test_unserialisable_data_leaves_the_existing_file_untouched(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "x.json")
+            sync._write_json_atomic(path, {"ok": True})
+            with self.assertRaises(TypeError):
+                sync._write_json_atomic(path, {"bad": object()})
+            with open(path, encoding="utf-8") as f:
+                self.assertEqual(json.load(f), {"ok": True})
+            self.assertEqual(os.listdir(d), ["x.json"])
+
+    def test_a_failed_rename_cleans_up_its_temp_file(self):
+        with tempfile.TemporaryDirectory() as d:
+            with mock.patch("os.replace", side_effect=OSError("disk gone")), self.assertRaises(OSError):
+                sync._write_json_atomic(os.path.join(d, "x.json"), {"a": 1})
+            self.assertEqual(os.listdir(d), [])
+
+    def test_keeps_the_existing_file_mode(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "x.json")
+            sync._write_json_atomic(path, {})
+            os.chmod(path, 0o640)
+            sync._write_json_atomic(path, {"a": 1})
+            self.assertEqual(stat.S_IMODE(os.stat(path).st_mode), 0o640)
+
+    def test_a_concurrent_reader_never_sees_a_half_written_file(self):
+        payload = {"rows": [{"n": i, "text": "x" * 40} for i in range(4000)]}  # ~250 KB
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "big.json")
+            sync._write_json_atomic(path, payload)
+            stop = threading.Event()
+
+            def writer():
+                while not stop.is_set():
+                    sync._write_json_atomic(path, payload)
+
+            thread = threading.Thread(target=writer)
+            thread.start()
+            try:
+                for _ in range(150):
+                    with open(path, encoding="utf-8") as f:
+                        self.assertEqual(len(json.load(f)["rows"]), 4000)  # raises on a partial file
+            finally:
+                stop.set()
+                thread.join(5)
+
+
+class TestSingleFlight(unittest.TestCase):
+    def test_a_second_sync_is_rejected_while_one_is_running(self):
+        started, release = threading.Event(), threading.Event()
+
+        def slow_sync():
+            started.set()
+            release.wait(5)
+            return {"status": "success"}
+
+        with mock.patch.object(sync, "_run_full_sync", slow_sync):
+            thread = threading.Thread(target=sync.run_full_sync)
+            thread.start()
+            self.assertTrue(started.wait(2))
+            with self.assertRaises(sync.SyncInProgress):
+                sync.run_full_sync()
+            release.set()
+            thread.join(2)
+        with mock.patch.object(sync, "_run_full_sync", return_value={"status": "success"}):
+            self.assertEqual(sync.run_full_sync(), {"status": "success"})  # lock was released
+
+    def test_the_lock_is_released_when_a_sync_crashes(self):
+        with mock.patch.object(sync, "_run_full_sync", side_effect=RuntimeError("boom")), self.assertRaises(RuntimeError):
+            sync.run_full_sync()
+        with mock.patch.object(sync, "_run_full_sync", return_value={"status": "success"}):
+            sync.run_full_sync()
+
+
+class TestQuoteCoverage(unittest.TestCase):
+    """A fund without a quote symbol silently never gets a price (SGLD went unnoticed that way)."""
+
+    def setUp(self):
+        with open(os.path.join(DATA_DIR, "etfs.json"), encoding="utf-8") as f:
+            self.etfs = json.load(f)
+
+    def test_every_etf_in_the_dataset_has_a_quote_symbol(self):
+        missing = [e["ticker"] for e in self.etfs if e["ticker"].upper() not in ETF_MARKET_MAP]
+        self.assertEqual(missing, [], "add these to ETF_MARKET_MAP (Yahoo symbol + exchange), or they never get a live quote")
+
+    def test_map_isins_match_the_dataset(self):
+        wrong = {
+            e["ticker"]: (ETF_MARKET_MAP[e["ticker"]]["isin"], e["isin"])
+            for e in self.etfs
+            if e["ticker"] in ETF_MARKET_MAP and ETF_MARKET_MAP[e["ticker"]]["isin"] != e["isin"]
+        }
+        self.assertEqual(wrong, {}, "(map ISIN, dataset ISIN): usually a different share class of the same fund")
+
+    def test_every_map_entry_belongs_to_a_dataset_etf(self):
+        self.assertEqual(sorted(set(ETF_MARKET_MAP) - {e["ticker"] for e in self.etfs}), [])
 
 
 if __name__ == "__main__":

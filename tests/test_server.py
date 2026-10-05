@@ -3,7 +3,6 @@ Unit tests for ApexETF HTTP Server and REST API Handlers
 """
 
 import json
-import socketserver
 import threading
 import time
 import unittest
@@ -11,13 +10,14 @@ import urllib.request
 import urllib.error
 from unittest import mock
 
-from apex_etf.server import ETFHandler
+from apex_etf import sync as sync_module
+from apex_etf.server import create_server
 
 class TestServerEndpoints(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Bind to port 0 to get an ephemeral OS-assigned free port
-        cls.httpd = socketserver.TCPServer(("127.0.0.1", 0), ETFHandler)
+        cls.httpd = create_server(0, "127.0.0.1")
         cls.port = cls.httpd.server_address[1]
         cls.base_url = f"http://127.0.0.1:{cls.port}"
         
@@ -174,6 +174,59 @@ class TestServerEndpoints(unittest.TestCase):
                 urllib.request.urlopen(req, timeout=3.0)
         self.assertEqual(ctx.exception.code, 500)
         self.assertEqual(json.loads(ctx.exception.read().decode("utf-8")), {"error": "etfs.json not found"})
+
+class TestServerStaysResponsiveDuringSync(unittest.TestCase):
+    """A Live Sync takes ~15 s. On the old single-threaded server it froze every other request."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.httpd = create_server(0, "127.0.0.1")
+        cls.base_url = f"http://127.0.0.1:{cls.httpd.server_address[1]}"
+        threading.Thread(target=cls.httpd.serve_forever, daemon=True).start()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.httpd.shutdown()
+        cls.httpd.server_close()
+
+    def post_sync(self):
+        req = urllib.request.Request(f"{self.base_url}/api/sync", data=b"{}", method="POST",
+                                     headers={"Content-Type": "application/json"})
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.status, json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as err:
+            return err.code, json.loads(err.read().decode("utf-8"))
+
+    def test_requests_are_served_during_a_sync_and_a_second_sync_gets_409(self):
+        started, release = threading.Event(), threading.Event()
+
+        def slow_sync():
+            started.set()
+            release.wait(10)
+            return {"status": "success", "quotesUpdated": 1}
+
+        results = {}
+        with mock.patch.object(sync_module, "_run_full_sync", slow_sync), \
+             mock.patch("apex_etf.server.reload_datasets"):
+            first = threading.Thread(target=lambda: results.update(first=self.post_sync()))
+            first.start()
+            try:
+                self.assertTrue(started.wait(3), "the first sync never started")
+
+                began = time.monotonic()
+                with urllib.request.urlopen(f"{self.base_url}/api/market-status", timeout=3) as resp:
+                    self.assertEqual(resp.status, 200)
+                self.assertLess(time.monotonic() - began, 1.5, "a plain GET waited for the sync")
+
+                status, body = self.post_sync()  # the first sync still holds the lock
+                self.assertEqual(status, 409)
+                self.assertEqual(body["code"], "sync_in_progress")
+            finally:
+                release.set()
+                first.join(5)
+        self.assertEqual(results["first"][0], 200)
+
 
 if __name__ == "__main__":
     unittest.main()

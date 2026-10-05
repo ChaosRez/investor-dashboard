@@ -174,6 +174,13 @@ window.NewsSignalsModule = (function () {
     return map[String(ticker).toUpperCase()] || "Macroeconomic Growth • Central Bank Interest Rate Cycle • Corporate Earnings Resilience";
   }
 
+  /** "Live feed" for items from this sync; "Cached" for the last good copy of a feed that stopped answering. */
+  function liveBadge(item) {
+    if (!item.isStale) return `<span class="badge badge-neutral badge-sm">Live feed</span>`;
+    const when = item.fetchedAt ? ` (fetched ${fmt.relative(item.fetchedAt)})` : "";
+    return `<span class="badge badge-amber badge-sm" data-tip="${esc(`This feed did not answer on the latest Live Sync, so this is the last copy we fetched${when}.`)}">Cached</span>`;
+  }
+
   function formatNewsDate(raw) {
     const s = String(raw || "");
     if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
@@ -268,7 +275,7 @@ window.NewsSignalsModule = (function () {
             <span class="badge badge-${tone} signal-pill">${esc(sig.bias || "Watch / Neutral")}</span>
             <span class="badge ${sig.impactBadge === "critical" ? "badge-red" : "badge-amber"}">${esc(sig.impact || "")}</span>
             <span class="badge badge-blue">${esc(sig.timeframe || "")}</span>
-            ${item.isLiveStream ? `<span class="badge badge-neutral badge-sm">Live feed</span>` : ""}
+            ${item.isLiveStream ? liveBadge(item) : ""}
           </div>
           <div class="news-date">${esc(formatNewsDate(item.date))} · Source: ${source}</div>
         </div>

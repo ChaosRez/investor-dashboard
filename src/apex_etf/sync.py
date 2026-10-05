@@ -5,25 +5,48 @@ validates fund size (AUM) and TER against justETF, and streams live institutiona
 European Central Bank (ECB) and market financial wires.
 """
 
+import hashlib
 import json
 import os
 import re
 import socket
 import ssl
 import sys
+import tempfile
+import threading
 import time
-import urllib.request
 import urllib.error
+import urllib.parse
+import urllib.request
 import xml.etree.ElementTree as ET
 from collections import Counter
-from datetime import datetime, timezone
-from typing import Dict, Any, List, Optional
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
+from typing import Dict, Any, Iterator, List, Optional, Tuple
 
 from .config import DATA_DIR, BASE_DIR, ETF_MARKET_MAP, WATCHLIST_TICKERS
 from .macro_news import VERIFIED_MACRO_NEWS
 
 # Yahoo answers HTTP 429 to browser-spoofing and urllib's default User-Agents, so identify honestly.
 USER_AGENT = "ApexETF/1.0 (personal dashboard)"
+
+ECB_SOURCE = "European Central Bank (Official RSS Feed)"
+MARKETWATCH_SOURCE = "MarketWatch Wire Service"
+
+# Headlines a feed stops delivering are kept (marked stale) for this long, then dropped.
+STALE_NEWS_MAX_AGE_DAYS = 7
+
+# Other CA bundles to try *after* the default trust store rejects a certificate, e.g. an out-of-date
+# system bundle that lacks a newer root such as Sectigo's. Verification is never switched off.
+CA_BUNDLE_FALLBACKS = (
+    "/opt/homebrew/etc/ca-certificates/cert.pem",  # Homebrew, Apple Silicon
+    "/usr/local/etc/ca-certificates/cert.pem",     # Homebrew, Intel
+    "/etc/ssl/cert.pem",
+    "/etc/pki/tls/certs/ca-bundle.crt",            # RHEL / Fedora
+    "/etc/ssl/certs/ca-certificates.crt",          # Debian / Ubuntu
+)
+
+_logged_fallbacks = set()
 
 def describe_fetch_error(exc: BaseException) -> str:
     """Short reason a request failed, suitable for showing in the Live Sync summary."""
@@ -38,15 +61,70 @@ def describe_fetch_error(exc: BaseException) -> str:
         return "network unreachable"
     return type(reason).__name__
 
-def fetch_url(url: str, timeout: int = 5, errors: Optional[List[str]] = None) -> Optional[str]:
-    """GET a URL as text. Returns None on any failure; the reason is appended to `errors` when given."""
+def _is_cert_failure(exc: BaseException) -> bool:
+    return isinstance(getattr(exc, "reason", exc), ssl.SSLCertVerificationError)
+
+def _fallback_ssl_contexts() -> Iterator[Tuple[str, ssl.SSLContext]]:
+    """(bundle path, verifying context) for each other CA bundle on this machine, certifi first.
+
+    Every context requires a valid certificate chain and a matching hostname; only the set of
+    trusted roots differs from the default context.
+    """
+    candidates: List[str] = []
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            return resp.read().decode("utf-8", errors="ignore")
+        import certifi  # optional: used when installed, never required
+        candidates.append(certifi.where())
+    except ImportError:
+        pass
+    candidates.extend(CA_BUNDLE_FALLBACKS)
+
+    default_cafile = ssl.get_default_verify_paths().cafile
+    seen = {os.path.realpath(default_cafile)} if default_cafile else set()  # symlinks: /etc/ssl/cert.pem
+    for path in candidates:
+        real = os.path.realpath(path)
+        if real in seen or not os.path.isfile(path):
+            continue
+        seen.add(real)
+        try:
+            yield path, ssl.create_default_context(cafile=path)
+        except (OSError, ssl.SSLError):
+            continue
+
+def _http_get(url: str, timeout: int, context: Optional[ssl.SSLContext] = None) -> str:
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    kwargs: Dict[str, Any] = {"timeout": timeout}
+    if context is not None:
+        kwargs["context"] = context
+    with urllib.request.urlopen(req, **kwargs) as resp:
+        return resp.read().decode("utf-8", errors="ignore")
+
+def fetch_url(url: str, timeout: int = 5, errors: Optional[List[str]] = None) -> Optional[str]:
+    """GET a URL as text. Returns None on any failure; the reason is appended to `errors` when given.
+
+    If the default trust store rejects the server's certificate, other CA bundles are tried before
+    giving up (see CA_BUNDLE_FALLBACKS). A certificate no bundle can verify is still refused, and
+    setting APEX_STRICT_TLS=1 turns the fallback off so only the default trust store is used.
+    """
+    try:
+        return _http_get(url, timeout)
     except Exception as exc:
+        failure = exc
+        if _is_cert_failure(exc) and not os.environ.get("APEX_STRICT_TLS"):
+            for path, context in _fallback_ssl_contexts():
+                try:
+                    body = _http_get(url, timeout, context)
+                except Exception as retry_exc:
+                    failure = retry_exc
+                    if not _is_cert_failure(retry_exc):
+                        break
+                    continue
+                host = urllib.parse.urlparse(url).hostname
+                if (host, path) not in _logged_fallbacks:
+                    _logged_fallbacks.add((host, path))
+                    print(f"[sync] The default CA bundle rejected {host}; verified it against {path} instead.", file=sys.stderr)
+                return body
         if errors is not None:
-            errors.append(describe_fetch_error(exc))
+            errors.append(describe_fetch_error(failure))
         return None
 
 def fetch_json(url: str, timeout: int = 5, errors: Optional[List[str]] = None) -> Optional[Dict[str, Any]]:
@@ -173,6 +251,11 @@ def scrape_justetf_fund_data(isin: str, errors: Optional[List[str]] = None) -> O
     except Exception:
         return None
 
+def _stable_id(prefix: str, title: str) -> str:
+    """Same headline, same id on every run. (The built-in hash() is salted per process, so ids built
+    from it changed on each restart and could never be matched against a previous sync.)"""
+    return f"{prefix}-{int(hashlib.sha1(title.encode('utf-8')).hexdigest()[:8], 16) % 100000000}"
+
 def sync_live_ecb_news(errors: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """Streams live monetary policy decisions and press releases from the official European Central Bank RSS."""
     url = "https://www.ecb.europa.eu/rss/press.html"
@@ -181,6 +264,7 @@ def sync_live_ecb_news(errors: Optional[List[str]] = None) -> List[Dict[str, Any
         return []
 
     items = []
+    fetched_at = datetime.now(timezone.utc).isoformat()
     try:
         root = ET.fromstring(xml_data)
         # Handle standard RSS 2.0 or RDF
@@ -188,7 +272,7 @@ def sync_live_ecb_news(errors: Optional[List[str]] = None) -> List[Dict[str, Any
         item_nodes = channel.findall("item") if channel is not None else root.findall("{http://purl.org/rss/1.0/}item")
         
         for node in item_nodes[:5]:
-            title = node.findtext("title") or node.findtext("{http://purl.org/rss/1.0/}title") or "ECB Press Release"
+            title = (node.findtext("title") or node.findtext("{http://purl.org/rss/1.0/}title") or "ECB Press Release").strip()
             link = node.findtext("link") or node.findtext("{http://purl.org/rss/1.0/}link") or "https://www.ecb.europa.eu"
             desc = node.findtext("description") or node.findtext("{http://purl.org/rss/1.0/}description") or ""
             pub_date = node.findtext("pubDate") or node.findtext("{http://purl.org/dc/elements/1.1/}date") or datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0200")
@@ -209,13 +293,14 @@ def sync_live_ecb_news(errors: Optional[List[str]] = None) -> List[Dict[str, Any
                 bias_color = "var(--accent-rose)"
 
             items.append({
-                "id": f"ecb-{abs(hash(title)) % 100000000}",
+                "id": _stable_id("ecb", title),
                 "title": f"🇪🇺 ECB: {title}",
                 "summary": desc[:250] + ("..." if len(desc) > 250 else ""),
                 "date": pub_date,
-                "source": "European Central Bank (Official RSS Feed)",
+                "source": ECB_SOURCE,
                 "sourceUrl": link,
                 "isLiveStream": True,
+                "fetchedAt": fetched_at,
                 "signal": {
                     "bias": bias,
                     "biasColor": bias_color,
@@ -246,12 +331,13 @@ def sync_live_marketwatch_news(errors: Optional[List[str]] = None) -> List[Dict[
         return []
 
     items = []
+    fetched_at = datetime.now(timezone.utc).isoformat()
     try:
         root = ET.fromstring(xml_data)
         channel = root.find("channel")
         item_nodes = channel.findall("item") if channel is not None else []
         for node in item_nodes[:7]:
-            title = node.findtext("title") or "Market Update"
+            title = (node.findtext("title") or "Market Update").strip()
             link = node.findtext("link") or "https://www.marketwatch.com"
             desc = node.findtext("description") or ""
             pub_date = node.findtext("pubDate") or datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
@@ -273,13 +359,14 @@ def sync_live_marketwatch_news(errors: Optional[List[str]] = None) -> List[Dict[
                 impact_badge = "critical"
 
             items.append({
-                "id": f"mw-{abs(hash(title)) % 100000000}",
+                "id": _stable_id("mw", title),
                 "title": f"🌐 MarketWatch: {title}",
                 "summary": desc[:250] + ("..." if len(desc) > 250 else ""),
                 "date": pub_date,
-                "source": "MarketWatch Wire Service",
+                "source": MARKETWATCH_SOURCE,
                 "sourceUrl": link,
                 "isLiveStream": True,
+                "fetchedAt": fetched_at,
                 "signal": {
                     "bias": bias,
                     "biasColor": bias_color,
@@ -300,6 +387,31 @@ def sync_live_marketwatch_news(errors: Optional[List[str]] = None) -> List[Dict[
             errors.append("unreadable feed")
 
     return items
+
+def _write_text_atomic(path: str, text: str) -> None:
+    """Write `text` to `path` so a concurrent reader (the server runs threaded) sees either the old
+    file or the new one, never a half-written file: write a temp file next to it, then rename."""
+    directory = os.path.dirname(path) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=directory, prefix=os.path.basename(path) + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+        try:
+            mode = os.stat(path).st_mode & 0o777
+        except FileNotFoundError:
+            mode = 0o644
+        os.chmod(tmp_path, mode)
+        os.replace(tmp_path, path)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
+
+def _write_json_atomic(path: str, data: Any) -> None:
+    # Serialise first: a TypeError must leave the existing file untouched.
+    _write_text_atomic(path, json.dumps(data, indent=2))
 
 def build_js_store() -> None:
     """Generates public/js/data-store.js from current JSON files to ensure offline standalone execution."""
@@ -336,8 +448,7 @@ window.APEX_DATA_STORE = {{
 }};
 """
         store_path = os.path.join(BASE_DIR, "public", "js", "data-store.js")
-        with open(store_path, "w", encoding="utf-8") as f:
-            f.write(js_content)
+        _write_text_atomic(store_path, js_content)
     except Exception as e:
         print(f"Error rebuilding data-store.js: {e}", file=sys.stderr)
 
@@ -345,12 +456,83 @@ def _top_reason(errors: List[str], default: str = "no data returned") -> str:
     """Most frequent failure reason in a list, e.g. 'HTTP 429'."""
     return Counter(errors).most_common(1)[0][0] if errors else default
 
+def _parse_when(raw: Any) -> Optional[datetime]:
+    """Parse an RSS (RFC 822) or ISO 8601 timestamp into an aware datetime; None if it is neither."""
+    if not raw or not isinstance(raw, str):
+        return None
+    try:
+        when = parsedate_to_datetime(raw)
+    except (TypeError, ValueError, IndexError):
+        try:
+            when = datetime.fromisoformat(raw)
+        except ValueError:
+            return None
+    return when if when.tzinfo else when.replace(tzinfo=timezone.utc)
+
+def merge_live_news(
+    previous: List[Dict[str, Any]],
+    fresh_by_source: Dict[str, List[Dict[str, Any]]],
+    now: Optional[datetime] = None,
+    max_age_days: int = STALE_NEWS_MAX_AGE_DAYS,
+) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
+    """Live headlines for news.json, one feed at a time.
+
+    A feed that delivered this run replaces its previous items. A feed that delivered nothing (it was
+    unreachable, or its certificate or markup broke) keeps the items from its last good sync, marked
+    `isStale` with a `staleSince` stamp, so a transient outage does not wipe the news radar. Kept items
+    older than `max_age_days` are dropped. Returns the items and, per source, how many were kept.
+    """
+    now = now or datetime.now(timezone.utc)
+    cutoff = now - timedelta(days=max_age_days)
+    merged: List[Dict[str, Any]] = []
+    kept: Dict[str, int] = {}
+    for source, fresh in fresh_by_source.items():
+        if fresh:
+            merged.extend(fresh)
+            kept[source] = 0
+            continue
+        carried = []
+        for item in previous:
+            if not item.get("isLiveStream") or item.get("source") != source:
+                continue
+            published = _parse_when(item.get("date")) or _parse_when(item.get("fetchedAt")) or _parse_when(item.get("staleSince"))
+            if published is not None and published < cutoff:
+                continue
+            carried.append({**item, "isStale": True, "staleSince": item.get("staleSince") or now.isoformat()})
+        merged.extend(carried)
+        kept[source] = len(carried)
+    return merged, kept
+
+def _read_live_news(path: str) -> List[Dict[str, Any]]:
+    """Live-feed items currently in news.json ([] if the file is missing or unreadable)."""
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return []
+    return [n for n in data if isinstance(n, dict) and n.get("isLiveStream")] if isinstance(data, list) else []
+
+class SyncInProgress(RuntimeError):
+    """A sync was requested while another one is still running."""
+
+_SYNC_LOCK = threading.Lock()
+
 def run_full_sync() -> Dict[str, Any]:
+    """Run one sync at a time. A second caller gets SyncInProgress at once instead of racing the
+    first one over the data files (the server is threaded, so a second click really can overlap)."""
+    if not _SYNC_LOCK.acquire(blocking=False):
+        raise SyncInProgress("A sync is already running. Try again when it finishes.")
+    try:
+        return _run_full_sync()
+    finally:
+        _SYNC_LOCK.release()
+
+def _run_full_sync() -> Dict[str, Any]:
     """
     Executes a complete dynamic sync:
     1. Updates live quotes for all ETFs via Yahoo Finance.
     2. Validates AUM and TER via justETF.
-    3. Streams live news from ECB RSS and MarketWatch RSS.
+    3. Streams live news from ECB RSS and MarketWatch RSS (a feed that fails keeps its last headlines).
     4. Preserves verified macroeconomic events with transmission mechanisms.
     5. Rebuilds data-store.js.
 
@@ -414,30 +596,29 @@ def run_full_sync() -> Dict[str, Any]:
         updated_count += 1
         sync_details.append({
             "ticker": ticker,
-            "price": etf.get("liveMarketData", {}).get("livePrice", etf.get("currentPriceEUR")),
-            "currency": etf.get("liveMarketData", {}).get("currency", "EUR"),
-            "dayChange": etf.get("liveMarketData", {}).get("dayChangePercent", 0.0),
+            "price": (etf.get("liveMarketData") or {}).get("livePrice", etf.get("currentPriceEUR")),
+            "currency": (etf.get("liveMarketData") or {}).get("currency", "EUR"),
+            "dayChange": (etf.get("liveMarketData") or {}).get("dayChangePercent", 0.0),
             "aumMillions": etf.get("aumMillionsEUR", 0.0),
             "quoteUpdated": quote_updated
         })
         time.sleep(0.05)  # Politeness interval
 
     # Write updated ETFs
-    with open(etfs_path, "w", encoding="utf-8") as f:
-        json.dump(etfs, f, indent=2)
+    _write_json_atomic(etfs_path, etfs)
 
     # 3. Stream live news feeds
     ecb_errors: List[str] = []
     mw_errors: List[str] = []
     live_ecb = sync_live_ecb_news(errors=ecb_errors)
     live_mw = sync_live_marketwatch_news(errors=mw_errors)
-    live_news_items = live_ecb + live_mw
+    fresh_news = live_ecb + live_mw
 
     news_path = os.path.join(DATA_DIR, "news.json")
-    combined_news = live_news_items + VERIFIED_MACRO_NEWS
-
-    with open(news_path, "w", encoding="utf-8") as f:
-        json.dump(combined_news, f, indent=2)
+    live_news_items, kept = merge_live_news(
+        _read_live_news(news_path), {ECB_SOURCE: live_ecb, MARKETWATCH_SOURCE: live_mw}
+    )
+    _write_json_atomic(news_path, live_news_items + VERIFIED_MACRO_NEWS)
 
     # Rebuild data-store.js
     build_js_store()
@@ -449,10 +630,14 @@ def run_full_sync() -> Dict[str, Any]:
         warnings.append(f"Yahoo Finance: {len(quotes_failed)} of {quote_targets} price requests failed ({_top_reason(quote_errors)}).")
     if fund_failed:
         warnings.append(f"justETF: fund size and TER unavailable for {fund_failed} of {fund_updated + fund_failed} funds ({_top_reason(fund_errors)}).")
-    if not live_ecb:
-        warnings.append(f"ECB feed: no headlines ({_top_reason(ecb_errors)}).")
-    if not live_mw:
-        warnings.append(f"MarketWatch feed: no headlines ({_top_reason(mw_errors)}).")
+    for label, items, errors, source in (
+        ("ECB feed", live_ecb, ecb_errors, ECB_SOURCE),
+        ("MarketWatch feed", live_mw, mw_errors, MARKETWATCH_SOURCE),
+    ):
+        if not items:
+            n = kept[source]
+            cached = f"; showing {n} cached headline{'s' if n != 1 else ''}" if n else ""
+            warnings.append(f"{label}: no headlines ({_top_reason(errors)}){cached}.")
 
     sources = []
     if quotes_updated:
@@ -464,7 +649,7 @@ def run_full_sync() -> Dict[str, Any]:
     if live_mw:
         sources.append("MarketWatch RSS (Real-Time Equity & Earnings Headlines)")
 
-    refreshed_anything = bool(quotes_updated or fund_updated or live_news_items)
+    refreshed_anything = bool(quotes_updated or fund_updated or fresh_news)
     return {
         "status": "failed" if not refreshed_anything else "partial" if warnings else "success",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -473,8 +658,9 @@ def run_full_sync() -> Dict[str, Any]:
         "quotesFailed": quotes_failed,
         "quotesSkipped": quotes_skipped,
         "fundDataUpdated": fund_updated,
-        "liveNewsItemsFetched": len(live_news_items),
+        "liveNewsItemsFetched": len(fresh_news),
         "newsSources": {"ecb": len(live_ecb), "marketwatch": len(live_mw)},
+        "newsCachedKept": {"ecb": kept[ECB_SOURCE], "marketwatch": kept[MARKETWATCH_SOURCE]},
         "warnings": warnings,
         "sources": sources,
         "details": sync_details
