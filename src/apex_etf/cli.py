@@ -40,11 +40,15 @@ def cmd_sync(args: argparse.Namespace) -> None:
     print("=" * 65)
     
     result = run_full_sync()
+    history = refresh_planner_risk()
     
     print("\n✅ Sync Completed Successfully!")
     print(f"⏰ Timestamp: {result.get('timestamp')}")
     print(f"📈 ETFs Processed: {result.get('etfsSynced')}")
     print(f"📰 Live News Wire Items: {result.get('liveNewsItemsFetched')}")
+    print(f"📉 Price histories (performance & risk): {history.get('instrumentsUpdated', 0)} instruments ({history.get('status')})")
+    for w in (result.get("warnings") or []) + (history.get("warnings") or ([history["error"]] if history.get("error") else [])):
+        print(f"⚠️  {w}")
     print("\nETF Details:")
     for item in result.get("details", []):
         day_chg = item.get("dayChange", 0.0)
@@ -376,7 +380,7 @@ def cmd_plan(args: argparse.Namespace) -> None:
 
 def cmd_planner_risk(args: argparse.Namespace) -> None:
     """Recompute the planner's risk statistics from fresh Yahoo Finance price history."""
-    print("🔄 Downloading price history and recomputing planner risk statistics…")
+    print("🔄 Downloading price histories and recomputing performance, backtest and planner risk data…")
     res = refresh_planner_risk()
     if res.get("status") == "failed":
         print(f"❌ {res.get('error')}")
@@ -455,7 +459,7 @@ def main() -> None:
     plan_parser.add_argument("--allowance-used", type=float, default=0.0, help="Saver's allowance already used elsewhere this year, EUR")
 
     # Command: planner-risk
-    subparsers.add_parser("planner-risk", help="Recompute the planner's risk statistics from fresh price history")
+    subparsers.add_parser("planner-risk", help="Re-download price histories: performance figures, backtests and planner risk data")
 
     args = parser.parse_args()
 

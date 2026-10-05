@@ -437,6 +437,7 @@ def build_js_store() -> None:
         edu = read_j("education.json")
         planner = read_j("planner.json", {})
         planner_risk = read_j("planner-risk.json", {})
+        performance = read_j("performance.json", {})
 
         js_content = f"""/**
  * ApexETF Grounded Data Store
@@ -456,7 +457,8 @@ window.APEX_DATA_STORE = {{
   news: {json.dumps(news, indent=2)},
   education: {json.dumps(edu, indent=2)},
   planner: {json.dumps(planner, indent=2)},
-  plannerRisk: {json.dumps(planner_risk, indent=2)}
+  plannerRisk: {json.dumps(planner_risk, indent=2)},
+  performance: {json.dumps(performance)}
 }};
 """
         store_path = os.path.join(BASE_DIR, "public", "js", "data-store.js")

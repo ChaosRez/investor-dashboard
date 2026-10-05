@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-05T06:57:18.745252+00:00",
-  "asOf": "2026-10-02",
+  "generatedAt": "2026-10-05T15:22:40.660111+00:00",
+  "asOf": "2026-10-05",
   "benchmark": "VWCE",
   "benchmarkName": "Vanguard FTSE All-World UCITS ETF (USD) Accumulating",
   "source": "Yahoo Finance daily adjusted closes in EUR",
@@ -45,9 +45,9 @@
   "instruments": {
     "XEON": {
       "symbol": "XEON.DE",
-      "firstDate": "2016-10-04",
-      "lastDate": "2026-10-02",
-      "lastPrice": 150.386,
+      "firstDate": "2016-10-05",
+      "lastDate": "2026-10-05",
+      "lastPrice": 150.39,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 0.2,
@@ -56,9 +56,9 @@
       "correlation": 0.0,
       "maxDrawdown": {
         "value": -0.5,
-        "peak": "2021-10-04",
+        "peak": "2021-10-07",
         "trough": "2022-08-04",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -0.5,
@@ -83,9 +83,9 @@
     },
     "DBXP": {
       "symbol": "DBXP.DE",
-      "firstDate": "2016-10-04",
-      "lastDate": "2026-10-02",
-      "lastPrice": 173.74,
+      "firstDate": "2016-10-05",
+      "lastDate": "2026-10-05",
+      "lastPrice": 173.665,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 1.3,
@@ -96,7 +96,7 @@
         "value": -5.5,
         "peak": "2021-11-19",
         "trough": "2023-03-06",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -5.1,
@@ -122,8 +122,8 @@
     "WGLD": {
       "symbol": "WGLD.MI",
       "firstDate": "2020-11-30",
-      "lastDate": "2026-10-02",
-      "lastPrice": 365.21,
+      "lastDate": "2026-10-05",
+      "lastPrice": 367.41,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 17.2,
@@ -134,7 +134,7 @@
         "value": -22.8,
         "peak": "2026-03-02",
         "trough": "2026-07-16",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -8.9,
@@ -160,9 +160,9 @@
     },
     "SGLD": {
       "symbol": "8PSG.DE",
-      "firstDate": "2016-10-04",
-      "lastDate": "2026-10-02",
-      "lastPrice": 354.14,
+      "firstDate": "2016-10-05",
+      "lastDate": "2026-10-05",
+      "lastPrice": 355.22,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 20.8,
@@ -173,7 +173,7 @@
         "value": -22.6,
         "peak": "2026-03-02",
         "trough": "2026-07-17",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -8.8,
@@ -200,7 +200,7 @@
       "symbol": "BTC-EUR",
       "firstDate": "2016-10-05",
       "lastDate": "2026-10-05",
-      "lastPrice": 77067.3203,
+      "lastPrice": 76262.6719,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 46.0,
@@ -211,13 +211,13 @@
         "value": -73.6,
         "peak": "2021-11-08",
         "trough": "2022-11-21",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -72.6,
         "from": "2021-11-09",
         "to": "2022-11-09",
-        "windows": 1464
+        "windows": 1462
       },
       "episodes": {
         "2020-02": {
@@ -237,8 +237,8 @@
     "AII": {
       "symbol": "AIFS.DE",
       "firstDate": "2024-12-09",
-      "lastDate": "2026-10-02",
-      "lastPrice": 10.706,
+      "lastDate": "2026-10-05",
+      "lastPrice": 10.758,
       "statsFrom": "2024-12-13",
       "weeks": 94,
       "volatility": 27.1,
@@ -255,7 +255,7 @@
         "value": 19.3,
         "from": "2024-12-17",
         "to": "2025-12-17",
-        "windows": 205
+        "windows": 206
       },
       "episodes": {
         "2020-02": {
@@ -275,8 +275,8 @@
     "BATT": {
       "symbol": "BATE.DE",
       "firstDate": "2018-02-07",
-      "lastDate": "2026-10-02",
-      "lastPrice": 26.205,
+      "lastDate": "2026-10-05",
+      "lastPrice": 26.52,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 25.5,
@@ -287,7 +287,7 @@
         "value": -34.0,
         "peak": "2023-07-03",
         "trough": "2025-04-09",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -25.6,
@@ -313,8 +313,8 @@
     "BRIJ": {
       "symbol": "B41J.DE",
       "firstDate": "2024-09-09",
-      "lastDate": "2026-10-02",
-      "lastPrice": 18.536,
+      "lastDate": "2026-10-05",
+      "lastPrice": 18.442,
       "statsFrom": "2024-09-13",
       "weeks": 107,
       "volatility": 14.9,
@@ -328,10 +328,10 @@
         "windowStart": "2024-09-09"
       },
       "worst12m": {
-        "value": -1.5,
-        "from": "2025-10-01",
-        "to": "2026-10-01",
-        "windows": 270
+        "value": -1.6,
+        "from": "2025-10-03",
+        "to": "2026-10-05",
+        "windows": 271
       },
       "episodes": {
         "2020-02": {
@@ -350,9 +350,9 @@
     },
     "EXH9": {
       "symbol": "EXH9.DE",
-      "firstDate": "2016-10-04",
-      "lastDate": "2026-10-02",
-      "lastPrice": 55.27,
+      "firstDate": "2016-10-05",
+      "lastDate": "2026-10-05",
+      "lastPrice": 55.36,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 15.4,
@@ -363,7 +363,7 @@
         "value": -22.7,
         "peak": "2022-05-23",
         "trough": "2022-10-12",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -13.7,
@@ -389,8 +389,8 @@
     "VWCE": {
       "symbol": "VWCE.DE",
       "firstDate": "2019-07-29",
-      "lastDate": "2026-10-02",
-      "lastPrice": 171.14,
+      "lastDate": "2026-10-05",
+      "lastPrice": 172.78,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 12.6,
@@ -401,7 +401,7 @@
         "value": -21.1,
         "peak": "2025-02-19",
         "trough": "2025-04-09",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -13.7,
@@ -426,9 +426,9 @@
     },
     "IMAE": {
       "symbol": "IMAE.AS",
-      "firstDate": "2016-10-03",
-      "lastDate": "2026-10-02",
-      "lastPrice": 102.68,
+      "firstDate": "2016-10-05",
+      "lastDate": "2026-10-05",
+      "lastPrice": 102.84,
       "statsFrom": "2023-10-06",
       "weeks": 156,
       "volatility": 12.6,
@@ -439,7 +439,7 @@
         "value": -19.4,
         "peak": "2022-01-05",
         "trough": "2022-09-29",
-        "windowStart": "2021-10-02"
+        "windowStart": "2021-10-05"
       },
       "worst12m": {
         "value": -12.3,

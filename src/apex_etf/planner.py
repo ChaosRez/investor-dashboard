@@ -25,11 +25,13 @@ import urllib.parse
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
-from .config import DATA_DIR
-from .sync import _top_reason, _write_json_atomic, build_js_store, fetch_json
+from .config import DATA_DIR, ETF_MARKET_MAP
+from .sync import _top_reason, _write_json_atomic, _write_text_atomic, build_js_store, fetch_json
 
 PLANNER_FILE = "planner.json"
 RISK_FILE = "planner-risk.json"
+PERFORMANCE_FILE = "performance.json"
+HISTORY_FILE = "history.json"   # weekly closes per instrument, for backtests and tear sheets (server-side only)
 
 HISTORY_YEARS = 10          # how much daily history to download
 BETA_WINDOW_YEARS = 3       # weekly returns used for volatility, beta and correlation
@@ -69,6 +71,47 @@ def load_planner_dataset(data_dir: str = DATA_DIR) -> Dict[str, Any]:
 
 def load_planner_risk(data_dir: str = DATA_DIR) -> Dict[str, Any]:
     return _read_json(os.path.join(data_dir, RISK_FILE), {})
+
+
+def load_performance(data_dir: str = DATA_DIR) -> Dict[str, Any]:
+    return _read_json(os.path.join(data_dir, PERFORMANCE_FILE), {})
+
+
+def load_history(data_dir: str = DATA_DIR) -> Dict[str, Any]:
+    return _read_json(os.path.join(data_dir, HISTORY_FILE), {})
+
+
+def weekly_closes(series: Series, years: int = HISTORY_YEARS) -> Optional[Dict[str, Any]]:
+    """Friday closes (last close on or before each Friday) for the last `years`, or since the first price.
+
+    Compact form: value i belongs to `start` + 7*i days, except that the series ends on the latest close
+    (`lastDate`), which is usually not a Friday. `history_points` turns it back into (date, price) pairs.
+    """
+    if not series:
+        return None
+    last_day = series[-1][0]
+    start = max(series[0][0], last_day - timedelta(days=round(365.25 * years)))
+    fridays = fridays_between(start, last_day)
+    if not fridays:
+        return None
+    values = [round(price_on_or_before(series, f), 4) for f in fridays]
+    if fridays[-1] != last_day:
+        values.append(round(series[-1][1], 4))
+    return {"start": _iso(fridays[0]), "lastDate": _iso(last_day), "values": values}
+
+
+def history_points(entry: Dict[str, Any]) -> Series:
+    """(date, price) pairs of one `history.json` instrument entry."""
+    try:
+        start = date.fromisoformat(entry["start"])
+        last = date.fromisoformat(entry["lastDate"])
+        values = [float(v) for v in entry["values"]]
+    except (KeyError, TypeError, ValueError):
+        return []
+    days = [start + timedelta(weeks=i) for i in range(len(values))]
+    if days and days[-1] != last:
+        days[-1] = last
+    return list(zip(days, values))
 
 
 # ---------------------------------------------------------------------------
@@ -256,6 +299,61 @@ def period_return(series: Series, start: date, end: date) -> Optional[float]:
     return b / a - 1 if a and b else None
 
 
+def compute_performance(series: Series) -> Optional[Dict[str, Any]]:
+    """Trailing returns (in %, 3- and 5-year annualised), volatility, the deepest fall and a one-year
+    weekly price line, all from daily closes. A period longer than the history is None, never guessed."""
+    if not series:
+        return None
+    first_day = series[0][0]
+    last_day, last_price = series[-1]
+
+    def change_since(start: date) -> Optional[float]:
+        if start < first_day:
+            return None
+        base = price_on_or_before(series, start)
+        return last_price / base - 1 if base else None
+
+    def annualised(years: int) -> Optional[float]:
+        r = change_since(last_day - timedelta(days=round(365.25 * years)))
+        return None if r is None else (1 + r) ** (1 / years) - 1
+
+    pct = lambda x: None if x is None else round(x * 100, 2)
+    returns = {
+        "1m": pct(change_since(last_day - timedelta(days=30))),
+        "3m": pct(change_since(last_day - timedelta(days=91))),
+        "ytd": pct(change_since(date(last_day.year - 1, 12, 31))),
+        "1y": pct(change_since(last_day - timedelta(days=365))),
+        "3y": pct(annualised(3)),
+        "5y": pct(annualised(5)),
+    }
+    years_of_history = (last_day - first_day).days / 365.25
+    since_first_price = None
+    if returns["3y"] is None and years_of_history >= 0.25:
+        total = last_price / series[0][1] - 1
+        since_first_price = {"from": _iso(first_day), "total": pct(total),
+                        "annualised": pct((1 + total) ** (1 / years_of_history) - 1) if years_of_history >= 1 else None}
+
+    vol_start = max(first_day, last_day - timedelta(days=round(365.25 * BETA_WINDOW_YEARS)))
+    weekly = [r for r in weekly_returns(series, fridays_between(vol_start, last_day)) if r is not None]
+    volatility = round(math.sqrt(_var(weekly)) * math.sqrt(52) * 100, 1) if len(weekly) >= MIN_WEEKS else None
+
+    risk_start = max(first_day, last_day - timedelta(days=round(365.25 * RISK_WINDOW_YEARS)))
+    spark_days = [f for f in fridays_between(last_day - timedelta(days=364), last_day) if f >= first_day]
+    spark = [round(price_on_or_before(series, f), 4) for f in spark_days]
+    if not spark_days or spark_days[-1] != last_day:
+        spark.append(round(last_price, 4))
+    return {
+        "firstDate": _iso(first_day),
+        "lastDate": _iso(last_day),
+        "lastPrice": round(last_price, 4),
+        "returns": returns,
+        "sinceFirstPrice": since_first_price,
+        "volatility": volatility,
+        "maxDrawdown": {**(max_drawdown(series, risk_start) or {}), "windowStart": _iso(risk_start)},
+        "spark": {"from": _iso(spark_days[0]) if spark_days else _iso(last_day), "stepDays": 7, "values": spark},
+    }
+
+
 def _episode_id(peak: date) -> str:
     return f"{peak.year}-{peak.month:02d}"
 
@@ -372,11 +470,24 @@ def compute_risk_stats(
     }
 
 
+def _market_symbols(dataset: Dict[str, Any], data_dir: str) -> Dict[str, str]:
+    """id -> Yahoo symbol for every screener ETF with a quote symbol and every planner instrument."""
+    etfs = _read_json(os.path.join(data_dir, "etfs.json"), [])
+    symbols = {e["ticker"].upper(): ETF_MARKET_MAP[e["ticker"].upper()]["symbol"]
+               for e in etfs if isinstance(e, dict) and e.get("ticker", "").upper() in ETF_MARKET_MAP}
+    for inst in dataset.get("instruments") or []:
+        if inst.get("yahooSymbol"):
+            symbols.setdefault(inst["id"], inst["yahooSymbol"])
+    return symbols
+
+
 def refresh_planner_risk(data_dir: str = DATA_DIR, rebuild_store: bool = True) -> Dict[str, Any]:
-    """Download price history for every planner instrument, recompute planner-risk.json and report
-    what refreshed. One refresh at a time; a second caller gets RiskRefreshInProgress."""
+    """Download daily price history for every planner instrument and screener ETF, recompute
+    planner-risk.json (planner statistics) and performance.json (returns, volatility, deepest fall and a
+    one-year price line per instrument), and report what refreshed. One refresh at a time; a second
+    caller gets RiskRefreshInProgress."""
     if not _REFRESH_LOCK.acquire(blocking=False):
-        raise RiskRefreshInProgress("A risk-data refresh is already running. Try again when it finishes.")
+        raise RiskRefreshInProgress("A price-history refresh is already running. Try again when it finishes.")
     try:
         dataset = load_planner_dataset(data_dir)
         instruments = dataset.get("instruments") or []
@@ -384,40 +495,72 @@ def refresh_planner_risk(data_dir: str = DATA_DIR, rebuild_store: bool = True) -
         if not instruments or not benchmark:
             return {"status": "failed", "error": f"{PLANNER_FILE} is missing or has no instruments/benchmark."}
 
-        histories: Dict[str, Series] = {}
+        symbols = _market_symbols(dataset, data_dir)
+        by_symbol: Dict[str, Series] = {}
         failed: List[str] = []
         errors: List[str] = []
-        for inst in instruments:
-            symbol = inst.get("yahooSymbol")
-            if not symbol:
-                continue
-            series = fetch_price_history(symbol, errors=errors)
-            if series:
-                histories[inst["id"]] = series
-            else:
-                failed.append(inst["id"])
-            time.sleep(0.05)  # politeness interval
+        for iid, symbol in symbols.items():
+            if symbol not in by_symbol:
+                by_symbol[symbol] = fetch_price_history(symbol, errors=errors)
+                time.sleep(0.05)  # politeness interval
+            if not by_symbol[symbol]:
+                failed.append(iid)
 
+        planner_ids = {i["id"] for i in instruments if i.get("yahooSymbol")}
+        histories = {i["id"]: by_symbol.get(i["yahooSymbol"]) for i in instruments
+                     if i.get("yahooSymbol") and by_symbol.get(i["yahooSymbol"])}
         if benchmark not in histories:
             return {
                 "status": "failed",
-                "error": f"No price history for the benchmark {benchmark} ({_top_reason(errors)}); kept the previous risk data.",
+                "error": f"No price history for the benchmark {benchmark} ({_top_reason(errors)}); kept the previous data.",
                 "failed": failed,
             }
 
         risk = compute_risk_stats(histories, instruments, benchmark, dataset.get("episodeLabels"))
         _write_json_atomic(os.path.join(data_dir, RISK_FILE), risk)
+
+        previous = load_performance(data_dir).get("instruments") or {}
+        performance: Dict[str, Any] = {}
+        for iid, symbol in symbols.items():
+            stats = compute_performance(by_symbol.get(symbol) or [])
+            if stats:
+                performance[iid] = {"symbol": symbol, **stats}
+            elif iid in previous:
+                performance[iid] = {**previous[iid], "isStale": True}  # keep the last good copy, labelled
+        _write_json_atomic(os.path.join(data_dir, PERFORMANCE_FILE), {
+            "generatedAt": risk["generatedAt"],
+            "asOf": risk["asOf"],
+            "source": "Yahoo Finance daily adjusted closes in EUR (distributions reinvested)",
+            "instruments": performance,
+        })
+        old_history = load_history(data_dir).get("instruments") or {}
+        history: Dict[str, Any] = {}
+        for iid, symbol in symbols.items():
+            weekly = weekly_closes(by_symbol.get(symbol) or [])
+            if weekly:
+                history[iid] = {"symbol": symbol, **weekly}
+            elif iid in old_history:
+                history[iid] = {**old_history[iid], "isStale": True}
+        # Compact JSON: ~27 x 520 numbers that change on every refresh
+        _write_text_atomic(os.path.join(data_dir, HISTORY_FILE), json.dumps({
+            "generatedAt": risk["generatedAt"],
+            "asOf": risk["asOf"],
+            "frequency": "weekly: Friday closes from `start`; the last value is the close on `lastDate`",
+            "source": "Yahoo Finance daily adjusted closes in EUR (distributions reinvested)",
+            "instruments": history,
+        }, separators=(",", ":")))
         if rebuild_store:
             build_js_store()
 
         warnings = list(risk["warnings"])
         if failed:
-            warnings.insert(0, f"Yahoo Finance: no history for {', '.join(failed)} ({_top_reason(errors)}); their statistics were not updated.")
+            warnings.insert(0, f"Yahoo Finance: no history for {', '.join(failed)} ({_top_reason(errors)}); their figures were not updated.")
         return {
             "status": "partial" if failed else "success",
             "asOf": risk["asOf"],
             "generatedAt": risk["generatedAt"],
-            "instrumentsUpdated": len(histories),
+            "instrumentsUpdated": len(symbols) - len(failed),
+            "plannerInstruments": len(planner_ids & set(histories)),
             "failed": failed,
             "episodes": len(risk["episodes"]),
             "warnings": warnings,

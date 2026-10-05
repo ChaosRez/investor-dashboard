@@ -158,11 +158,42 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertIn("riskfolio", data)
         self.assertIn("quantstats", data)
 
+    HISTORY_OK = {"status": "success", "instrumentsUpdated": 27, "warnings": []}
+
     def test_post_sync_passes_partial_results_through(self):
         partial = {"status": "partial", "quotesUpdated": 0, "warnings": ["Yahoo Finance: 21 of 21 price requests failed (HTTP 429)."]}
-        with mock.patch("apex_etf.server.run_full_sync", return_value=partial), \
+        with mock.patch("apex_etf.server.run_full_sync", return_value=dict(partial, warnings=list(partial["warnings"]))), \
+             mock.patch("apex_etf.server.refresh_planner_risk", return_value=self.HISTORY_OK), \
              mock.patch("apex_etf.server.reload_datasets"):
-            self.assertEqual(self.post_json("/api/sync", {}), partial)
+            data = self.post_json("/api/sync", {})
+        self.assertEqual(data["status"], "partial")
+        self.assertEqual(data["warnings"], partial["warnings"])
+        self.assertEqual(data["historyUpdated"], 27)
+
+    def test_post_sync_also_refreshes_price_histories_and_reports_their_problems(self):
+        ok = {"status": "success", "quotesUpdated": 22, "warnings": []}
+        history = {"status": "partial", "instrumentsUpdated": 26, "warnings": ["Yahoo Finance: no history for BTC (HTTP 429); their figures were not updated."]}
+        with mock.patch("apex_etf.server.run_full_sync", return_value=ok), \
+             mock.patch("apex_etf.server.refresh_planner_risk", return_value=history), \
+             mock.patch("apex_etf.server.reload_datasets"):
+            data = self.post_json("/api/sync", {})
+        self.assertEqual(data["status"], "partial")  # one source missing is not "success"
+        self.assertIn(history["warnings"][0], data["warnings"])
+        self.assertEqual(data["historyUpdated"], 26)
+
+    def test_post_sync_survives_a_history_refresh_that_is_already_running(self):
+        from apex_etf.planner import RiskRefreshInProgress
+        with mock.patch("apex_etf.server.run_full_sync", return_value={"status": "success", "quotesUpdated": 22, "warnings": []}), \
+             mock.patch("apex_etf.server.refresh_planner_risk", side_effect=RiskRefreshInProgress("busy")), \
+             mock.patch("apex_etf.server.reload_datasets"):
+            data = self.post_json("/api/sync", {})
+        self.assertEqual(data["status"], "partial")
+        self.assertIn("Performance figures: not refreshed (a price-history refresh was already running).", data["warnings"])
+
+    def test_get_performance(self):
+        data = self.get_json("/api/performance")
+        self.assertIn("VWCE", data["instruments"])
+        self.assertIn("1y", data["instruments"]["VWCE"]["returns"])
 
     def test_post_sync_error_result_is_not_a_200(self):
         # {"error": ...} used to be returned with HTTP 200, so clients checking res.ok saw "success"
@@ -242,6 +273,7 @@ class TestServerStaysResponsiveDuringSync(unittest.TestCase):
 
         results = {}
         with mock.patch.object(sync_module, "_run_full_sync", slow_sync), \
+             mock.patch("apex_etf.server.refresh_planner_risk", return_value={"status": "success", "instrumentsUpdated": 0, "warnings": []}), \
              mock.patch("apex_etf.server.reload_datasets"):
             first = threading.Thread(target=lambda: results.update(first=self.post_sync()))
             first.start()

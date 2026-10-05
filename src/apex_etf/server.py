@@ -45,9 +45,10 @@ EDUCATION_DATA = load_json("education.json")
 ETFS_BY_TICKER = {etf["ticker"].upper(): etf for etf in ETFS_DATA}
 PLANNER_DATA = load_json("planner.json", {})
 PLANNER_RISK = load_json("planner-risk.json", {})
+PERFORMANCE_DATA = load_json("performance.json", {})
 
 def reload_datasets():
-    global ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER, PLANNER_DATA, PLANNER_RISK
+    global ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER, PLANNER_DATA, PLANNER_RISK, PERFORMANCE_DATA
     # The server is threaded: load everything first, then swap, so a request running in parallel
     # never sees half of the new datasets next to half of the old ones.
     etfs = load_json("etfs.json")
@@ -56,9 +57,30 @@ def reload_datasets():
     education = load_json("education.json")
     planner_data = load_json("planner.json", {})
     planner_risk = load_json("planner-risk.json", {})
+    performance = load_json("performance.json", {})
     by_ticker = {etf["ticker"].upper(): etf for etf in etfs}
-    (ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER, PLANNER_DATA, PLANNER_RISK) = (
-        etfs, correlations, news, education, by_ticker, planner_data, planner_risk)
+    (ETFS_DATA, CORRELATIONS_DATA, NEWS_DATA, EDUCATION_DATA, ETFS_BY_TICKER, PLANNER_DATA, PLANNER_RISK, PERFORMANCE_DATA) = (
+        etfs, correlations, news, education, by_ticker, planner_data, planner_risk, performance)
+
+def attach_history_refresh(sync_res: Dict[str, Any]) -> None:
+    """After a Live Sync, also refresh price histories (performance figures and planner risk data)
+    and fold the outcome into the sync report, so one button refreshes everything and says what didn't."""
+    try:
+        history = refresh_planner_risk()
+    except RiskRefreshInProgress:
+        history = {"status": "failed", "error": "a price-history refresh was already running"}
+    except Exception as exc:  # the quotes and news already refreshed; report, don't fail the sync
+        history = {"status": "failed", "error": f"price-history refresh failed ({type(exc).__name__})"}
+    sync_res["historyUpdated"] = history.get("instrumentsUpdated", 0)
+    warnings = sync_res.setdefault("warnings", [])
+    if history.get("status") == "failed":
+        warnings.append(f"Performance figures: not refreshed ({history.get('error')}).")
+    else:
+        warnings.extend(history.get("warnings") or [])
+    if warnings and sync_res.get("status") == "success":
+        sync_res["status"] = "partial"
+    if history.get("status") != "failed":
+        sync_res.setdefault("sources", []).append("Yahoo Finance (daily price history: returns, volatility, drawdowns)")
 
 class ETFHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
@@ -143,6 +165,10 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
             self.send_json({"dataset": PLANNER_DATA, "risk": PLANNER_RISK})
             return
 
+        elif path == "/api/performance":
+            self.send_json(PERFORMANCE_DATA)
+            return
+
         elif path == "/api/market-status":
             self.send_json({
                 "status": "online",
@@ -180,6 +206,8 @@ class ETFHandler(http.server.SimpleHTTPRequestHandler):
         if path in ["/api/sync", "/api/refresh"]:
             try:
                 sync_res = run_full_sync()
+                if "error" not in sync_res:
+                    attach_history_refresh(sync_res)
                 reload_datasets()
                 self.send_json(sync_res, status=500 if "error" in sync_res else 200)
             except SyncInProgress as e:

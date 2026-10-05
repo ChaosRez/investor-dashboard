@@ -388,7 +388,8 @@ window.App = (function () {
     const nothing = payload.status === "failed" || (refreshed === 0 && headlines === 0);
     const problems = warnings.length > 0 || payload.status === "partial" || (!hasAccounting && refreshed < targets);
     const prices = `${refreshed} of ${targets} prices`;
-    const live = `${headlines} live headline${headlines === 1 ? "" : "s"}`;
+    const histories = Number.isFinite(payload.historyUpdated) ? `, ${payload.historyUpdated} price histories` : "";
+    const live = `${headlines} live headline${headlines === 1 ? "" : "s"}${histories}`;
 
     if (nothing) {
       return {

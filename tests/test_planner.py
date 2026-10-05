@@ -14,6 +14,7 @@ from apex_etf import planner
 from apex_etf.config import DATA_DIR
 from apex_etf.planner import (
     analyze_plan,
+    compute_performance,
     compute_risk_stats,
     drawdown_episodes,
     fridays_between,
@@ -179,6 +180,45 @@ class TestComputeRiskStats(unittest.TestCase):
     def test_missing_benchmark_is_an_error(self):
         with self.assertRaises(ValueError):
             compute_risk_stats({}, SYN_INSTRUMENTS, "BENCH")
+
+
+class TestPerformance(unittest.TestCase):
+    def test_trailing_returns_and_annualisation(self):
+        # Six years of daily prices growing exactly 10% a year
+        start = date(2020, 9, 30)
+        s = [(start + timedelta(days=i), 100 * 1.1 ** (i / 365.25)) for i in range(int(6 * 365.25) + 1)]
+        perf = compute_performance(s)
+        self.assertAlmostEqual(perf["returns"]["1y"], 10.0, delta=0.05)
+        self.assertAlmostEqual(perf["returns"]["3y"], 10.0, delta=0.05)
+        self.assertAlmostEqual(perf["returns"]["5y"], 10.0, delta=0.05)
+        self.assertIsNone(perf["sinceFirstPrice"])  # long enough for a 3-year figure
+        self.assertEqual(perf["maxDrawdown"]["value"], 0.0)
+        self.assertEqual(perf["lastDate"], s[-1][0].isoformat())
+
+    def test_periods_longer_than_the_history_are_missing_not_guessed(self):
+        s = daily(date(2025, 1, 1), [100 + i * 0.1 for i in range(500)])  # ~1.4 years
+        perf = compute_performance(s)
+        self.assertIsNotNone(perf["returns"]["1y"])
+        self.assertIsNone(perf["returns"]["3y"])
+        self.assertIsNone(perf["returns"]["5y"])
+        self.assertEqual(perf["sinceFirstPrice"]["from"], "2025-01-01")
+        self.assertAlmostEqual(perf["sinceFirstPrice"]["total"], round((s[-1][1] / 100 - 1) * 100, 2))
+
+    def test_spark_is_a_year_of_weekly_closes_ending_today(self):
+        s = daily(date(2024, 1, 1), [100 + i for i in range(800)])
+        spark = compute_performance(s)["spark"]
+        self.assertGreaterEqual(len(spark["values"]), 52)
+        self.assertLessEqual(len(spark["values"]), 54)
+        self.assertEqual(spark["values"][-1], s[-1][1])
+
+    def test_volatility_and_drawdown(self):
+        s = daily(date(2022, 1, 1), [100 * (1.02 if (i // 7) % 2 else 0.98) ** (i % 7) for i in range(1200)])
+        perf = compute_performance(s)
+        self.assertGreater(perf["volatility"], 0)
+        self.assertLess(perf["maxDrawdown"]["value"], 0)
+
+    def test_empty_history(self):
+        self.assertIsNone(compute_performance([]))
 
 
 DATASET = {
@@ -467,6 +507,38 @@ class TestRefresh(unittest.TestCase):
         self.assertEqual(report["instrumentsUpdated"], 4)
         with open(os.path.join(self.tmp.name, "planner-risk.json"), encoding="utf-8") as f:
             self.assertIn("LEV", json.load(f)["instruments"])
+        with open(os.path.join(self.tmp.name, "performance.json"), encoding="utf-8") as f:
+            perf = json.load(f)["instruments"]
+        self.assertEqual(sorted(perf), ["BENCH", "GOLD", "LATE", "LEV"])
+        self.assertIn("1y", perf["LEV"]["returns"])
+
+    def test_screener_etfs_get_performance_figures_too(self):
+        with open(os.path.join(self.tmp.name, "etfs.json"), "w", encoding="utf-8") as f:
+            json.dump([{"ticker": "VWCE"}, {"ticker": "NOSYM"}], f)  # VWCE has a quote symbol, NOSYM none
+        histories = synthetic_histories()
+        fetch = self._fake_fetch(histories)
+
+        def fetch_with_vwce(symbol, errors=None, years=10):
+            return histories["LEV"] if symbol == "VWCE.DE" else fetch(symbol, errors, years)
+        with mock.patch.object(planner, "fetch_price_history", fetch_with_vwce), mock.patch.object(planner.time, "sleep"):
+            report = planner.refresh_planner_risk(self.tmp.name, rebuild_store=False)
+        self.assertEqual(report["instrumentsUpdated"], 5)
+        with open(os.path.join(self.tmp.name, "performance.json"), encoding="utf-8") as f:
+            perf = json.load(f)["instruments"]
+        self.assertEqual(perf["VWCE"]["symbol"], "VWCE.DE")
+        self.assertNotIn("NOSYM", perf)
+
+    def test_a_failed_download_keeps_the_last_figures_labelled_stale(self):
+        with mock.patch.object(planner, "fetch_price_history", self._fake_fetch(synthetic_histories())), \
+                mock.patch.object(planner.time, "sleep"):
+            planner.refresh_planner_risk(self.tmp.name, rebuild_store=False)
+        with mock.patch.object(planner, "fetch_price_history", self._fake_fetch(synthetic_histories(), failing={"G"})), \
+                mock.patch.object(planner.time, "sleep"):
+            planner.refresh_planner_risk(self.tmp.name, rebuild_store=False)
+        with open(os.path.join(self.tmp.name, "performance.json"), encoding="utf-8") as f:
+            perf = json.load(f)["instruments"]
+        self.assertTrue(perf["GOLD"]["isStale"])
+        self.assertNotIn("isStale", perf["LEV"])
 
     def test_a_failed_instrument_is_named(self):
         with mock.patch.object(planner, "fetch_price_history", self._fake_fetch(synthetic_histories(), failing={"L"})), \
