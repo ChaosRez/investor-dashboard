@@ -189,3 +189,23 @@ class TestAdvancedAnalysisSuite(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCrisisEstimatesAreLabelled(unittest.TestCase):
+    def test_funds_launched_after_a_crisis_are_named(self):
+        res = calculate_crisis_stress_test({"VWCE": 50, "AII": 50})
+        by_id = {c["crisisId"]: c for c in res["crises"]}
+        self.assertEqual(by_id["dot_com_2000"]["estimatedFor"], [{"ticker": "AII", "launchYear": 2024}])
+        self.assertEqual(by_id["fed_hiking_2022"]["estimatedFor"], [{"ticker": "AII", "launchYear": 2024}])
+        self.assertEqual(by_id["covid_2020"]["assumedFor"], [])
+
+    def test_unknown_tickers_are_named_as_assumptions(self):
+        res = calculate_crisis_stress_test({"VWCE": 50, "ZZZZ": 50})
+        self.assertTrue(all(c["assumedFor"] == ["ZZZZ"] for c in res["crises"]))
+
+    def test_funds_that_existed_are_not_flagged(self):
+        res = calculate_crisis_stress_test({"BATT": 100})
+        by_id = {c["crisisId"]: c for c in res["crises"]}
+        self.assertEqual(by_id["covid_2020"]["estimatedFor"], [])
+        self.assertEqual(by_id["gfc_2008"]["estimatedFor"], [{"ticker": "BATT", "launchYear": 2018}])
+

@@ -106,7 +106,9 @@ def test_etf_structural_integrity(etfs_data):
         assert all(k in hist for k in ['cagr', 'sharpe', 'stdev', 'maxDrawdown'])
         assert hist['maxDrawdown'] < 0, f"maxDrawdown {hist['maxDrawdown']} should be negative"
         assert -2 <= hist['sharpe'] <= 5, f"sharpe {hist['sharpe']} out of bounds"
-        assert -10 <= hist['cagr'] <= 40, f"cagr {hist['cagr']} out of bounds"
+        # A sanity range, not a plausibility judgement: a fund under two years old annualises a short,
+        # possibly spectacular history (AII: +121% from Dec 2024 to Oct 2026 is a 54.8% CAGR).
+        assert -50 <= hist['cagr'] <= 100, f"cagr {hist['cagr']} out of bounds"
         assert 0 <= hist['stdev'] <= 50, f"stdev {hist['stdev']} out of bounds"
         
         # Quant stats

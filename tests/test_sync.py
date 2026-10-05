@@ -148,6 +148,15 @@ class TestDailyChange(unittest.TestCase):
         self.assertTrue(quote["lastPriceUpdated"])
         self.assertEqual(quote["lastPriceUpdated"], quote["marketTime"])
 
+    def test_a_quote_in_another_currency_is_refused(self):
+        # A non-EUR quote means the symbol points at another listing or share class.
+        payload = yahoo_chart([169.12, 169.40, 169.78, 169.38, None])
+        payload["chart"]["result"][0]["meta"]["currency"] = "USD"
+        errors = []
+        with mock.patch.object(sync, "fetch_json", return_value=payload):
+            self.assertIsNone(sync.sync_etf_market_data("VWCE", errors=errors))
+        self.assertEqual(errors, ["VWCE.DE is quoted in USD, not EUR"])
+
     def test_http_429_is_reported_not_swallowed(self):
         errors = []
         with mock.patch("urllib.request.urlopen",

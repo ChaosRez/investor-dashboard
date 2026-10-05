@@ -182,6 +182,14 @@ def sync_etf_market_data(ticker: str, errors: Optional[List[str]] = None) -> Opt
         if price is None:
             return None
 
+        # The dashboard shows EUR. A quote in another currency means the symbol points at another
+        # listing or share class (AGGU.L is the USD-hedged class of a EUR-hedged fund), so refuse it.
+        currency = meta.get("currency") or "EUR"
+        if currency != "EUR":
+            if errors is not None:
+                errors.append(f"{symbol} is quoted in {currency}, not EUR")
+            return None
+
         # Change calculation
         day_change = round(price - prev_close, 3) if prev_close else 0.0
         day_change_pct = round(((price - prev_close) / prev_close) * 100, 2) if prev_close else 0.0
@@ -193,7 +201,7 @@ def sync_etf_market_data(ticker: str, errors: Optional[List[str]] = None) -> Opt
         fetched_at = datetime.now(timezone.utc).isoformat()
         return {
             "livePrice": round(price, 3),
-            "currency": meta.get("currency", "EUR"),
+            "currency": currency,
             "previousClose": round(prev_close, 3) if prev_close else None,
             "dayChange": day_change,
             "dayChangePercent": day_change_pct,

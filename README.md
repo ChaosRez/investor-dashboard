@@ -41,7 +41,7 @@ uv run apex-etf plan AII:1500 WGLD:1500 --hold CASH:15000 --hold BTC:250 --drop 
 # 10. Recompute the planner's risk statistics from fresh daily prices (~5 s)
 uv run apex-etf planner-risk
 
-# 11. Run the complete automated test suite (142 tests across 7 test modules)
+# 11. Run the complete automated test suite (146 tests across 7 test modules)
 uv run pytest tests
 ```
 
@@ -193,13 +193,13 @@ For money you may need again within a few years. It does the arithmetic of **you
 │       └── macro_news.py       # Macro events, transmission mechanisms, and Boglehead rules
 ├── tests/
 │   ├── __init__.py
-│   ├── test_advanced_analysis.py # 11 tests: HRP, ERC, Mean-CVaR, Shrinkage, Stress-test, QuantStats
+│   ├── test_advanced_analysis.py # 14 tests: HRP, ERC, Mean-CVaR, Shrinkage, Stress-test (estimates labelled), QuantStats
 │   ├── test_analysis.py          # 6 tests: overlap math, weighted TER, Curvo DCA compounding
 │   ├── test_cli.py               # 6 tests: CLI subcommands (audit, optimize, stress-test, teardown, platforms)
 │   ├── test_planner.py           # 49 tests: price-history statistics, episodes, stress test, orders, savings-plan calendar, tax, risk refresh
 │   ├── test_data_integrity.py    # 4 tests: ETF schema, sector sums, holdings sums, correlation matrix
 │   ├── test_server.py            # 22 tests: HTTP REST endpoints on ephemeral port, sync errors, responsiveness during a sync, planner API
-│   └── test_sync.py              # 44 tests: fetch errors and CA fallback, daily change, justETF parsing, sync reporting, headline retention, atomic writes, quote-symbol coverage
+│   └── test_sync.py              # 45 tests: fetch errors and CA fallback, daily change, EUR-only quotes, justETF parsing, sync reporting, headline retention, atomic writes, quote-symbol coverage
 ├── scripts/                      # Data maintenance and store generation scripts
 │   ├── build_etf_data.py
 │   ├── build_supporting_data.py
@@ -243,17 +243,18 @@ For money you may need again within a few years. It does the arithmetic of **you
 | `ECB feed: no headlines (TLS certificate could not be verified)` | Your Python's CA bundle does not trust the CA that signs `ecb.europa.eu` (Sectigo's newer root). Verification stays on. | Nothing, normally: after the default trust store rejects a certificate the sync retries with `certifi` (if installed) and then with common OS bundles (Homebrew, Debian, RHEL), still requiring a valid chain and hostname, and logs the bundle it used. You only see this warning if none of them can verify it. Then point Python at a current bundle: `SSL_CERT_FILE=/opt/homebrew/etc/ca-certificates/cert.pem uv run apex-etf`. Set `APEX_STRICT_TLS=1` to forbid the fallback and use only the default trust store. |
 | `justETF: fund size and TER unavailable … (page layout not recognised)` | justETF changed its profile markup. | Update `JUSTETF_SIZE_PATTERNS` / `JUSTETF_TER_PATTERNS` in `sync.py`. |
 
-Every ETF in `etfs.json` needs an entry in `ETF_MARKET_MAP` (Yahoo symbol, exchange, ISIN) or it never gets a live quote; a test fails if one is missing or its ISIN disagrees with the dataset. A ticker without an entry is reported as *skipped*, not failed.
+Every ETF in `etfs.json` needs an entry in `ETF_MARKET_MAP` (Yahoo symbol, exchange, ISIN) or it never gets a live quote; a test fails if one is missing or its ISIN disagrees with the dataset. A ticker without an entry is reported as *skipped*, not failed. The symbol must be a **EUR** line of the **same share class**: a quote in another currency is refused and reported (`… is quoted in USD, not EUR`), because London lines and other share classes quote in USD. When adding a fund, check the name Yahoo returns for the symbol, not just that it returns a price.
 
 | Warning | Cause | Fix |
 |---|---|---|
+| `… is quoted in USD, not EUR` | The symbol is a non-EUR listing or another share class. | Use the fund's Xetra (`.DE`), Euronext (`.AS`/`.PA`) or Milan (`.MI`) line; Yahoo's search by ISIN lists them. |
 | Planner: `No risk statistics for …` | The instrument has no price symbol or too little history (fewer than 26 weeks). | Add `yahooSymbol` in `planner.json` and run `uv run apex-etf planner-risk`. |
 
 ---
 
 ## 🧪 Running Automated Tests
 
-Run the comprehensive test suite (142 unit and integration tests across 7 test modules):
+Run the comprehensive test suite (146 unit and integration tests across 7 test modules):
 
 ```bash
 # Using pytest (Recommended):

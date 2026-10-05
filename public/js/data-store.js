@@ -2,12 +2,12 @@
  * ApexETF Grounded Data Store
  * Grounded in verified real-world metrics from justETF, extraETF, Curvo, Portfolio Visualizer,
  * Morningstar, Trackinsight, Yahoo Finance, and official issuer KIDs.
- * Last Synced: 2026-10-05T15:03:44.977038+00:00
+ * Last Synced: 2026-10-05T15:03:45.330854+00:00
  */
 
 window.APEX_DATA_STORE = {
   syncMeta: {
-    lastSyncedAt: "2026-10-05T15:03:44.977420+00:00",
+    lastSyncedAt: "2026-10-05T15:03:45.331057+00:00",
     isLiveDynamic: true,
     sources: ["Yahoo Finance", "justETF", "extraETF", "Curvo.eu", "Portfolio Visualizer", "ECB", "MarketWatch"]
   },
@@ -3238,7 +3238,6 @@ window.APEX_DATA_STORE = {
   {
     "ticker": "XCS6",
     "secondaryTickers": [
-      "RQFI",
       "XCHA"
     ],
     "isin": "LU0779800910",
@@ -3793,7 +3792,7 @@ window.APEX_DATA_STORE = {
     "wkn": "A40H8L",
     "name": "iShares AI Infrastructure UCITS ETF USD (Acc)",
     "issuer": "iShares",
-    "benchmarkIndex": "Morningstar Global AI Infrastructure Index",
+    "benchmarkIndex": "STOXX Global AI Infrastructure Index",
     "assetClass": "Thematic Equities (AI Data Centers & Infrastructure)",
     "distributionPolicy": "Accumulating",
     "isAccumulating": true,
@@ -3806,7 +3805,7 @@ window.APEX_DATA_STORE = {
     "securitiesLending": false,
     "securitiesLendingRevenueShare": "No lending",
     "sriRisk": 5,
-    "holdingCount": 55,
+    "holdingCount": 52,
     "isUserWatchlist": true,
     "topHoldings": [
       {
@@ -3875,21 +3874,21 @@ window.APEX_DATA_STORE = {
       "Utilities (Grid Capacity)": 5.0
     },
     "historicalStatsCurvo": {
-      "period": "2023 - 2026 (AI Infrastructure Index Track)",
-      "cagr": 24.5,
-      "sharpe": 1.15,
-      "stdev": 22.8,
-      "maxDrawdown": -21.4,
-      "recoveryPeriod": "8 months",
-      "bestYear": 48.5,
-      "worstYear": -12.5,
+      "period": "Dec 2024 - Oct 2026 (since launch, 1.8 years; measured from Yahoo Finance prices, not a Curvo backtest)",
+      "cagr": 54.8,
+      "sharpe": 1.94,
+      "stdev": 27.1,
+      "maxDrawdown": -31.1,
+      "recoveryPeriod": "7 months (Feb 2025 - Sep 2025)",
+      "bestYear": null,
+      "worstYear": null,
       "curvoUrl": "https://curvo.eu/backtest/en/fund/ishares-ai-infrastructure-ucits-etf-usd-acc/IE000X59ZHE2"
     },
     "quantitativeStatsPV": {
       "sortino": 1.58,
       "calmar": 1.14,
       "var95": -9.8,
-      "marketBeta": 1.38,
+      "marketBeta": 1.7,
       "annualizedTurnover": 25.0,
       "pvUrl": "https://www.portfoliovisualizer.com/backtest-portfolio"
     },
@@ -3979,13 +3978,12 @@ window.APEX_DATA_STORE = {
     "dayChangePercent": 2.43,
     "fiftyTwoWeekHigh": 10.77,
     "fiftyTwoWeekLow": 5.75,
-    "lastSyncedAt": "2026-10-03T19:54:47.024949+00:00"
+    "lastSyncedAt": "2026-10-03T19:54:47.024949+00:00",
+    "inceptionDate": "2024-12-05"
   },
   {
     "ticker": "WTAI",
-    "secondaryTickers": [
-      "2B76"
-    ],
+    "secondaryTickers": [],
     "isin": "IE00BDVPNG13",
     "wkn": "A2N6WP",
     "name": "WisdomTree Artificial Intelligence UCITS ETF USD Acc",
@@ -4183,7 +4181,7 @@ window.APEX_DATA_STORE = {
       "8PSG"
     ],
     "isin": "IE00B579F325",
-    "wkn": "A0N62G",
+    "wkn": "A1AA5X",
     "name": "Invesco Physical Gold ETC",
     "issuer": "Invesco",
     "benchmarkIndex": "LBMA Gold Price PM Index",

@@ -786,7 +786,19 @@ window.RegimeRiskParityModule = (function () {
         <div class="crisis-bars" role="group" aria-label="${esc(c.name)}: ${vals.map((x) => `${x.label} ${fmt.pct(x.v, 1, { sign: true })}`).join(", ")}">${bars}</div>
         <div class="crisis-alpha ${alpha >= 0 ? "val-positive" : "val-negative"}"><span aria-hidden="true">${alpha >= 0 ? "▲" : "▼"}</span> ${alpha >= 0 ? "Outperformed" : "Underperformed"} all-world equity by ${esc(fmt.pct(Math.abs(alpha), 1))}</div>
         <p class="crisis-dynamics">💡 ${esc(c.regimeDynamics)}</p>
+        ${estimateNote(c)}
       </article>`;
+  }
+
+  /** Figures for funds that did not exist yet (or have no crisis data at all) are not measurements: say so. */
+  function estimateNote(c) {
+    const est = (c.estimatedFor || []).map((e) => `${e.ticker} (launched ${e.launchYear})`);
+    const assumed = c.assumedFor || [];
+    if (!est.length && !assumed.length) return "";
+    const parts = [];
+    if (est.length) parts.push(`rough estimate, not measured, for ${est.join(", ")}`);
+    if (assumed.length) parts.push(`no data for ${assumed.join(", ")} (a flat assumption was used)`);
+    return `<p class="crisis-dynamics accent-amber">${icon("alert")} Includes a ${esc(parts.join("; "))}.</p>`;
   }
 
   function renderStressTestResults() {

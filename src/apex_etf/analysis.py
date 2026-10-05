@@ -463,6 +463,15 @@ HISTORICAL_CRISES: List[Dict[str, Any]] = [
     }
 ]
 
+# Funds launched after some of the crises above. Their figures for earlier crises are rough analogues,
+# not measured returns (neither the fund nor a long history of its thematic index existed), so the
+# stress test names them instead of presenting them as data. Launch years: issuer / justETF / first
+# trading day on Yahoo Finance.
+FUND_LAUNCH_YEARS: Dict[str, int] = {"AII": 2024, "RARE": 2024, "BATT": 2018, "WTAI": 2018}
+CRISIS_START_YEARS: Dict[str, int] = {
+    "dot_com_2000": 2000, "gfc_2008": 2007, "euro_debt_2011": 2011, "covid_2020": 2020, "fed_hiking_2022": 2022,
+}
+
 # ---------------------------------------------------------------------------
 # ASSET COVARIANCE & CORRELATION MATRIX BUILDER
 # ---------------------------------------------------------------------------
@@ -1151,6 +1160,9 @@ def calculate_crisis_stress_test(
     for crisis in HISTORICAL_CRISES:
         asset_rets = crisis.get("assetReturns", {})
         port_ret = 0.0
+        start_year = CRISIS_START_YEARS.get(crisis["id"], 0)
+        estimated = sorted(t for t in norm_w if FUND_LAUNCH_YEARS.get(t, 0) > start_year and t in asset_rets)
+        assumed = sorted(t for t in norm_w if t not in asset_rets)
         for t, w in norm_w.items():
             r = asset_rets.get(t)
             if r is None:
@@ -1199,7 +1211,10 @@ def calculate_crisis_stress_test(
             "outperformanceVsEquity": round(outperf_eq, 2),
             "outperformanceVs6040": round(outperf_60_40, 2),
             "estimatedRecoveryMonths": est_recovery,
-            "regimeDynamics": regime_dynamics
+            "regimeDynamics": regime_dynamics,
+            # Holdings whose figure for this crisis is not a measured return
+            "estimatedFor": [{"ticker": t, "launchYear": FUND_LAUNCH_YEARS[t]} for t in estimated],
+            "assumedFor": assumed,
         }
         crisis_results.append(res_item)
 
