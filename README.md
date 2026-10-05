@@ -38,10 +38,10 @@ uv run apex-etf status
 # 9. Short-horizon plan: stress test, one-year risk, orders & fees, tax notes for amounts YOU choose
 uv run apex-etf plan AII:1500 WGLD:1500 --hold CASH:15000 --hold BTC:250 --drop -10 --strategy tranches
 
-# 10. Recompute the planner's risk statistics from fresh daily prices (~5 s)
+# 10. Re-download price histories: performance figures, backtests, planner risk data (~5 s; Live Sync does it too)
 uv run apex-etf planner-risk
 
-# 11. Run the complete automated test suite (146 tests across 7 test modules)
+# 11. Run the complete automated test suite (166 tests across 7 test modules)
 uv run pytest tests
 ```
 
@@ -84,7 +84,12 @@ All figures, metrics, percentages, and document links in this dashboard are grou
 
 ## 🎯 Key Dashboard Features
 
+### 0. 🔎 Ticker Cards (everywhere)
+* Hover, focus or tap any ticker (screener, comparison, planner, overlap heatmap, parity, quant risk, news chips, factsheets) for a card: full name, type, Acc/Dist and domicile, TER, fund size, price and day change, a one-year price line, and **measured** returns (1M, YTD, 1Y, 3Y and 5Y a year), volatility and the deepest fall with its dates. Enter on a ticker opens the full details; Esc closes.
+* The figures come from `public/data/performance.json`, computed from Yahoo Finance daily prices (distributions reinvested) on every Live Sync. A period longer than a fund's price history shows "—"; a fund whose download failed keeps its last figures, labelled **Cached**.
+
 ### 1. 📊 ETF Screener & Multi-Factor Retail Scoring
+* **Compact table:** ticker, name and badges (Acc/Dist, domicile, ISIN) in one cell; score, TER, tracking difference, fund size, **1-year return (measured)** and price. Details, compare and add-to-portfolio are icon buttons.
 * **Prioritizes Accumulating (Acc) ETFs**: Default filters highlight accumulating share classes, explaining the elimination of dividend tax leakage and broker reinvestment friction.
 * **Retail Multi-Factor Score (0–100)**: Evaluates ETFs not on star ratings alone, but across:
   1. *Index Coverage & Breadth* (FTSE All-World vs MSCI World vs S&P 500)
@@ -104,24 +109,23 @@ All figures, metrics, percentages, and document links in this dashboard are grou
   - Shows pairwise shared constituent weight (e.g., VWCE vs IWDA has 88.4% overlap; SXR8 vs QDVE has 32.1% overlap).
   - Calculates true sector and geographic exposures with automated Bogleheads warnings.
 
-### 3. 📈 Curvo Historical Backtest & DCA Growth Engine
+### 3. 📈 Backtest & DCA Plan
 * **Pre-Built Classic Portfolios**:
   - *"VWCE and Chill"* (100% VWCE)
   - *"Bogleheads 88/12"* (88% IWDA + 12% EIMI)
   - *"Bogleheads 80/20"* (80% VWCE + 20% AGGU EUR Hedged)
   - *"Global All-Cap"* (80% VWCE + 20% IUSN Small Cap)
   - *"US Core + Tech Tilt"* (70% SXR8 + 30% QDVE)
-* **Real Compounding DCA Simulator**:
-  - Configure initial deposit (€), monthly Sparplan contribution (€), investment horizon (years), and inflation rate (%).
-  - Real-time SVG Growth Chart: Visualizes **Nominal Portfolio Value**, **Real Purchasing Power (Inflation-Adjusted)**, and **Total Out-of-Pocket Deposits**.
-  - Direct deep-link to verify and compare live on `https://curvo.eu/backtest/en`.
+* **With real prices:** the same plan (initial deposit, monthly Sparplan, years, inflation) run on actual month-end prices over the last N years, or as far back as the shared price history goes (said so when shorter): deposits, final value, value after inflation, the mix's annual return and volatility, and the deepest fall on the way. No fees or taxes.
+* **Projection:** the plan compounded at the funds' weighted long-run CAGR from the dataset, with nominal, after-inflation and deposits lines. An illustration, not a forecast; real paths swing far more.
+* Direct deep-link to verify and compare live on `https://curvo.eu/backtest/en`.
 
 ### 4. 🛡️ Regime Resilience & Non-Linear Risk Parity Studio
 Built specifically for unpredictable macro regimes where basic Markowitz Mean-Variance Optimization (MPT) fails due to fragile expected return forecasts:
 * **The 3-Step Decision-Making Workflow**:
   1. *Step 1: Pick Structural Building Blocks*: Manually assemble assets across 5 distinct economic regimes (**Growth Equities**, **Factor Tilts**, **Fixed Income Bonds**, **Cash €STR Liquidity**, and **Real Commodities/Gold**).
   2. *Step 2: Size with HRP or Risk Parity*: Allocate by true volatility risk contribution rather than subjective return forecasts using **Hierarchical Risk Parity (HRP)** or **Equal Risk Contribution (ERC / Risk Parity)**.
-  3. *Step 3: Stress-Test the Downside*: Evaluate drawdown survival across 5 historical crisis shocks (**2000–2002 Dot-Com**, **2007–2009 Lehman GFC**, **2011 Euro Debt**, **2020 COVID**, and **2022 Fed Rate-Hiking Cycle**). If maximum drawdown breaches your behavioral tolerance, increase your short Treasury / liquidity allocation (€STR).
+  3. *Step 3: Stress-Test the Downside*: Evaluate drawdown survival across 5 historical crisis shocks (**2000–2002 Dot-Com**, **2007–2009 Lehman GFC**, **2011 Euro Debt**, **2020 COVID**, and **2022 Fed Rate-Hiking Cycle**). If the worst result breaches your tolerance, the engine computes the exact XEON (€STR cash) share that would have kept every crisis within it, and "Try it" mixes that share in. Figures for funds launched after a crisis are labelled as estimates.
 * **The 60/40 Equity Risk Trap Exposed**:
   - In a nominal 60/40 equity/bond portfolio, equities account for **over 91.5% of total portfolio risk**.
   - In the 2022 stagflation shock, intermediate bonds suffered a **-16.8% drawdown**, failing as a hedge and proving the necessity of non-linear risk parity, cash (€STR), and real assets.
@@ -130,9 +134,9 @@ Built specifically for unpredictable macro regimes where basic Markowitz Mean-Va
   - **Equal Risk Contribution (ERC / Risk Parity)**: Exact Cyclical Coordinate Descent solver balancing marginal risk contributions ($w_i (\Sigma w)_i = w_j (\Sigma w)_j$).
   - **Mean-CVaR (Conditional Value-at-Risk)**: Projected gradient descent minimizing 95% expected tail loss in extreme black swan scenarios.
   - **Ledoit-Wolf Covariance Shrinkage**: Constant-correlation target shrinking sample noise to prevent extreme allocations.
-  - **QuantStats Downside Tear-Sheet**: Calculates CAGR, Sharpe, Sortino, Calmar, Max Drawdown, Tail Ratio, Monthly VaR 95%, CVaR 95%, CDaR 95%, Ulcer Index, and 30-Year Safe Withdrawal Rate (SWR).
+  - **QuantStats Downside Tear-Sheet**: computed from the portfolio's real weekly returns (rebalanced weekly, over the dates all holdings share): CAGR, volatility, Sharpe and Sortino (risk-free rate: XEON over the same window), Calmar, maximum drawdown and longest time under water, VaR/CVaR 95% of 4-week returns, CDaR 95%, Ulcer index and tail ratio. The period is shown; a safe withdrawal rate would need decades of data and is not estimated.
 * **Open-Source Python Quant Script Generators**:
-  - One-click copyable scripts for **PyPortfolioOpt** (`HRPOpt`), **Riskfolio-Lib** (`riskfolio.Portfolio`), and **QuantStats** (`qs.reports.full`).
+  - One-click copyable scripts for **PyPortfolioOpt** (HRP, minimum CVaR, Ledoit-Wolf), **Riskfolio-Lib** (equal risk contribution, minimum CDaR) and **QuantStats** (HTML tear sheet against VWCE), pre-filled with your weights and the dashboard's EUR symbols. Run end to end on 5 Oct 2026 with yfinance 1.7, PyPortfolioOpt 1.6, Riskfolio-Lib 7 and QuantStats; they include a shim for PyPortfolioOpt 1.6 on SciPy 1.18.
 * **Institutional No-Code Tools Integration**:
   - Interactive deep-dives into **Portfolio Visualizer** (Factor regression & Risk Parity), **Testfol.io** (Synthetic histories & cash drag), and **Portfolio Charts** (Drawdown survival & safe withdrawal rates).
 
@@ -168,7 +172,7 @@ For money you may need again within a few years. It does the arithmetic of **you
 * **Order plan at Trade Republic:** all at once, in tranches, or as savings plans on the broker's real execution days (2nd/9th/16th/23rd); fees (€1 Bestpreis / €2 Direktpreis since 1 Jul 2026; savings plans free, €10–€10,000 per execution), estimated crypto spread, interest earned on money still waiting, and how much a fall would cost after each purchase date.
 * **Taxes (Germany, simplified):** saver's allowance vs the interest it must cover, per-instrument treatment (30% partial exemption for equity funds, 12-month rule for direct crypto and gold ETCs with a delivery right), and an upper bound for the Vorabpauschale (Basiszins 3.20% for 2026).
 * **Market context with sources:** ECB deposit rate, euro-area inflation projection, S&P 500 Shiller CAPE, Germany's €500 bn infrastructure fund, the pending crypto-tax reform.
-* Facts render offline from the bundled store; the calculations need the local server (`POST /api/planner/analyze`). "Refresh risk data" (or `uv run apex-etf planner-risk`) re-downloads prices and recomputes `public/data/planner-risk.json`. Inputs are remembered in your browser only.
+* Facts render offline from the bundled store; the calculations need the local server (`POST /api/planner/analyze`). "Refresh prices" (or Live Sync, or `uv run apex-etf planner-risk`) re-downloads prices and recomputes `planner-risk.json`, `performance.json` and `history.json`. Inputs are remembered in your browser only.
 
 ---
 
@@ -193,12 +197,12 @@ For money you may need again within a few years. It does the arithmetic of **you
 │       └── macro_news.py       # Macro events, transmission mechanisms, and Boglehead rules
 ├── tests/
 │   ├── __init__.py
-│   ├── test_advanced_analysis.py # 14 tests: HRP, ERC, Mean-CVaR, Shrinkage, Stress-test (estimates labelled), QuantStats
-│   ├── test_analysis.py          # 6 tests: overlap math, weighted TER, Curvo DCA compounding
+│   ├── test_advanced_analysis.py # 19 tests: HRP, ERC, Mean-CVaR, Shrinkage, crisis stress test and exact cash share, tear sheet from real prices, generated scripts
+│   ├── test_analysis.py          # 11 tests: overlap math, weighted TER, DCA projection per fund, DCA backtest on real prices
 │   ├── test_cli.py               # 6 tests: CLI subcommands (audit, optimize, stress-test, teardown, platforms)
-│   ├── test_planner.py           # 49 tests: price-history statistics, episodes, stress test, orders, savings-plan calendar, tax, risk refresh
+│   ├── test_planner.py           # 56 tests: price-history statistics, performance figures, episodes, stress test, orders, savings-plan calendar, tax, refresh
 │   ├── test_data_integrity.py    # 4 tests: ETF schema, sector sums, holdings sums, correlation matrix
-│   ├── test_server.py            # 22 tests: HTTP REST endpoints on ephemeral port, sync errors, responsiveness during a sync, planner API
+│   ├── test_server.py            # 25 tests: HTTP REST endpoints on ephemeral port, sync errors and price-history refresh, responsiveness during a sync, planner and performance API
 │   └── test_sync.py              # 45 tests: fetch errors and CA fallback, daily change, EUR-only quotes, justETF parsing, sync reporting, headline retention, atomic writes, quote-symbol coverage
 ├── scripts/                      # Data maintenance and store generation scripts
 │   ├── build_etf_data.py
@@ -207,9 +211,10 @@ For money you may need again within a few years. It does the arithmetic of **you
 └── public/                       # Frontend client (zero framework, vanilla modern JS/CSS)
     ├── index.html                # App shell: app bar, ARIA tab bar (doubles as the 7-stage roadmap), dialogs, SVG icon sprite
     ├── css/styles.css            # Design system: tokens, cascade layers, dark/light themes, components, views
-    ├── data/                     # Verified JSON datasets (etfs.json, news.json, correlations.json, planner.json) + computed planner-risk.json
+    ├── data/                     # Verified JSON datasets (etfs.json, news.json, correlations.json, planner.json) + computed planner-risk.json, performance.json, history.json
     └── js/                       # Classic scripts (no bundler) so file:// keeps working
         ├── ui.js                 # Shared toolkit: HTML escaping, formatting, dialogs, tooltips, toasts, chart helpers
+        ├── ticker-card.js        # Hover/focus/tap card for every ticker: what it is, price, measured performance
         ├── app.js                # Controller: theme, tab routing, roadmap context bar, Live Sync, data hydration
         ├── data-store.js         # (generated) offline mirror of the datasets — run scripts/build_js_store.py after data edits
         ├── provider-logos.js
@@ -232,7 +237,7 @@ For money you may need again within a few years. It does the arithmetic of **you
 * **Accessibility:** WAI-ARIA tabs, focus-trapped dialogs with `inert` background, keyboard-focusable tooltips, labelled form controls, every chart has a **Table** view, and the correlation heatmap is a keyboard grid.
 * **Offline behaviour:** the dashboard renders instantly from the bundled `data-store.js`, then refreshes from the REST API in the background. Overlap audit and Curvo backtests fall back to client-side math. Risk-parity analytics, Live Sync and script generation need the local server and say so when it is unreachable.
 * **Caching:** the dev server sends `Cache-Control: no-cache` for static files and `index.html` versions its asset URLs (`?v=YYYYMMDD`). Bump that version string when you ship frontend changes.
-* **Live Sync reports what it refreshed:** `POST /api/sync` returns `status` (`success`, `partial` or `failed`), per-source counts (`quotesUpdated`, `quotesFailed`, `fundDataUpdated`, `newsSources`) and human-readable `warnings`. The header button shows the same outcome ("Synced" / "Partly synced" / "Sync failed") and the freshness chip is judged by the *oldest* quote, so a partial sync never makes the table look fresher than it is. A sync takes ~15 s; the server is threaded, so everything else keeps answering meanwhile, and a second sync started while one is running (say from another tab) is refused with HTTP 409.
+* **Live Sync reports what it refreshed:** `POST /api/sync` returns `status` (`success`, `partial` or `failed`), per-source counts (`quotesUpdated`, `quotesFailed`, `fundDataUpdated`, `newsSources`) and human-readable `warnings`. The header button shows the same outcome ("Synced" / "Partly synced" / "Sync failed") and the freshness chip is judged by the *oldest* quote, so a partial sync never makes the table look fresher than it is. A sync takes ~25 s: after quotes, fund data and news it re-downloads daily price histories (`historyUpdated`) and recomputes `performance.json`, `history.json` and the planner's risk data. The server is threaded, so everything else keeps answering meanwhile, and a second sync started while one is running (say from another tab) is refused with HTTP 409.
 * **Headlines survive a feed outage:** a news feed that stops answering keeps its last headlines, labelled **Cached** (with when they were fetched) and counted as "cached" rather than "live"; they are dropped after 7 days. A feed that answers always replaces them.
 
 ### 🔧 Troubleshooting Live Sync
@@ -254,7 +259,7 @@ Every ETF in `etfs.json` needs an entry in `ETF_MARKET_MAP` (Yahoo symbol, excha
 
 ## 🧪 Running Automated Tests
 
-Run the comprehensive test suite (146 unit and integration tests across 7 test modules):
+Run the comprehensive test suite (166 unit and integration tests across 7 test modules):
 
 ```bash
 # Using pytest (Recommended):
