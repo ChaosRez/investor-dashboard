@@ -1,8 +1,28 @@
+# Python artifacts
 __pycache__/
-*.pyc
-.DS_Store
-.venv/
-.pytest_cache/
+*.py[cod]
+*$py.class
 *.egg-info/
 dist/
 build/
+.venv/
+.pytest_cache/
+
+# Environment and secrets
+.env
+.env.*
+*.local
+
+# IDEs & Editor configs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AI agent worktrees & logs
+.claude/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+

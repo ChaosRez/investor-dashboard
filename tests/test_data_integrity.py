@@ -4,8 +4,10 @@ import re
 import os
 import sys
 
-# Ensure we can import analysis.py
+# Resolve paths from this file so the suite works from any checkout (and CI)
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Ensure we can import analysis.py
 sys.path.insert(0, os.path.join(REPO_ROOT, 'src'))
 from apex_etf.analysis import calculate_portfolio_overlap
 
